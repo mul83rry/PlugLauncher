@@ -1,6 +1,6 @@
 using System.IO.Compression;
-using System.Net.Http.Json;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace PlugLauncher.Core;
@@ -45,18 +45,91 @@ public sealed class StoreClient(string baseUrl, FileLogger? logger = null) : IDi
         Timeout = TimeSpan.FromSeconds(30)
     };
 
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+    /// <summary>
+    /// نوع فروشگاهی که این آدرس جواب داد: فایل ثابت <c>index.json</c> (هاست استاتیک مثل GitHub
+    /// Pages) یا API کامل. بار اول تشخیص داده می‌شود و تا پایان عمر کلاینت نگه داشته می‌شود.
+    /// </summary>
+    private bool? _staticIndex;
+
     public string BaseUrl => _http.BaseAddress!.ToString();
 
     /// <summary>گرفتن فهرست بسته‌ها؛ <paramref name="query"/> خالی یعنی همه.</summary>
     public async Task<IReadOnlyList<StorePlugin>> SearchAsync(string? query, CancellationToken cancellationToken = default)
     {
-        var url = string.IsNullOrWhiteSpace(query)
-            ? "api/v1/plugins?pageSize=100"
-            : $"api/v1/plugins?pageSize=100&q={Uri.EscapeDataString(query.Trim())}";
+        var catalog = await LoadCatalogAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(query)) return catalog;
 
-        var page = await _http.GetFromJsonAsync<StorePage>(url, cancellationToken).ConfigureAwait(false);
-        return page?.Items ?? [];
+        // فیلتر سمت کلاینت انجام می‌شود چون هاست استاتیک پارامتر جستجو ندارد؛ فهرست حداکثر چند
+        // ده بسته است و همین‌طور هم کامل دانلود می‌شد.
+        var needle = query.Trim();
+        return catalog.Where(p => Matches(p, needle)).ToList();
     }
+
+    private async Task<IReadOnlyList<StorePlugin>> LoadCatalogAsync(CancellationToken cancellationToken)
+    {
+        if (_staticIndex is null or true)
+        {
+            var index = await TryGetStringAsync("index.json", cancellationToken).ConfigureAwait(false);
+            if (index is not null)
+            {
+                _staticIndex = true;
+                return ParseCatalog(index);
+            }
+
+            if (_staticIndex is true)
+                throw new InvalidOperationException("The store index (index.json) could not be read.");
+        }
+
+        var api = await TryGetStringAsync("api/v1/plugins?pageSize=100", cancellationToken).ConfigureAwait(false)
+                  ?? throw new InvalidOperationException(
+                      "The store did not answer: neither index.json nor the plugins API is reachable.");
+
+        _staticIndex = false;
+        return ParseCatalog(api);
+    }
+
+    /// <summary>
+    /// خواندن بدنه به‌صورت رشته و دیسریالایز دستی — عمداً به‌جای <c>GetFromJsonAsync</c>، چون
+    /// هاست‌های استاتیک برای فایل‌های JSON همیشه <c>application/json</c> نمی‌فرستند و آن متد
+    /// پاسخ را با Content-Type دیگر رد می‌کند.
+    /// </summary>
+    private async Task<string?> TryGetStringAsync(string url, CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var response = await _http.GetAsync(url, cancellationToken).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                _log.Warn($"store: {url} answered {(int)response.StatusCode}");
+                return null;
+            }
+
+            return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _log.Warn($"store: {url} failed: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>هم پاسخ صفحه‌بندی‌شده‌ی API و هم یک آرایه‌ی خام از بسته‌ها پذیرفته می‌شود.</summary>
+    private static IReadOnlyList<StorePlugin> ParseCatalog(string json)
+    {
+        var trimmed = json.AsSpan().TrimStart();
+
+        return trimmed.Length > 0 && trimmed[0] == '['
+            ? JsonSerializer.Deserialize<List<StorePlugin>>(json, JsonOptions) ?? []
+            : JsonSerializer.Deserialize<StorePage>(json, JsonOptions)?.Items ?? [];
+    }
+
+    private static bool Matches(StorePlugin plugin, string needle)
+        => plugin.Id.Contains(needle, StringComparison.OrdinalIgnoreCase)
+           || plugin.Name.Contains(needle, StringComparison.OrdinalIgnoreCase)
+           || plugin.Description.Contains(needle, StringComparison.OrdinalIgnoreCase)
+           || plugin.Keywords.Any(k => k.Contains(needle, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>دانلود آیکن یک بسته در حافظه (برای نمایش در لیست فروشگاه).</summary>
     public async Task<byte[]?> DownloadIconAsync(StorePlugin plugin, CancellationToken cancellationToken = default)
