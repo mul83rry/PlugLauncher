@@ -25,12 +25,18 @@ public sealed class AppSettings
     [JsonPropertyName("startWithWindows")]
     public bool StartWithWindows { get; set; }
 
+    /// <summary>آدرس پیش‌فرض فروشگاه (بدون اسلش پایانی؛ <c>StoreClient</c> خودش اضافه می‌کند).</summary>
+    public const string DefaultStoreUrl = "https://mul83rry.github.io/PlugLauncher";
+
+    /// <summary>آدرس فروشگاه قدیمی (VPS)؛ فقط برای ارتقای یک‌بارِ تنظیمات ذخیره‌شده نگه داشته شده است.</summary>
+    public const string LegacyStoreUrl = "https://thehokm.cloud/pluglauncher";
+
     /// <summary>
     /// آدرس فروشگاه پلاگین. عمداً در UI قابل ویرایش نیست — مقدار پیش‌فرض همین‌جا هاردکد است و
     /// تغییرش فقط با ویرایش دستی <c>settings.json</c> ممکن است، تا کاربر ناخواسته به مخزن دیگری وصل نشود.
     /// </summary>
     [JsonPropertyName("storeUrl")]
-    public string StoreUrl { get; set; } = "https://thehokm.cloud/pluglauncher";
+    public string StoreUrl { get; set; } = DefaultStoreUrl;
 
     public bool IsEnabled(string pluginId)
         => !DisabledPlugins.Contains(pluginId, StringComparer.OrdinalIgnoreCase);
@@ -55,7 +61,11 @@ public sealed class SettingsStore(FileLogger? logger = null)
             {
                 var json = File.ReadAllText(PluginPaths.SettingsFile);
                 var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
-                if (settings is not null) return settings;
+                if (settings is not null)
+                {
+                    if (MigrateStoreUrl(settings)) Save(settings);
+                    return settings;
+                }
             }
         }
         catch (Exception ex)
@@ -64,6 +74,21 @@ public sealed class SettingsStore(FileLogger? logger = null)
         }
 
         return new AppSettings();
+    }
+
+    /// <summary>
+    /// نصب‌های موجود آدرس فروشگاه قدیمی را در <c>settings.json</c> ذخیره دارند و عوض شدن پیش‌فرض در کد
+    /// آن‌ها را جابه‌جا نمی‌کند. فقط وقتی مقدار <b>دقیقاً</b> همان آدرس قدیمی است ارتقا داده می‌شود، تا
+    /// کاربری که عمداً آدرس دیگری گذاشته دست نخورد.
+    /// </summary>
+    private bool MigrateStoreUrl(AppSettings settings)
+    {
+        var current = settings.StoreUrl?.TrimEnd('/');
+        if (!string.Equals(current, AppSettings.LegacyStoreUrl, StringComparison.OrdinalIgnoreCase)) return false;
+
+        settings.StoreUrl = AppSettings.DefaultStoreUrl;
+        _log.Info($"store url migrated from {AppSettings.LegacyStoreUrl} to {AppSettings.DefaultStoreUrl}");
+        return true;
     }
 
     public void Save(AppSettings settings)
