@@ -1,0 +1,72 @@
+{
+    "generatedAt":  "2026-09-06T15:40:22Z",
+    "total":  4,
+    "page":  1,
+    "pageSize":  4,
+    "items":  [
+                  {
+                      "id":  "com.pluglauncher.calculator",
+                      "name":  "Calculator",
+                      "description":  "Evaluates math expressions; Enter copies the result",
+                      "version":  "1.2.0",
+                      "author":  "PlugLauncher",
+                      "keywords":  [
+
+                                   ],
+                      "size":  2912,
+                      "sha256":  "4b190a566d1cb22fe6de2aa9855a2c345606613eb0e78e216200b4f652a2d46d",
+                      "publishedAt":  "2026-09-06T11:40:03Z",
+                      "downloads":  0,
+                      "downloadUrl":  "packages/com.pluglauncher.calculator/1.2.0/com.pluglauncher.calculator-1.2.0.plz",
+                      "iconUrl":  "packages/com.pluglauncher.calculator/1.2.0/icon.png"
+                  },
+                  {
+                      "id":  "com.pluglauncher.password",
+                      "name":  "Password Generator",
+                      "description":  "Strong passwords — type pw and pick a length and options from the list",
+                      "version":  "1.1.0",
+                      "author":  "PlugLauncher",
+                      "keywords":  [
+                                       "pw"
+                                   ],
+                      "size":  5464,
+                      "sha256":  "0cc0d0adefbda218654648a9c44f6d6c9e2fe3391b9d8974b9c23e729ae1db40",
+                      "publishedAt":  "2026-09-06T11:40:03Z",
+                      "downloads":  0,
+                      "downloadUrl":  "packages/com.pluglauncher.password/1.1.0/com.pluglauncher.password-1.1.0.plz",
+                      "iconUrl":  "packages/com.pluglauncher.password/1.1.0/icon.png"
+                  },
+                  {
+                      "id":  "com.pluglauncher.programs",
+                      "name":  "Programs",
+                      "description":  "Search applications installed in the Start menu",
+                      "version":  "1.2.0",
+                      "author":  "PlugLauncher",
+                      "keywords":  [
+
+                                   ],
+                      "size":  3230,
+                      "sha256":  "a89caca09bdf8c10d122b510523f4edf11b9c8c2fe4599282f92d088819601cb",
+                      "publishedAt":  "2026-09-06T11:40:03Z",
+                      "downloads":  0,
+                      "downloadUrl":  "packages/com.pluglauncher.programs/1.2.0/com.pluglauncher.programs-1.2.0.plz",
+                      "iconUrl":  "packages/com.pluglauncher.programs/1.2.0/icon.png"
+                  },
+                  {
+                      "id":  "com.pluglauncher.steam-games",
+                      "name":  "Steam Games",
+                      "description":  "Find and launch installed Steam games",
+                      "version":  "1.1.0",
+                      "author":  "PlugLauncher",
+                      "keywords":  [
+                                       "st"
+                                   ],
+                      "size":  3331,
+                      "sha256":  "b7ad48bc2b1c91dc1eeac7be48967b2318d017854f3dda76e39d6058b08509d3",
+                      "publishedAt":  "2026-09-06T11:02:12Z",
+                      "downloads":  0,
+                      "downloadUrl":  "packages/com.pluglauncher.steam-games/1.1.0/com.pluglauncher.steam-games-1.1.0.plz",
+                      "iconUrl":  "packages/com.pluglauncher.steam-games/1.1.0/icon.png"
+                  }
+              ]
+}
