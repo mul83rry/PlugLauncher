@@ -1,0 +1,10 @@
+{
+  "id": "com.pluglauncher.programs",
+  "name": "برنامه‌ها",
+  "description": "جستجوی برنامه‌های نصب‌شده از منوی استارت",
+  "version": "1.0.0",
+  "author": "PlugLauncher",
+  "entry": "main.csx",
+  "keywords": [],
+  "icon": ""
+}

@@ -1,0 +1,290 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Threading;
+using PlugLauncher.App.Interop;
+using PlugLauncher.Core;
+
+namespace PlugLauncher.App;
+
+public partial class MainWindow : Window
+{
+    private readonly PluginEngine _engine;
+    private readonly FileLogger _log = new("window");
+    private readonly GlobalHotkey _hotkey = new();
+    private readonly DispatcherTimer _debounce;
+
+    private CancellationTokenSource? _queryCts;
+    private bool _suppressHideOnDeactivate;
+
+    public MainWindow(PluginEngine engine)
+    {
+        _engine = engine;
+        InitializeComponent();
+
+        _debounce = new DispatcherTimer(DispatcherPriority.Input) { Interval = TimeSpan.FromMilliseconds(120) };
+        _debounce.Tick += async (_, _) =>
+        {
+            _debounce.Stop();
+            await RunQueryAsync();
+        };
+
+        Deactivated += (_, _) =>
+        {
+            if (!_suppressHideOnDeactivate) HideLauncher();
+        };
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+
+        WindowEffects.TryApplyAcrylic(this);
+
+        _hotkey.Pressed += (_, _) =>
+        {
+            _log.Info("هات‌کی زده شد");
+            ToggleLauncher();
+        };
+
+        if (_hotkey.Register(this, _engine.Settings.Hotkey))
+        {
+            _log.Info($"هات‌کی «{_engine.Settings.Hotkey}» ثبت شد");
+        }
+        else
+        {
+            _log.Error($"ثبت هات‌کی «{_engine.Settings.Hotkey}» شکست خورد");
+            MessageBox.Show(
+                $"ثبت هات‌کی «{_engine.Settings.Hotkey}» ممکن نشد؛ احتمالاً برنامه‌ی دیگری آن را گرفته است.",
+                "PlugLauncher",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+    }
+
+    // ===== نمایش / مخفی‌سازی =====
+
+    public void ToggleLauncher()
+    {
+        if (IsVisible && IsActive) HideLauncher();
+        else ShowLauncher();
+    }
+
+    public void ShowLauncher()
+    {
+        SearchBox.Text = string.Empty;
+        ShowDefaultRows();
+        PositionOnActiveScreen();
+
+        Show();
+        Activate();
+        Topmost = true;
+        ForegroundHelper.ForceForeground(this);
+
+        SearchBox.Focus();
+        Keyboard.Focus(SearchBox);
+
+        _log.Info($"نمایش پنجره: visible={IsVisible} active={IsActive} left={Left:F0} top={Top:F0} " +
+                  $"width={ActualWidth:F0} height={ActualHeight:F0}");
+    }
+
+    public void HideLauncher()
+    {
+        _debounce.Stop();
+        _queryCts?.Cancel();
+        Hide();
+        SearchBox.Text = string.Empty;
+        ResultsList.ItemsSource = null;
+    }
+
+    /// <summary>وسط‌چین افقی روی همان نمایشگری که موس در آن است، کمی بالاتر از وسط عمودی.</summary>
+    private void PositionOnActiveScreen()
+    {
+        var screen = System.Windows.Forms.Screen.FromPoint(System.Windows.Forms.Control.MousePosition);
+        var dpi = VisualTreeHelper.GetDpi(this);
+        var area = screen.WorkingArea;
+
+        Left = (area.Left + (area.Width - Width * dpi.DpiScaleX) / 2) / dpi.DpiScaleX;
+        Top = (area.Top + area.Height * 0.2) / dpi.DpiScaleY;
+    }
+
+    // ===== جستجو =====
+
+    private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        SettingsButton.Visibility = string.IsNullOrEmpty(SearchBox.Text) ? Visibility.Visible : Visibility.Collapsed;
+
+        _debounce.Stop();
+
+        if (string.IsNullOrWhiteSpace(SearchBox.Text))
+        {
+            _queryCts?.Cancel();
+            ShowDefaultRows();
+            return;
+        }
+
+        _debounce.Start();
+    }
+
+    private async Task RunQueryAsync()
+    {
+        var query = SearchBox.Text;
+
+        _queryCts?.Cancel();
+        _queryCts = new CancellationTokenSource();
+        var token = _queryCts.Token;
+
+        IReadOnlyList<SearchItem> results;
+        try
+        {
+            results = await _engine.QueryAsync(query, token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (token.IsCancellationRequested || !string.Equals(query, SearchBox.Text, StringComparison.Ordinal)) return;
+
+        SetRows(results.Select(LauncherRow.FromResult).ToList());
+    }
+
+    /// <summary>حالت پیش‌فرض: پلاگین‌ها به ترتیب آخرین استفاده.</summary>
+    private void ShowDefaultRows()
+        => SetRows(_engine.PluginsByRecency().Select(LauncherRow.FromPlugin).ToList());
+
+    private void SetRows(IReadOnlyList<LauncherRow> rows)
+    {
+        ResultsList.ItemsSource = rows;
+        ResultsList.SelectedIndex = rows.Count > 0 ? 0 : -1;
+        ResultsList.Visibility = rows.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        UpdateHint();
+    }
+
+    // ===== تکمیل خودکار درون‌خطی =====
+
+    private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ResultsList.SelectedItem is not null) ResultsList.ScrollIntoView(ResultsList.SelectedItem);
+        UpdateHint();
+    }
+
+    private void UpdateHint()
+    {
+        var typed = SearchBox.Text;
+        HintTyped.Text = typed;
+        HintRest.Text = string.Empty;
+
+        if (ResultsList.SelectedItem is not LauncherRow row || string.IsNullOrEmpty(typed)) return;
+
+        // آخرین کلمه‌ی تایپ‌شده مبنای تکمیل است
+        var lastSpace = typed.LastIndexOf(' ');
+        var fragment = lastSpace < 0 ? typed : typed[(lastSpace + 1)..];
+
+        if (fragment.Length > 0 && row.Title.StartsWith(fragment, StringComparison.CurrentCultureIgnoreCase))
+            HintRest.Text = row.Title[fragment.Length..];
+        else
+            HintRest.Text = typed.EndsWith(' ') ? row.Title : " " + row.Title;
+    }
+
+    private void CompleteFromHint()
+    {
+        if (string.IsNullOrEmpty(HintRest.Text)) return;
+
+        SearchBox.Text = HintTyped.Text + HintRest.Text;
+        SearchBox.CaretIndex = SearchBox.Text.Length;
+    }
+
+    // ===== کیبورد =====
+
+    private async void OnSearchKeyDown(object sender, KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Key.Escape:
+                HideLauncher();
+                e.Handled = true;
+                break;
+
+            case Key.Down:
+                MoveSelection(1);
+                e.Handled = true;
+                break;
+
+            case Key.Up:
+                MoveSelection(-1);
+                e.Handled = true;
+                break;
+
+            case Key.Tab:
+                CompleteFromHint();
+                e.Handled = true;
+                break;
+
+            case Key.Enter:
+                e.Handled = true;
+                await ActivateSelectedAsync();
+                break;
+        }
+    }
+
+    private void MoveSelection(int delta)
+    {
+        if (ResultsList.Items.Count == 0) return;
+
+        var next = ResultsList.SelectedIndex + delta;
+        if (next < 0) next = ResultsList.Items.Count - 1;
+        if (next >= ResultsList.Items.Count) next = 0;
+
+        ResultsList.SelectedIndex = next;
+    }
+
+    private async void OnResultDoubleClick(object sender, MouseButtonEventArgs e) => await ActivateSelectedAsync();
+
+    private async Task ActivateSelectedAsync()
+    {
+        if (ResultsList.SelectedItem is not LauncherRow row) return;
+
+        // ردیف پلاگین در حالت پیش‌فرض: کلیدواژه‌اش را در باکس می‌گذاریم
+        if (row.Plugin is not null)
+        {
+            var keyword = row.Plugin.Manifest.Keywords.FirstOrDefault();
+            SearchBox.Text = string.IsNullOrEmpty(keyword) ? string.Empty : keyword + " ";
+            SearchBox.CaretIndex = SearchBox.Text.Length;
+            return;
+        }
+
+        if (row.Item is null) return;
+
+        var shouldHide = await _engine.ExecuteAsync(row.Item);
+        if (shouldHide) HideLauncher();
+    }
+
+    // ===== تنظیمات =====
+
+    private void OnSettingsClick(object sender, RoutedEventArgs e) => OpenSettings();
+
+    public void OpenSettings()
+    {
+        _suppressHideOnDeactivate = true;
+        try
+        {
+            var window = new SettingsWindow(_engine) { Owner = IsVisible ? this : null };
+            window.ShowDialog();
+        }
+        finally
+        {
+            _suppressHideOnDeactivate = false;
+        }
+
+        ShowDefaultRows();
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _hotkey.Dispose();
+        _engine.Usage.Flush();
+        base.OnClosed(e);
+    }
+}

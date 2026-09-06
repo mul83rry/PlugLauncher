@@ -1,0 +1,10 @@
+{
+  "id": "com.pluglauncher.steam-games",
+  "name": "بازی‌های Steam",
+  "description": "جستجو و اجرای بازی‌های نصب‌شده‌ی Steam",
+  "version": "1.0.0",
+  "author": "PlugLauncher",
+  "entry": "main.csx",
+  "keywords": [ "st" ],
+  "icon": "assets/icon.png"
+}
