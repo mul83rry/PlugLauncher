@@ -23,7 +23,7 @@ public partial class App : Application
         _instanceMutex = new Mutex(initiallyOwned: true, InstanceMutexName, out var isFirstInstance);
         if (!isFirstInstance)
         {
-            MessageBox.Show("PlugLauncher از قبل در حال اجراست.", "PlugLauncher");
+            MessageBox.Show("PlugLauncher is already running.", "PlugLauncher");
             Shutdown();
             return;
         }
@@ -33,11 +33,11 @@ public partial class App : Application
         var log = new FileLogger("app");
         DispatcherUnhandledException += (_, args) =>
         {
-            log.Error("خطای مدیریت‌نشده در رابط کاربری", args.Exception);
+            log.Error("unhandled UI exception", args.Exception);
             args.Handled = true;
         };
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
-            log.Error("خطای مدیریت‌نشده", args.ExceptionObject as Exception);
+            log.Error("unhandled exception", args.ExceptionObject as Exception);
 
         LoadUserTheme();
 
@@ -69,17 +69,17 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            new FileLogger("theme").Error($"بارگذاری تم کاربر شکست خورد: {themeFile}", ex);
+            new FileLogger("theme").Error($"could not load user theme: {themeFile}", ex);
         }
     }
 
     private void CreateTrayIcon()
     {
         var menu = new ContextMenuStrip();
-        menu.Items.Add("نمایش", null, (_, _) => _window?.ShowLauncher());
-        menu.Items.Add("تنظیمات", null, (_, _) => _window?.OpenSettings());
+        menu.Items.Add("Show", null, (_, _) => _window?.ShowLauncher());
+        menu.Items.Add("Settings", null, (_, _) => _window?.OpenSettings());
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("خروج", null, (_, _) => Shutdown());
+        menu.Items.Add("Exit", null, (_, _) => Shutdown());
 
         _trayIcon = new NotifyIcon
         {

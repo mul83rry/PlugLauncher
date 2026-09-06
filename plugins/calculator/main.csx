@@ -1,5 +1,5 @@
-// پلاگین نمونه‌ی «سراسری»: چون در plugin.json کلیدواژه‌ای ندارد، برای هر کوئری صدا زده می‌شود
-// و فقط وقتی چیزی برمی‌گرداند که متن، یک عبارت ریاضی باشد. مثال: «12*(3+4)»
+// Global sample plugin: it declares no keyword in plugin.json, so it is called for every
+// query and only returns something when the text is a math expression. Example: 12*(3+4)
 
 using System.Data;
 using System.Globalization;
@@ -38,7 +38,7 @@ return Plugin.Create(query =>
         {
             Id = "result",
             Title = result,
-            Subtitle = $"{expression} — برای کپی Enter بزنید",
+            Subtitle = $"{expression} — press Enter to copy",
             Score = 200,
             Action = () => System.Windows.Clipboard.SetText(result)
         }

@@ -6,3 +6,8 @@ obj/
 *.suo
 artifacts/
 cache/
+
+# artifacts / local data
+publish/
+dist/
+.localstore/

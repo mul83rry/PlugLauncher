@@ -36,6 +36,13 @@ public sealed class PluginResult
 
     private Action? _syncAction;
 
+    /// <summary>
+    /// اگر مقدار داشته باشد، این ردیف کاری انجام نمی‌دهد؛ فقط متن باکس جستجو با این مقدار جایگزین
+    /// می‌شود و پنجره باز می‌ماند. برای ردیف‌های راهنما/نمونه است تا کاربر بتواند یک گزینه را
+    /// امتحان کند بدون آن‌که نحوش را حفظ کرده باشد.
+    /// </summary>
+    public string? ReplaceQuery { get; init; }
+
     /// <summary>داده‌ی دلخواه پلاگین که همراه ردیف حمل می‌شود.</summary>
     public object? Data { get; init; }
 

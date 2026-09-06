@@ -33,7 +33,7 @@ public sealed class PluginDiscovery(FileLogger? logger = null)
                 if (descriptor is null) continue;
 
                 if (!byId.TryAdd(descriptor.Id, descriptor))
-                    _log.Warn($"پلاگین تکراری نادیده گرفته شد: {descriptor.Id} در {directory}");
+                    _log.Warn($"duplicate plugin ignored: {descriptor.Id} in {directory}");
             }
         }
 
@@ -53,26 +53,26 @@ public sealed class PluginDiscovery(FileLogger? logger = null)
         }
         catch (Exception ex)
         {
-            _log.Error($"plugin.json نامعتبر است: {manifestPath}", ex);
+            _log.Error($"invalid plugin.json: {manifestPath}", ex);
             return null;
         }
 
         if (manifest is null)
         {
-            _log.Error($"plugin.json خالی است: {manifestPath}");
+            _log.Error($"empty plugin.json: {manifestPath}");
             return null;
         }
 
         if (string.IsNullOrWhiteSpace(manifest.Id))
         {
-            _log.Error($"plugin.json فیلد id ندارد: {manifestPath}");
+            _log.Error($"plugin.json has no id field: {manifestPath}");
             return null;
         }
 
         var entry = Path.Combine(directory, manifest.Entry);
         if (!File.Exists(entry))
         {
-            _log.Error($"فایل ورودی پلاگین «{manifest.Id}» پیدا نشد: {entry}");
+            _log.Error($"entry file for plugin \"{manifest.Id}\" not found: {entry}");
             return null;
         }
 

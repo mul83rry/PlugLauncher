@@ -1,10 +1,10 @@
-// پلاگین نمونه: بازی‌های نصب‌شده‌ی Steam را پیدا می‌کند و با Enter اجرا می‌کند.
-// کلیدواژه: st   (مثلاً: «st raft»)
+// Sample plugin: finds installed Steam games and launches them on Enter.
+// Keyword: st   (for example: "st raft")
 
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
 
-// ---------- مدل ----------
+// ---------- model ----------
 class Game
 {
     public string AppId = "";
@@ -15,7 +15,7 @@ class Game
 
 List<Game>? cache = null;
 
-// ---------- پیدا کردن مسیر Steam ----------
+// ---------- locate the Steam install ----------
 string? FindSteamPath()
 {
     foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
@@ -32,7 +32,7 @@ string? FindSteamPath()
     return null;
 }
 
-// ---------- کتابخانه‌های Steam ----------
+// ---------- Steam library folders ----------
 IEnumerable<string> LibraryFolders(string steamPath)
 {
     yield return steamPath;
@@ -47,7 +47,7 @@ IEnumerable<string> LibraryFolders(string steamPath)
     }
 }
 
-// ---------- خواندن بازی‌ها از فایل‌های appmanifest ----------
+// ---------- read games from the appmanifest files ----------
 List<Game> LoadGames()
 {
     var games = new List<Game>();
@@ -99,7 +99,7 @@ string? FindIcon(string steamPath, string appId)
     return candidates.FirstOrDefault(File.Exists);
 }
 
-// ---------- امتیازدهی ساده ----------
+// ---------- simple scoring ----------
 int ScoreOf(string name, string term)
 {
     if (string.IsNullOrEmpty(term)) return 10;
@@ -107,12 +107,12 @@ int ScoreOf(string name, string term)
     if (name.StartsWith(term, StringComparison.CurrentCultureIgnoreCase)) return 80;
     if (name.Contains(term, StringComparison.CurrentCultureIgnoreCase)) return 50;
 
-    // تطبیق حروف اول کلمات: «tab» → «They Are Billions»
+    // initials match: "tab" -> "They Are Billions"
     var initials = string.Concat(name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(w => w[0]));
     return initials.StartsWith(term, StringComparison.CurrentCultureIgnoreCase) ? 60 : -1;
 }
 
-// ---------- پلاگین ----------
+// ---------- plugin ----------
 return Plugin.Create(query =>
 {
     cache ??= LoadGames();

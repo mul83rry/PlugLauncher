@@ -105,7 +105,7 @@ public sealed class UsageStore
         }
         catch (Exception ex)
         {
-            _log.Error("ذخیره‌ی usage.json شکست خورد", ex);
+            _log.Error("could not save usage.json", ex);
         }
     }
 
@@ -122,7 +122,7 @@ public sealed class UsageStore
         }
         catch (Exception ex)
         {
-            _log.Error("خواندن usage.json شکست خورد", ex);
+            _log.Error("could not read usage.json", ex);
         }
 
         return [];

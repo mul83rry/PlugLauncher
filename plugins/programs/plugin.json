@@ -1,10 +1,10 @@
 {
   "id": "com.pluglauncher.programs",
-  "name": "برنامه‌ها",
-  "description": "جستجوی برنامه‌های نصب‌شده از منوی استارت",
-  "version": "1.0.0",
+  "name": "Programs",
+  "description": "Search applications installed in the Start menu",
+  "version": "1.2.0",
   "author": "PlugLauncher",
   "entry": "main.csx",
   "keywords": [],
-  "icon": ""
+  "icon": "assets/icon.png"
 }

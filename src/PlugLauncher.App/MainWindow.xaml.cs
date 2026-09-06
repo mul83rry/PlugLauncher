@@ -18,6 +18,9 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _queryCts;
     private bool _suppressHideOnDeactivate;
 
+    /// <summary>متن اصلاح‌شده‌ی چیدمان کیبورد برای کوئری فعلی، اگر نتایج از روی آن آمده باشند.</summary>
+    private string? _layoutFix;
+
     public MainWindow(PluginEngine engine)
     {
         _engine = engine;
@@ -44,19 +47,19 @@ public partial class MainWindow : Window
 
         _hotkey.Pressed += (_, _) =>
         {
-            _log.Info("هات‌کی زده شد");
+            _log.Info("hotkey pressed");
             ToggleLauncher();
         };
 
         if (_hotkey.Register(this, _engine.Settings.Hotkey))
         {
-            _log.Info($"هات‌کی «{_engine.Settings.Hotkey}» ثبت شد");
+            _log.Info($"hotkey \"{_engine.Settings.Hotkey}\" registered");
         }
         else
         {
-            _log.Error($"ثبت هات‌کی «{_engine.Settings.Hotkey}» شکست خورد");
+            _log.Error($"could not register hotkey \"{_engine.Settings.Hotkey}\"");
             MessageBox.Show(
-                $"ثبت هات‌کی «{_engine.Settings.Hotkey}» ممکن نشد؛ احتمالاً برنامه‌ی دیگری آن را گرفته است.",
+                $"Could not register the hotkey \"{_engine.Settings.Hotkey}\" — another application probably owns it.",
                 "PlugLauncher",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
@@ -85,7 +88,7 @@ public partial class MainWindow : Window
         SearchBox.Focus();
         Keyboard.Focus(SearchBox);
 
-        _log.Info($"نمایش پنجره: visible={IsVisible} active={IsActive} left={Left:F0} top={Top:F0} " +
+        _log.Info($"showing window: visible={IsVisible} active={IsActive} left={Left:F0} top={Top:F0} " +
                   $"width={ActualWidth:F0} height={ActualHeight:F0}");
     }
 
@@ -96,6 +99,7 @@ public partial class MainWindow : Window
         Hide();
         SearchBox.Text = string.Empty;
         ResultsList.ItemsSource = null;
+        _layoutFix = null;
     }
 
     /// <summary>وسط‌چین افقی روی همان نمایشگری که موس در آن است، کمی بالاتر از وسط عمودی.</summary>
@@ -120,6 +124,7 @@ public partial class MainWindow : Window
         if (string.IsNullOrWhiteSpace(SearchBox.Text))
         {
             _queryCts?.Cancel();
+            _layoutFix = null;
             ShowDefaultRows();
             return;
         }
@@ -135,10 +140,10 @@ public partial class MainWindow : Window
         _queryCts = new CancellationTokenSource();
         var token = _queryCts.Token;
 
-        IReadOnlyList<SearchItem> results;
+        QueryOutcome outcome;
         try
         {
-            results = await _engine.QueryAsync(query, token);
+            outcome = await _engine.QueryAsync(query, token);
         }
         catch (OperationCanceledException)
         {
@@ -147,7 +152,8 @@ public partial class MainWindow : Window
 
         if (token.IsCancellationRequested || !string.Equals(query, SearchBox.Text, StringComparison.Ordinal)) return;
 
-        SetRows(results.Select(LauncherRow.FromResult).ToList());
+        _layoutFix = outcome.CorrectedQuery;
+        SetRows(outcome.Items.Select(LauncherRow.FromResult).ToList());
     }
 
     /// <summary>حالت پیش‌فرض: پلاگین‌ها به ترتیب آخرین استفاده.</summary>
@@ -176,6 +182,13 @@ public partial class MainWindow : Window
         HintTyped.Text = typed;
         HintRest.Text = string.Empty;
 
+        // چیدمان کیبورد اشتباه بوده: به‌جای تکمیل، خوانشِ درست همان کلیدها نشان داده می‌شود
+        if (!string.IsNullOrEmpty(_layoutFix))
+        {
+            HintRest.Text = "   →  " + _layoutFix;
+            return;
+        }
+
         if (ResultsList.SelectedItem is not LauncherRow row || string.IsNullOrEmpty(typed)) return;
 
         // آخرین کلمه‌ی تایپ‌شده مبنای تکمیل است
@@ -190,6 +203,14 @@ public partial class MainWindow : Window
 
     private void CompleteFromHint()
     {
+        // با چیدمان اشتباه، Tab خودِ متن باکس را درست می‌کند نه اینکه ادامه‌اش را بچسباند
+        if (!string.IsNullOrEmpty(_layoutFix))
+        {
+            SearchBox.Text = _layoutFix;
+            SearchBox.CaretIndex = SearchBox.Text.Length;
+            return;
+        }
+
         if (string.IsNullOrEmpty(HintRest.Text)) return;
 
         SearchBox.Text = HintTyped.Text + HintRest.Text;
@@ -256,6 +277,15 @@ public partial class MainWindow : Window
         }
 
         if (row.Item is null) return;
+
+        // ردیف راهنما: به‌جای اجرا، نحوِ پیشنهادی را در باکس می‌گذارد و پنجره باز می‌ماند
+        if (!string.IsNullOrEmpty(row.Item.Result.ReplaceQuery))
+        {
+            SearchBox.Text = row.Item.Result.ReplaceQuery;
+            SearchBox.CaretIndex = SearchBox.Text.Length;
+            SearchBox.Focus();
+            return;
+        }
 
         var shouldHide = await _engine.ExecuteAsync(row.Item);
         if (shouldHide) HideLauncher();

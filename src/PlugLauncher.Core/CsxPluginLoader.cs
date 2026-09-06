@@ -48,13 +48,13 @@ public sealed class CsxPluginLoader(FileLogger? logger = null)
                 var cached = await RunCompiledAsync(cachedAssembly).ConfigureAwait(false);
                 if (cached is not null)
                 {
-                    _log.Info($"«{descriptor.Id}» از کش لود شد ({Path.GetFileName(cachedAssembly)})");
+                    _log.Info($"\"{descriptor.Id}\" loaded from cache ({Path.GetFileName(cachedAssembly)})");
                     return cached;
                 }
             }
             catch (Exception ex)
             {
-                _log.Warn($"کش «{descriptor.Id}» قابل استفاده نبود، دوباره کامپایل می‌شود: {ex.Message}");
+                _log.Warn($"cache for \"{descriptor.Id}\" was unusable, recompiling: {ex.Message}");
                 TryDelete(cachedAssembly);
             }
         }
@@ -85,7 +85,7 @@ public sealed class CsxPluginLoader(FileLogger? logger = null)
         }
         catch (Exception ex)
         {
-            _log.Warn($"نوشتن کش کامپایل «{descriptor.Id}» شکست خورد: {ex.Message}");
+            _log.Warn($"could not write compile cache for \"{descriptor.Id}\": {ex.Message}");
             return await RunInMemoryAsync(script, descriptor, cancellationToken).ConfigureAwait(false);
         }
 
@@ -102,7 +102,7 @@ public sealed class CsxPluginLoader(FileLogger? logger = null)
 
             throw new PluginLoadException(
                 descriptor.Id,
-                $"اسکریپت مقداری از نوع {nameof(IPlugin)} برنگرداند. آخرین خط باید چیزی شبیه «return Plugin.Create(...);» باشد.");
+                $"The script did not return an {nameof(IPlugin)}. The last line should look like \"return Plugin.Create(...);\".");
         }
         catch (PluginLoadException)
         {
@@ -110,7 +110,7 @@ public sealed class CsxPluginLoader(FileLogger? logger = null)
         }
         catch (Exception ex)
         {
-            _log.Warn($"اجرای اسمبلی کش‌شده‌ی «{descriptor.Id}» شکست خورد، اجرای مستقیم انجام می‌شود: {ex.Message}");
+            _log.Warn($"running the cached assembly for \"{descriptor.Id}\" failed, falling back to direct execution: {ex.Message}");
             TryDelete(outputAssembly);
             return await RunInMemoryAsync(script, descriptor, cancellationToken).ConfigureAwait(false);
         }
@@ -130,7 +130,7 @@ public sealed class CsxPluginLoader(FileLogger? logger = null)
         return state.ReturnValue as IPlugin
                ?? throw new PluginLoadException(
                    descriptor.Id,
-                   $"اسکریپت مقداری از نوع {nameof(IPlugin)} برنگرداند.");
+                   $"The script did not return an {nameof(IPlugin)}.");
     }
 
     /// <summary>
@@ -143,10 +143,10 @@ public sealed class CsxPluginLoader(FileLogger? logger = null)
         var assembly = Assembly.LoadFrom(assemblyPath);
         var submission = assembly.GetType("Submission#0")
                          ?? assembly.GetTypes().FirstOrDefault(t => t.Name.StartsWith("Submission#0", StringComparison.Ordinal))
-                         ?? throw new InvalidOperationException("کلاس Submission#0 در اسمبلی کش‌شده پیدا نشد.");
+                         ?? throw new InvalidOperationException("Submission#0 was not found in the cached assembly.");
 
         var factory = submission.GetMethod("<Factory>", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-                      ?? throw new InvalidOperationException("متد <Factory> در اسمبلی کش‌شده پیدا نشد.");
+                      ?? throw new InvalidOperationException("The <Factory> method was not found in the cached assembly.");
 
         // خانه‌ی صفر برای globals است (استفاده نمی‌کنیم) و خانه‌ی بعدی محل ذخیره‌ی نتیجه‌ی submission.
         var submissionArray = new object?[2];
@@ -236,11 +236,11 @@ public sealed class CsxPluginLoader(FileLogger? logger = null)
             .Select(d =>
             {
                 var line = d.Location.GetLineSpan().StartLinePosition.Line + 1;
-                return $"خط {line}: {d.Id} {d.GetMessage()}";
+                return $"line {line}: {d.Id} {d.GetMessage()}";
             })
             .ToList();
 
-        return errors.Count == 0 ? "کامپایل بدون دلیل مشخص شکست خورد." : string.Join(Environment.NewLine, errors);
+        return errors.Count == 0 ? "Compilation failed with no specific reason." : string.Join(Environment.NewLine, errors);
     }
 
     private static string SanitizeFileName(string value)
@@ -264,7 +264,7 @@ public sealed class CsxPluginLoader(FileLogger? logger = null)
 
 /// <summary>خطای کامپایل یا اجرای اسکریپت پلاگین.</summary>
 public sealed class PluginLoadException(string pluginId, string details)
-    : Exception($"لود پلاگین «{pluginId}» شکست خورد:{Environment.NewLine}{details}")
+    : Exception($"Failed to load plugin \"{pluginId}\":{Environment.NewLine}{details}")
 {
     public string PluginId { get; } = pluginId;
     public string Details { get; } = details;

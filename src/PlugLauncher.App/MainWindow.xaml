@@ -47,7 +47,7 @@
                 <Button x:Name="SettingsButton"
                         Grid.Column="1"
                         Style="{StaticResource GhostButton}"
-                        Content="تنظیمات"
+                        Content="Settings"
                         VerticalAlignment="Center"
                         Click="OnSettingsClick" />
             </Grid>

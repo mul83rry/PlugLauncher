@@ -1,10 +1,10 @@
 {
   "id": "com.pluglauncher.calculator",
-  "name": "ماشین‌حساب",
-  "description": "محاسبه‌ی عبارت‌های ریاضی؛ Enter نتیجه را کپی می‌کند",
-  "version": "1.0.0",
+  "name": "Calculator",
+  "description": "Evaluates math expressions; Enter copies the result",
+  "version": "1.2.0",
   "author": "PlugLauncher",
   "entry": "main.csx",
   "keywords": [],
-  "icon": ""
+  "icon": "assets/icon.png"
 }

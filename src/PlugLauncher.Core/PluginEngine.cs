@@ -15,6 +15,7 @@ public sealed class PluginEngine
     private readonly SettingsStore _settingsStore;
 
     private List<PluginDescriptor> _plugins = [];
+    private StoreClient? _store;
 
     public PluginEngine()
     {
@@ -27,6 +28,9 @@ public sealed class PluginEngine
 
     public AppSettings Settings { get; private set; }
     public UsageStore Usage { get; }
+
+    /// <summary>کلاینت فروشگاه؛ با تغییر آدرس در تنظیمات دوباره ساخته می‌شود.</summary>
+    public StoreClient Store => _store ??= new StoreClient(Settings.StoreUrl, _log);
 
     /// <summary>همه‌ی پلاگین‌های کشف‌شده (شامل غیرفعال‌ها و خراب‌ها) برای صفحه‌ی تنظیمات.</summary>
     public IReadOnlyList<PluginDescriptor> Plugins => _plugins;
@@ -52,7 +56,7 @@ public sealed class PluginEngine
         _plugins = discovered.ToList();
 
         var loaded = _plugins.Count(p => p.State == PluginState.Loaded);
-        _log.Info($"{loaded} از {_plugins.Count} پلاگین در {stopwatch.ElapsedMilliseconds}ms لود شد");
+        _log.Info($"loaded {loaded} of {_plugins.Count} plugins in {stopwatch.ElapsedMilliseconds}ms");
     }
 
     private async Task LoadOneAsync(PluginDescriptor descriptor, CancellationToken cancellationToken)
@@ -80,16 +84,36 @@ public sealed class PluginEngine
             descriptor.State = PluginState.Failed;
             descriptor.Error = ex is PluginLoadException ple ? ple.Details : ex.Message;
             descriptor.Instance = null;
-            _log.Error($"لود پلاگین «{descriptor.Id}» شکست خورد", ex);
+            _log.Error($"failed to load plugin \"{descriptor.Id}\"", ex);
         }
     }
 
-    /// <summary>اجرای کوئری روی پلاگین‌های مرتبط و برگرداندن نتایج مرتب‌شده.</summary>
-    public async Task<IReadOnlyList<SearchItem>> QueryAsync(string raw, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// اجرای کوئری روی پلاگین‌های مرتبط و برگرداندن نتایج مرتب‌شده.
+    ///
+    /// اگر هیچ پلاگینی چیزی برنگرداند، یک‌بار دیگر با خوانشِ اصلاح‌شده‌ی چیدمان کیبورد امتحان می‌شود
+    /// (مثلاً «زاقخپث» که با زبان فارسیِ جامانده تایپ شده، در واقع «chrome» است). این تلاش دوم فقط
+    /// وقتی انجام می‌شود که تلاش اول خالی باشد، پس هیچ‌وقت جای یک نتیجه‌ی واقعی را نمی‌گیرد.
+    /// </summary>
+    public async Task<QueryOutcome> QueryAsync(string raw, CancellationToken cancellationToken = default)
     {
         raw ??= string.Empty;
-        if (string.IsNullOrWhiteSpace(raw)) return [];
+        if (string.IsNullOrWhiteSpace(raw)) return QueryOutcome.Empty;
 
+        var items = await QueryTargetsAsync(raw, cancellationToken).ConfigureAwait(false);
+        if (items.Count > 0) return new QueryOutcome(items, null);
+
+        if (!KeyboardLayout.TryFix(raw, out var corrected)) return QueryOutcome.Empty;
+
+        var alternative = await QueryTargetsAsync(corrected, cancellationToken).ConfigureAwait(false);
+        if (alternative.Count == 0) return QueryOutcome.Empty;
+
+        _log.Info($"keyboard layout fix: \"{raw}\" read as \"{corrected}\" ({alternative.Count} results)");
+        return new QueryOutcome(alternative, corrected);
+    }
+
+    private async Task<IReadOnlyList<SearchItem>> QueryTargetsAsync(string raw, CancellationToken cancellationToken)
+    {
         var targets = ResolveTargets(raw);
         if (targets.Count == 0) return [];
 
@@ -160,12 +184,12 @@ public sealed class PluginEngine
         }
         catch (OperationCanceledException)
         {
-            _log.Warn($"پلاگین «{plugin.Id}» در {Settings.QueryTimeoutMs}ms پاسخ نداد");
+            _log.Warn($"plugin \"{plugin.Id}\" did not answer within {Settings.QueryTimeoutMs}ms");
             return [];
         }
         catch (Exception ex)
         {
-            _log.Error($"کوئری پلاگین «{plugin.Id}» خطا داد", ex);
+            _log.Error($"query failed for plugin \"{plugin.Id}\"", ex);
             return [];
         }
     }
@@ -183,7 +207,7 @@ public sealed class PluginEngine
         }
         catch (Exception ex)
         {
-            _log.Error($"اجرای ردیف «{item.Title}» از پلاگین «{item.Plugin.Id}» خطا داد", ex);
+            _log.Error($"action failed for result \"{item.Title}\" of plugin \"{item.Plugin.Id}\"", ex);
             return false;
         }
     }
@@ -226,17 +250,33 @@ public sealed class PluginEngine
             Usage.Forget(pluginId);
             Settings.DisabledPlugins.RemoveAll(id => id.Equals(pluginId, StringComparison.OrdinalIgnoreCase));
             _settingsStore.Save(Settings);
-            _log.Info($"پلاگین «{pluginId}» حذف شد");
+            _log.Info($"plugin \"{pluginId}\" removed");
         }
         catch (Exception ex)
         {
-            _log.Error($"حذف پلاگین «{pluginId}» شکست خورد", ex);
+            _log.Error($"failed to remove plugin \"{pluginId}\"", ex);
             throw;
         }
     }
 
     /// <summary>کشف دوباره‌ی پوشه‌ی پلاگین‌ها (بعد از نصب دستی یا ویرایش کد).</summary>
     public Task ReloadAsync(CancellationToken cancellationToken = default) => LoadAllAsync(cancellationToken);
+
+    /// <summary>نسخه‌ی نصب‌شده‌ی یک پلاگین، یا null اگر نصب نباشد.</summary>
+    public string? InstalledVersionOf(string pluginId)
+        => _plugins.FirstOrDefault(p => p.Id.Equals(pluginId, StringComparison.OrdinalIgnoreCase))?.Manifest.Version;
+
+    /// <summary>نصب یا به‌روزرسانی یک بسته از فروشگاه و لود دوباره‌ی پلاگین‌ها.</summary>
+    public async Task InstallFromStoreAsync(StorePlugin plugin, CancellationToken cancellationToken = default)
+    {
+        await Store.InstallAsync(plugin, cancellationToken).ConfigureAwait(false);
+
+        // پلاگین قبلی ممکن است غیرفعال شده باشد؛ نصب از فروشگاه یعنی کاربر آن را می‌خواهد
+        Settings.DisabledPlugins.RemoveAll(id => id.Equals(plugin.Id, StringComparison.OrdinalIgnoreCase));
+        _settingsStore.Save(Settings);
+
+        await LoadAllAsync(cancellationToken).ConfigureAwait(false);
+    }
 
     public void SaveSettings() => _settingsStore.Save(Settings);
 

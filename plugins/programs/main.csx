@@ -1,5 +1,5 @@
-// پلاگین نمونه‌ی سراسری: شورت‌کات‌های منوی استارت را ایندکس می‌کند و با Enter اجرا می‌کند.
-// چون کلیدواژه ندارد، هر چیزی که کاربر تایپ کند اینجا هم جستجو می‌شود.
+// Global sample plugin: indexes Start menu shortcuts and launches them on Enter.
+// It has no keyword, so whatever the user types is searched here too.
 
 class Shortcut
 {

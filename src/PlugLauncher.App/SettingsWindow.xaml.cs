@@ -23,7 +23,7 @@ public partial class SettingsWindow : Window
     private void Refresh()
     {
         PluginsList.ItemsSource = _engine.Plugins.Select(p => new PluginRow(p, _engine.Settings.IsEnabled(p.Id))).ToList();
-        FooterText.Text = $"پوشه‌ی پلاگین‌ها: {PluginPaths.UserPlugins}";
+        FooterText.Text = $"Plugins folder: {PluginPaths.UserPlugins}";
     }
 
     private async void OnPluginToggled(object sender, RoutedEventArgs e)
@@ -39,8 +39,8 @@ public partial class SettingsWindow : Window
         if (sender is not Button { Tag: string pluginId }) return;
 
         var confirm = MessageBox.Show(
-            $"پلاگین «{pluginId}» و همه‌ی فایل‌هایش حذف شود؟",
-            "حذف پلاگین",
+            $"Remove plugin \"{pluginId}\" and all of its files?",
+            "Remove plugin",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
@@ -53,7 +53,7 @@ public partial class SettingsWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"حذف نشد: {ex.Message}", "خطا", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Could not remove: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -61,7 +61,7 @@ public partial class SettingsWindow : Window
     {
         _engine.Settings.Hotkey = HotkeyBox.Text.Trim();
         _engine.SaveSettings();
-        HotkeyStatus.Text = "ذخیره شد — بعد از راه‌اندازی مجدد اعمال می‌شود";
+        HotkeyStatus.Text = "Saved — takes effect after restart";
     }
 
     private void OnOpenPluginsFolder(object sender, RoutedEventArgs e)
@@ -74,7 +74,7 @@ public partial class SettingsWindow : Window
     {
         if (!File.Exists(PluginPaths.LogFile))
         {
-            MessageBox.Show("هنوز لاگی نوشته نشده است.", "لاگ", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Nothing has been logged yet.", "Log", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -102,10 +102,10 @@ public partial class SettingsWindow : Window
 
         public string StateText => descriptor.State switch
         {
-            PluginState.Loaded => "آماده",
-            PluginState.Disabled => "غیرفعال",
-            PluginState.Failed => "خطا",
-            _ => "لود نشده"
+            PluginState.Loaded => "Ready",
+            PluginState.Disabled => "Disabled",
+            PluginState.Failed => "Failed",
+            _ => "Not loaded"
         };
 
         public Brush StateBrush => descriptor.State switch
