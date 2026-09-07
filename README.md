@@ -13,9 +13,16 @@ wrong layout →  «زاقخپث» is searched as «chrome»; Tab rewrites the b
 
 ## Download
 
-Grab the latest archive from the [Releases page](https://github.com/mul83rry/PlugLauncher/releases),
-extract it anywhere, and run `PlugLauncher.exe`. There is no installer, nothing is written to
-the registry, and administrator rights are never needed.
+The [Releases page](https://github.com/mul83rry/PlugLauncher/releases) has two downloads of the
+same build — take either:
+
+| | |
+|---|---|
+| `PlugLauncher-<version>-setup.exe` | Installer. Start menu shortcut, an entry in Add or remove programs, upgrades in place. Installs per user under `%LOCALAPPDATA%\Programs`, so it never asks for administrator rights. |
+| `PlugLauncher-<version>-win-x64.zip` | Portable. Extract anywhere, run `PlugLauncher.exe`, delete the folder to be rid of it. |
+
+Neither one needs administrator rights. The app writes to `%APPDATA%\PlugLauncher` and, only if
+you turn on **Start with Windows**, to `HKCU\...\CurrentVersion\Run` — nothing else.
 
 **Requirement: [.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0)**
 — the runtime, not the SDK. Pick **.NET Desktop Runtime**, `x64`, from the "Run desktop apps"
@@ -23,11 +30,14 @@ column. The plain *.NET Runtime* and the *ASP.NET Core Runtime* are **not** enou
 only ships in the Desktop bundle. .NET 9 or older will not work either: the app does not roll
 forward across a major version.
 
-If the runtime is missing, Windows shows a dialog with a download link when you start the app.
+The installer checks for the runtime and offers the download page before it copies anything. If
+you take the zip instead, Windows shows a dialog with a download link the first time you start
+the app.
 
-> **First run:** the executable is not code signed, so SmartScreen shows a blue
-> "Windows protected your PC" box. Click **More info → Run anyway**. The `SHA256SUMS.txt`
-> attached to each release lets you verify the archive you downloaded.
+> **First run:** nothing here is code signed, so SmartScreen shows a blue "Windows protected
+> your PC" box — for the installer and for the app. Click **More info → Run anyway**. The
+> `SHA256SUMS.txt` attached to each release covers both downloads, so you can check what you
+> got against it.
 
 `Alt+Space` opens the window. To quit: the tray icon → **Exit**, or the **Exit PlugLauncher**
 button in settings. Closing the window only hides it — the app stays in the tray so the hotkey
@@ -52,8 +62,13 @@ To produce a release archive exactly the way CI does:
 ```
 
 It publishes framework-dependent for `win-x64`, zips the output as
-`publish/PlugLauncher-<version>-win-x64.zip` and writes `SHA256SUMS.txt` beside it. The version
-comes from `Directory.Build.props`, which is the only place it is written down.
+`publish/PlugLauncher-<version>-win-x64.zip`, compiles `tools/PlugLauncher.iss` into
+`publish/PlugLauncher-<version>-setup.exe`, and writes one `SHA256SUMS.txt` covering both. The
+version comes from `Directory.Build.props`, which is the only place it is written down.
+
+The installer step needs `ISCC.exe` from [Inno Setup](https://jrsoftware.org/isinfo.php). The
+GitHub windows runner has it pre-installed; a machine without it gets a warning and the archive
+only, which `-SkipInstaller` also does deliberately.
 
 > **Do not turn on `PublishSingleFile`.** In single file mode the assemblies live inside the
 > executable and have no path on disk. `CsxPluginLoader` builds its Roslyn references from
@@ -72,10 +87,14 @@ comes from `Directory.Build.props`, which is the only place it is written down.
    git push origin v1.0.0
    ```
 
-The `Release` workflow builds the archive on `windows-latest`, checks that the tag matches the
-version in `Directory.Build.props`, and creates the GitHub release with the zip and the
-checksum file attached. Running the workflow by hand instead builds the same archive and leaves
-it as an artifact, without creating a release.
+The `Release` workflow builds on `windows-latest`, checks that the tag matches the version in
+`Directory.Build.props`, and creates the GitHub release with the installer, the zip and the
+checksum file attached. It fails if either artifact is missing rather than publishing half a
+release.
+
+Running the workflow by hand (**Actions → Release → Run workflow**) builds exactly the same
+thing and leaves it as an artifact without creating a release, which is the way to check a
+packaging change before committing to a tag.
 
 ## Project layout
 

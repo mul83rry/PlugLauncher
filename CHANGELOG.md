@@ -3,6 +3,26 @@
 The release workflow reads the section matching the tag out of this file and uses it as the
 release notes, so every version needs a `## <version>` heading here before it can be tagged.
 
+## 1.2.0 — 2026-09-07
+
+**An installer, alongside the zip**
+
+Every release now carries two downloads of the same build. The zip is unchanged: extract it
+anywhere, run it, delete the folder when you are done. `PlugLauncher-<version>-setup.exe` is for
+when you would rather have a Start menu entry and an uninstaller.
+
+- Installs to `%LOCALAPPDATA%\Programs\PlugLauncher`, per user, **no administrator rights**.
+- Adds a Start menu shortcut; the desktop shortcut is a checkbox and is off by default.
+- Warns, before installing, if the .NET 10 Desktop Runtime is missing, and offers the download
+  page. It does not block the install — the runtime can be added afterwards.
+- Refuses to overwrite a running PlugLauncher and asks you to close it first, so you cannot end
+  up still using the old executable after an upgrade.
+- Uninstalling removes the startup entry if it points at the copy being removed, and asks
+  separately before deleting your settings, installed plugins and logs.
+
+`SHA256SUMS.txt` now lists both files, and is written without a BOM and with LF endings so
+`sha256sum -c SHA256SUMS.txt` works on it.
+
 ## 1.1.0 — 2026-09-07
 
 **Start with Windows**

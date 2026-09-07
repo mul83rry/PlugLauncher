@@ -43,9 +43,21 @@ jobs:
 
           Write-Host "Version: $version"
 
-      - name: Build the release archive
+      - name: Build the release archive and installer
         shell: pwsh
         run: ./tools/build-release.ps1
+
+      # Inno Setup is pre-installed on the windows runner, so a missing installer here means
+      # the build script silently fell back to archive-only and the release would ship half
+      # of what it promises.
+      - name: Check both artifacts exist
+        shell: pwsh
+        run: |
+          foreach ($pattern in 'publish/PlugLauncher-*-win-x64.zip', 'publish/PlugLauncher-*-setup.exe') {
+            if (-not (Get-ChildItem $pattern -ErrorAction SilentlyContinue)) { throw "Missing: $pattern" }
+          }
+
+          Get-Content publish/SHA256SUMS.txt
 
       - name: Extract the release notes
         if: startsWith(github.ref, 'refs/tags/')
@@ -74,17 +86,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $archive = (Get-ChildItem publish/PlugLauncher-*.zip | Select-Object -First 1).FullName
+          $archive = (Get-ChildItem publish/PlugLauncher-*-win-x64.zip | Select-Object -First 1).FullName
+          $installer = (Get-ChildItem publish/PlugLauncher-*-setup.exe | Select-Object -First 1).FullName
 
           gh release create $env:GITHUB_REF_NAME `
+            $installer `
             $archive `
             publish/SHA256SUMS.txt `
             --title "PlugLauncher $env:GITHUB_REF_NAME" `
             --notes-file release-notes.md
 
-      - name: Keep the archive as an artifact
+      - name: Keep the build as an artifact
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
           name: PlugLauncher-${{ steps.version.outputs.value }}
-          path: publish/PlugLauncher-*.zip
+          path: |
+            publish/PlugLauncher-*-win-x64.zip
+            publish/PlugLauncher-*-setup.exe
+            publish/SHA256SUMS.txt
