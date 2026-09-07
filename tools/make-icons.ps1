@@ -109,3 +109,13 @@ foreach ($offset in 44, 60, 76) {
     Fill $c.Graphics $teal (New-RoundedPath 94 $offset 16 8 3)
 }
 Save-Canvas $c 'plugins/system/assets/icon.png'
+
+# ===== keyboard layout: two key caps, the second one dimmed — the same key, a different letter =====
+$c = New-Canvas
+Fill $c.Graphics $teal (New-RoundedPath 18 34 54 54 10)
+Fill $c.Graphics $plate (New-RoundedPath 30 46 30 30 6)
+Fill $c.Graphics $dim (New-RoundedPath 56 40 54 54 10)
+Fill $c.Graphics $plate (New-RoundedPath 68 52 30 30 6)
+Stroke $c.Graphics $teal 8 @((P 42 100), (P 86 100))
+Stroke $c.Graphics $teal 8 @((P 78 92), (P 86 100), (P 78 108))
+Save-Canvas $c 'plugins/keyboard-layout/assets/icon.png'

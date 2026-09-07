@@ -43,6 +43,9 @@ public sealed class PluginEngine
             .ThenBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
 
+    /// <summary>تعارض‌های کلیدواژه‌ی آخرین لود، برای اطلاع دادن به کاربر.</summary>
+    public IReadOnlyList<KeywordConflict> KeywordConflicts { get; private set; } = [];
+
     /// <summary>کشف و لود همه‌ی پلاگین‌های فعال. پلاگین‌های خراب با وضعیت Failed باقی می‌مانند.</summary>
     public async Task LoadAllAsync(CancellationToken cancellationToken = default)
     {
@@ -50,6 +53,8 @@ public sealed class PluginEngine
 
         var stopwatch = Stopwatch.StartNew();
         var discovered = _discovery.Discover();
+
+        KeywordConflicts = ResolveKeywordConflicts(discovered);
 
         await Task.WhenAll(discovered.Select(p => LoadOneAsync(p, cancellationToken))).ConfigureAwait(false);
 
@@ -59,8 +64,59 @@ public sealed class PluginEngine
         _log.Info($"loaded {loaded} of {_plugins.Count} plugins in {stopwatch.ElapsedMilliseconds}ms");
     }
 
+    /// <summary>
+    /// دو پلاگین با یک کلیدواژه هر دو صدا زده می‌شوند و نتایجشان در هم می‌رود، بدون اینکه کاربر
+    /// بفهمد چرا. پس کلیدواژه مالک دارد: قدیمی‌ترین پلاگین آن را نگه می‌دارد و هر پلاگین بعدی که
+    /// همان را برداشته باشد <b>اصلاً لود نمی‌شود</b> تا وقتی کلیدواژه‌اش عوض شود.
+    ///
+    /// یک پاس از قدیمی به جدید کافی است: پلاگینی که یکی از کلیدواژه‌هایش گرفته شده کنار می‌رود و
+    /// بقیه‌ی کلیدواژه‌هایش را هم claim نمی‌کند، پس پلاگین سومی که فقط با <i>او</i> تعارض داشت آزاد می‌ماند.
+    /// </summary>
+    private List<KeywordConflict> ResolveKeywordConflicts(IReadOnlyList<PluginDescriptor> discovered)
+    {
+        var conflicts = new List<KeywordConflict>();
+        var owners = new Dictionary<string, PluginDescriptor>(StringComparer.OrdinalIgnoreCase);
+
+        // مرتب‌سازی دوم روی شناسه است تا وقتی دو پوشه در یک لحظه ساخته شده‌اند — که در نصب تازه
+        // دقیقاً همین‌طور است — نتیجه بین اجراها عوض نشود
+        var oldestFirst = discovered
+            .OrderBy(p => p.InstalledAtUtc)
+            .ThenBy(p => p.Id, StringComparer.Ordinal);
+
+        foreach (var plugin in oldestFirst)
+        {
+            var keywords = plugin.Manifest.Keywords
+                .Where(k => !string.IsNullOrWhiteSpace(k))
+                .Select(k => k.Trim())
+                .ToList();
+
+            var taken = keywords.FirstOrDefault(k => owners.ContainsKey(k));
+
+            if (taken is not null)
+            {
+                var winner = owners[taken];
+                conflicts.Add(new KeywordConflict(plugin, winner, taken));
+
+                plugin.State = PluginState.Conflicted;
+                plugin.Error =
+                    $"The keyword \"{taken}\" already belongs to \"{winner.Name}\", which was installed first. " +
+                    $"Change \"keywords\" in this plugin's plugin.json and reload to enable it.";
+
+                _log.Warn($"keyword conflict: \"{plugin.Id}\" wants \"{taken}\", already owned by \"{winner.Id}\"");
+                continue;
+            }
+
+            foreach (var keyword in keywords) owners[keyword] = plugin;
+        }
+
+        return conflicts;
+    }
+
     private async Task LoadOneAsync(PluginDescriptor descriptor, CancellationToken cancellationToken)
     {
+        // قبل از هر چیز: یک پلاگین متعارض حتی کامپایل هم نمی‌شود
+        if (descriptor.State == PluginState.Conflicted) return;
+
         if (!Settings.IsEnabled(descriptor.Id))
         {
             descriptor.State = PluginState.Disabled;

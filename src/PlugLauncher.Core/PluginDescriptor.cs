@@ -15,7 +15,13 @@ public enum PluginState
     Disabled,
 
     /// <summary>کامپایل یا اجرای اسکریپت شکست خورده؛ <see cref="PluginDescriptor.Error"/> دلیل را دارد.</summary>
-    Failed
+    Failed,
+
+    /// <summary>
+    /// کلیدواژه‌اش را پلاگین قدیمی‌تری گرفته است. اصلاً لود نمی‌شود تا وقتی کلیدواژه‌اش عوض شود؛
+    /// <see cref="PluginDescriptor.Error"/> می‌گوید با چه چیزی تعارض دارد.
+    /// </summary>
+    Conflicted
 }
 
 /// <summary>یک پلاگین کشف‌شده روی دیسک، به‌همراه نمونه‌ی لودشده‌اش (اگر لود شده باشد).</summary>
@@ -28,6 +34,12 @@ public sealed class PluginDescriptor
 
     /// <summary>مسیر مطلق فایل ورودی اسکریپت.</summary>
     public required string EntryFile { get; init; }
+
+    /// <summary>
+    /// زمان ساخت پوشه‌ی پلاگین. ملاکِ «قدیمی‌تر» وقتی دو پلاگین یک کلیدواژه را برداشته‌اند.
+    /// نصب دوباره‌ی یک پلاگین پوشه را از نو می‌سازد، پس عملاً «زمان نصب» است نه زمان نگارش.
+    /// </summary>
+    public required DateTime InstalledAtUtc { get; init; }
 
     public PluginState State { get; internal set; } = PluginState.Discovered;
 
@@ -70,3 +82,11 @@ public sealed class PluginDescriptor
         return null;
     }
 }
+
+/// <summary>
+/// یک پلاگین که کلیدواژه‌اش را پلاگین قدیمی‌تری گرفته است، به‌همراه برنده و خود کلیدواژه.
+/// </summary>
+/// <param name="Loser">پلاگینی که کنار گذاشته شد.</param>
+/// <param name="Winner">پلاگین قدیمی‌تری که کلیدواژه به آن رسید.</param>
+/// <param name="Keyword">کلیدواژه‌ی مورد تعارض.</param>
+public sealed record KeywordConflict(PluginDescriptor Loser, PluginDescriptor Winner, string Keyword);

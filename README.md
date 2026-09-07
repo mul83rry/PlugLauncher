@@ -135,6 +135,7 @@ The rest live in the store tab in settings, one click each:
 | `ssh` | SSH Hosts | Hosts from `~/.ssh/config`, opens a terminal on the one you pick |
 | `dev` | Dev Toolbox | uuid, base64, url, hashes, epoch, JSON, JWT, random bytes, slugs |
 | `sys` | System | Lock, restart, the msc/cpl consoles, and memory/disk/IP read-outs |
+| `kb` | Keyboard Layout | Text typed on the wrong layout — `kb sghl` gives `سلام`, using the layouts you actually have installed |
 
 The store is a static index published at
 [mul83rry.github.io/PlugLauncher](https://mul83rry.github.io/PlugLauncher/) — no server, no
@@ -168,7 +169,12 @@ my-plugin/
 ```
 
 - With `keywords` set, the plugin only runs when the query starts with one of them (`mp something`).
+  The keyword has to be the whole first word: `mp` and `mp x` match, `mpx` does not.
 - With `keywords` empty the plugin is **global** and sees every query, the way `calculator` does.
+- A keyword has one owner. If two plugins claim the same one, the older install keeps it and the
+  newer plugin is not loaded at all — settings shows it as **Keyword taken** with the name of the
+  plugin holding it, and a tray notification says so at startup. Change `keywords` and hit
+  **Reload** to bring it back.
 
 **main.csx** — the last line has to return an `IPlugin`:
 

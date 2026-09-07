@@ -3,6 +3,35 @@
 The release workflow reads the section matching the tag out of this file and uses it as the
 release notes, so every version needs a `## <version>` heading here before it can be tagged.
 
+## 1.3.0 — 2026-09-07
+
+**Two plugins can no longer fight over a keyword**
+
+Previously both ran and their results were mixed together with nothing to explain why. A keyword
+now has one owner: the plugin installed first keeps it, and any later plugin claiming the same
+one is not loaded at all until its `keywords` change.
+
+- Settings shows it as **Keyword taken**, naming the plugin that holds the keyword.
+- A tray notification at startup says which plugin is off and why, rather than leaving you to
+  discover that typing its keyword does nothing.
+- A plugin that loses one keyword does not claim its others either, so a third plugin that only
+  clashed with the disabled one stays enabled.
+- Reload after editing `plugin.json` re-runs the check.
+
+**The wrong-layout correction was wrong**
+
+The Persian table was taken from the common pictures of a Persian keyboard rather than from
+`kbdfa`, the layout Windows actually ships, and it disagreed on nine keys. `پ` is on `\`, not on
+`m`; `m` gives `ئ`. So typing `chrome` with the Persian layout on produced `زاقخئث`, which the
+app read back as `chrose` and found nothing for. The table now matches what Windows reports for
+every key, checked against `VkKeyScanExW` and `ToUnicodeEx` directly.
+
+**New plugin: Keyboard Layout** (`kb`, from the store)
+
+`kb sghl` gives `سلام`. Nothing in it is specific to Persian — the candidate conversions come
+from the keyboard layouts installed on your machine, so it works for whatever pair you have.
+`kb` on its own converts the clipboard.
+
 ## 1.2.0 — 2026-09-07
 
 **An installer, alongside the zip**

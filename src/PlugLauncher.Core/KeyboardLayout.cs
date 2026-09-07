@@ -11,15 +11,19 @@ namespace PlugLauncher.Core;
 /// </summary>
 public static class KeyboardLayout
 {
-    // ردیف‌های اصلی کیبورد، حرف‌به‌حرف روی همان کلید فیزیکی
-    private const string EnglishKeys = "qwertyuiop[]asdfghjkl;'zxcvbnm,";
-    private const string PersianKeys = "ضصثقفغعهخحجچشسیبلاتنمکگظطزرذدپو";
+    // ردیف‌های اصلی کیبورد، حرف‌به‌حرف روی همان کلید فیزیکی.
+    //
+    // این جدول از خودِ ویندوز استخراج شده (VkKeyScanExW + ToUnicodeEx روی چیدمان 0429)، نه از
+    // تصویرهای رایج کیبورد فارسی که با kbdfa فرق دارند. دو جای مهمی که فرق می‌کنند:
+    // «پ» روی کلید \ است نه m، و m خودش «ئ» می‌دهد.
+    private const string EnglishKeys = @"qwertyuiop[]asdfghjkl;'zxcvbnm,\";
+    private const string PersianKeys = "ضصثقفغعهخحجچشسیبلاتنمکگظطزرذدئوپ";
 
     /// <summary>حرف‌هایی که با Shift روی چیدمان فارسی تولید می‌شوند (یعنی کاربر حرف بزرگ زده است).</summary>
     private static readonly Dictionary<char, char> ShiftedPersian = new()
     {
-        ['ؤ'] = 'a', ['ئ'] = 's', ['ي'] = 'd', ['إ'] = 'f', ['أ'] = 'g',
-        ['آ'] = 'h', ['ة'] = 'j', ['ژ'] = 'c', ['ء'] = 'm'
+        ['ؤ'] = 'v', ['ي'] = 'x', ['إ'] = 'b', ['أ'] = 'n',
+        ['آ'] = 'h', ['ة'] = 'z', ['ژ'] = 'c', ['ء'] = 'm'
     };
 
     private static readonly Dictionary<char, char> PersianToEnglish = BuildPersianToEnglish();

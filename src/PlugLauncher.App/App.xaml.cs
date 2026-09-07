@@ -52,8 +52,32 @@ public partial class App : Application
 
         await _engine.LoadAllAsync();
 
+        WarnAboutKeywordConflicts();
+
         // بعد از لود پلاگین‌ها، چون MessageBox رشته را نگه می‌دارد و قبلش استارتاپ را کند می‌کرد
         SyncStartupRegistration();
+    }
+
+    /// <summary>
+    /// تعارض کلیدواژه ساکت می‌ماند وگرنه: پلاگین هست، لود نشده، و کاربر فقط می‌بیند تایپ کردن
+    /// کلیدواژه کار نمی‌کند. بالن سینی به‌جای MessageBox، چون این وضعیت تا عوض شدن کلیدواژه
+    /// می‌ماند و یک دیالوگ مودال در هر بار اجرا آزاردهنده می‌شد. جزئیاتش در تنظیمات هست.
+    /// </summary>
+    private void WarnAboutKeywordConflicts()
+    {
+        var conflicts = _engine?.KeywordConflicts;
+        if (conflicts is null || conflicts.Count == 0 || _trayIcon is null) return;
+
+        var first = conflicts[0];
+        var text = conflicts.Count == 1
+            ? $"\"{first.Loser.Name}\" is off: its keyword \"{first.Keyword}\" already belongs to \"{first.Winner.Name}\"."
+            : $"{conflicts.Count} plugins are off because their keywords are already taken, starting with \"{first.Loser.Name}\" (\"{first.Keyword}\").";
+
+        _trayIcon.ShowBalloonTip(
+            10000,
+            "PlugLauncher — keyword conflict",
+            text + " Open settings for details.",
+            ToolTipIcon.Warning);
     }
 
     /// <summary>

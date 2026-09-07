@@ -80,7 +80,8 @@ public sealed class PluginDiscovery(FileLogger? logger = null)
         {
             Manifest = manifest,
             Directory = Path.GetFullPath(directory),
-            EntryFile = Path.GetFullPath(entry)
+            EntryFile = Path.GetFullPath(entry),
+            InstalledAtUtc = System.IO.Directory.GetCreationTimeUtc(directory)
         };
     }
 }
