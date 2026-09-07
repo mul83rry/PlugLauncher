@@ -52,7 +52,7 @@ jobs:
         shell: pwsh
         run: |
           $version = '${{ steps.version.outputs.value }}'
-          $lines = Get-Content CHANGELOG.md
+          $lines = Get-Content CHANGELOG.md -Encoding utf8
 
           $heading = $lines | Select-String -Pattern "^## $([regex]::Escape($version))\b" | Select-Object -First 1
           if (-not $heading) { throw "CHANGELOG.md has no section for $version." }
