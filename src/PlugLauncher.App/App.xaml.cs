@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Forms;
 using PlugLauncher.Core;
@@ -15,6 +16,9 @@ public partial class App : Application
     private NotifyIcon? _trayIcon;
     private PluginEngine? _engine;
     private MainWindow? _window;
+
+    /// <summary>آدرسی که کلیک روی بالن باز می‌کند. فقط بالنِ به‌روزرسانی آن را ست می‌کند.</summary>
+    private string? _updateUrl;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -56,6 +60,79 @@ public partial class App : Application
 
         // بعد از لود پلاگین‌ها، چون MessageBox رشته را نگه می‌دارد و قبلش استارتاپ را کند می‌کرد
         SyncStartupRegistration();
+
+        // انتظارش کشیده نمی‌شود: اگر شبکه کند باشد نباید استارتاپ را نگه دارد
+        _ = CheckForUpdatesAsync();
+    }
+
+    /// <summary>
+    /// بررسی نسخه‌ی جدید در پس‌زمینه، حداکثر روزی یک‌بار. نتیجه دو نشانه دارد: یک بالن سینی که
+    /// کلیک رویش صفحه‌ی ریلیز را باز می‌کند، و یک نقطه روی دکمه‌ی Settings که تا بسته شدن برنامه
+    /// می‌ماند — چون بالن چند ثانیه بیشتر نمی‌ماند و ممکن است اصلاً دیده نشود.
+    ///
+    /// چیزی خودکار دانلود یا نصب نمی‌شود؛ نصب دست کاربر است.
+    /// </summary>
+    private async Task CheckForUpdatesAsync()
+    {
+        if (_engine is null) return;
+
+        var settings = _engine.Settings;
+        if (!settings.CheckForUpdates) return;
+
+        var last = settings.LastUpdateCheckUtc;
+        if (last is not null && DateTime.UtcNow - last.Value < UpdateChecker.AutomaticInterval) return;
+
+        using var checker = new UpdateChecker(UpdateChecker.RunningVersion);
+        var result = await checker.CheckAsync();
+
+        // بررسی ناموفق ثبت نمی‌شود تا اجرای بعدی دوباره امتحان کند
+        if (!result.Succeeded) return;
+
+        settings.LastUpdateCheckUtc = DateTime.UtcNow;
+        _engine.SaveSettings();
+
+        if (result.Update is null) return;
+
+        _window?.MarkUpdateAvailable(result.Update);
+        ShowUpdateBalloon(result.Update);
+    }
+
+    private void ShowUpdateBalloon(UpdateInfo update)
+    {
+        if (_trayIcon is null) return;
+
+        _updateUrl = update.ReleaseUrl;
+
+        _trayIcon.ShowBalloonTip(
+            10000,
+            $"PlugLauncher {update.Version.ToString(3)} is available",
+            $"You are running {UpdateChecker.RunningVersion.ToString(3)}. Click to open the download page.",
+            ToolTipIcon.Info);
+    }
+
+    /// <summary>
+    /// کلیک روی بالن. بالن‌های دیگر (تعارض کلیدواژه) آدرسی ست نمی‌کنند، پس کلیک رویشان کاری
+    /// نمی‌کند؛ و بسته شدن بالن آدرس را پاک می‌کند تا کلیک روی بالن بعدی چیز اشتباهی باز نکند.
+    /// </summary>
+    private void OpenUpdatePage()
+    {
+        var url = _updateUrl;
+        if (string.IsNullOrEmpty(url)) return;
+
+        _updateUrl = null;
+        OpenUrl(url);
+    }
+
+    internal static void OpenUrl(string url)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            new FileLogger("app").Warn($"could not open {url}: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -163,6 +240,8 @@ public partial class App : Application
         };
 
         _trayIcon.DoubleClick += (_, _) => _window?.ShowLauncher();
+        _trayIcon.BalloonTipClicked += (_, _) => OpenUpdatePage();
+        _trayIcon.BalloonTipClosed += (_, _) => _updateUrl = null;
     }
 
     /// <summary>

@@ -21,6 +21,9 @@ public partial class MainWindow : Window
     /// <summary>متن اصلاح‌شده‌ی چیدمان کیبورد برای کوئری فعلی، اگر نتایج از روی آن آمده باشند.</summary>
     private string? _layoutFix;
 
+    /// <summary>به‌روزرسانی پیداشده در استارتاپ، تا تنظیمات مجبور نشود دوباره از گیت‌هاب بپرسد.</summary>
+    private UpdateInfo? _knownUpdate;
+
     public MainWindow(PluginEngine engine)
     {
         _engine = engine;
@@ -295,12 +298,24 @@ public partial class MainWindow : Window
 
     private void OnSettingsClick(object sender, RoutedEventArgs e) => OpenSettings();
 
+    /// <summary>
+    /// نقطه‌ی کنار «Settings» تنها نشانه‌ی ماندگار به‌روزرسانی است — بالن سینی چند ثانیه بعد
+    /// می‌رود و ممکن است اصلاً دیده نشود. جزئیاتش داخل خود تنظیمات است، چون پنجره‌ی لانچر باید
+    /// ساکت بماند.
+    /// </summary>
+    public void MarkUpdateAvailable(UpdateInfo update)
+    {
+        _knownUpdate = update;
+        SettingsButton.Content = "Settings ●";
+        SettingsButton.ToolTip = $"PlugLauncher {update.Version.ToString(3)} is available";
+    }
+
     public void OpenSettings()
     {
         _suppressHideOnDeactivate = true;
         try
         {
-            var window = new SettingsWindow(_engine) { Owner = IsVisible ? this : null };
+            var window = new SettingsWindow(_engine, _knownUpdate) { Owner = IsVisible ? this : null };
             window.ShowDialog();
         }
         finally

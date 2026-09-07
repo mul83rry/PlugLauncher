@@ -17,6 +17,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -65,8 +66,42 @@
                     <Button Content="Exit PlugLauncher" Style="{StaticResource GhostButton}" Margin="24,0,0,0" Click="OnExitApp" />
                 </StackPanel>
 
+                <!-- Updates -->
+                <Border Grid.Row="2" Background="#FF232323" CornerRadius="8" Padding="12,9" Margin="0,0,0,10">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="VersionText"
+                                   Foreground="{StaticResource TextBrush}"
+                                   VerticalAlignment="Center"
+                                   FontSize="13" />
+                        <TextBlock x:Name="UpdateStatus"
+                                   Foreground="{StaticResource SubtleTextBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="10,0,0,0"
+                                   FontSize="12.5" />
+                        <Button x:Name="UpdateDownloadButton"
+                                Content="Open download page"
+                                Style="{StaticResource GhostButton}"
+                                Margin="12,0,0,0"
+                                Visibility="Collapsed"
+                                Click="OnOpenUpdatePage" />
+                        <Button x:Name="UpdateCheckButton"
+                                Content="Check now"
+                                Style="{StaticResource GhostButton}"
+                                Margin="12,0,0,0"
+                                Click="OnCheckForUpdates" />
+                        <CheckBox x:Name="AutoUpdateBox"
+                                  Content="Check automatically"
+                                  Foreground="{StaticResource TextBrush}"
+                                  VerticalAlignment="Center"
+                                  FontSize="13"
+                                  Margin="18,0,0,0"
+                                  Checked="OnAutoUpdateToggled"
+                                  Unchecked="OnAutoUpdateToggled" />
+                    </StackPanel>
+                </Border>
+
                 <!-- Plugin list -->
-                <Border Grid.Row="2" Background="#FF232323" CornerRadius="8" Padding="4">
+                <Border Grid.Row="3" Background="#FF232323" CornerRadius="8" Padding="4">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="PluginsList">
                             <ItemsControl.ItemTemplate>
@@ -131,7 +166,7 @@
                     </ScrollViewer>
                 </Border>
 
-                <TextBlock Grid.Row="3"
+                <TextBlock Grid.Row="4"
                            x:Name="FooterText"
                            Foreground="{StaticResource HintTextBrush}"
                            FontSize="11.5"

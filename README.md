@@ -48,6 +48,18 @@ On the first run it asks whether to start with Windows, and does not ask again e
 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, so no administrator rights are needed and
 nothing is left behind for other users of the machine.
 
+### Updates
+
+Once a day PlugLauncher asks GitHub whether a newer release exists. If there is one, a tray
+notification names it and the **Settings** button keeps a dot until you restart. Nothing is
+downloaded or installed — the button opens the release page, and you upgrade the same way you
+installed: run the new `setup.exe`, or replace the folder you unzipped.
+
+It is one request to `api.github.com`, it carries nothing about you, and settings has both a
+**Check now** button and a **Check automatically** checkbox to switch it off. Turning it off is
+the same as `"checkForUpdates": false` in `settings.json`. A check that fails is not recorded, so
+being offline when you sign in does not use up the day's check.
+
 ## Building from source
 
 ```bash

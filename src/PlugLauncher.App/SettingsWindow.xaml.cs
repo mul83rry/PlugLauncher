@@ -15,7 +15,14 @@ public partial class SettingsWindow : Window
     /// <summary>موقع پر کردن اولیه‌ی کنترل‌ها، هندلرها نباید چیزی بنویسند.</summary>
     private bool _loading;
 
-    public SettingsWindow(PluginEngine engine)
+    /// <summary>به‌روزرسانی‌ای که الان نشان داده می‌شود، برای دکمه‌ی دانلود.</summary>
+    private UpdateInfo? _update;
+
+    /// <param name="knownUpdate">
+    /// اگر استارتاپ نسخه‌ی جدیدی پیدا کرده باشد، همان‌جا نشان داده می‌شود تا برای دیدنش لازم
+    /// نباشد دوباره از گیت‌هاب پرسیده شود.
+    /// </param>
+    public SettingsWindow(PluginEngine engine, UpdateInfo? knownUpdate = null)
     {
         _engine = engine;
         InitializeComponent();
@@ -26,9 +33,76 @@ public partial class SettingsWindow : Window
         HotkeyBox.Text = _engine.Settings.Hotkey;
         // از رجیستری خوانده می‌شود نه از settings.json، چون کاربر می‌تواند از Task Manager هم عوضش کند
         StartWithWindowsBox.IsChecked = StartupRegistration.IsEnabled();
+        AutoUpdateBox.IsChecked = _engine.Settings.CheckForUpdates;
         _loading = false;
 
+        VersionText.Text = $"PlugLauncher v{UpdateChecker.RunningVersion.ToString(3)}";
+        if (knownUpdate is not null) ShowUpdate(knownUpdate);
+
         Refresh();
+    }
+
+    private void OnAutoUpdateToggled(object sender, RoutedEventArgs e)
+    {
+        if (_loading) return;
+
+        _engine.Settings.CheckForUpdates = AutoUpdateBox.IsChecked == true;
+        _engine.SaveSettings();
+    }
+
+    /// <summary>
+    /// بررسی دستی. عمداً محدودیت «روزی یک‌بار» را دور می‌زند — کاربر خودش دکمه را زده و انتظار
+    /// جواب تازه دارد، نه جواب دیروز.
+    /// </summary>
+    private async void OnCheckForUpdates(object sender, RoutedEventArgs e)
+    {
+        UpdateCheckButton.IsEnabled = false;
+        UpdateDownloadButton.Visibility = Visibility.Collapsed;
+        UpdateStatus.Text = "Checking…";
+        _update = null;
+
+        try
+        {
+            using var checker = new UpdateChecker(UpdateChecker.RunningVersion);
+            var result = await checker.CheckAsync();
+
+            if (!result.Succeeded)
+            {
+                UpdateStatus.Text = $"Could not check — {result.Error}";
+                return;
+            }
+
+            _engine.Settings.LastUpdateCheckUtc = DateTime.UtcNow;
+            _engine.SaveSettings();
+
+            if (result.Update is null)
+            {
+                UpdateStatus.Text = "Up to date";
+                return;
+            }
+
+            ShowUpdate(result.Update);
+        }
+        finally
+        {
+            UpdateCheckButton.IsEnabled = true;
+        }
+    }
+
+    private void ShowUpdate(UpdateInfo update)
+    {
+        _update = update;
+        UpdateStatus.Text = $"Version {update.Version.ToString(3)} is available";
+        UpdateDownloadButton.Visibility = Visibility.Visible;
+    }
+
+    /// <summary>
+    /// صفحه‌ی ریلیز باز می‌شود، نه یک فایل مشخص: نصب با installer و اجرای zip دو مسیر متفاوت‌اند
+    /// و برنامه نمی‌داند کاربر با کدام‌یک آمده است.
+    /// </summary>
+    private void OnOpenUpdatePage(object sender, RoutedEventArgs e)
+    {
+        if (_update is not null) App.OpenUrl(_update.ReleaseUrl);
     }
 
     private void OnStartWithWindowsToggled(object sender, RoutedEventArgs e)

@@ -33,6 +33,20 @@ public sealed class AppSettings
     [JsonPropertyName("startupPromptAnswered")]
     public bool StartupPromptAnswered { get; set; }
 
+    /// <summary>
+    /// بررسی خودکار وجود نسخه‌ی جدید هنگام اجرا. تنها اثرش یک درخواست GET به API گیت‌هاب است،
+    /// حداکثر روزی یک‌بار؛ هیچ چیزی دانلود یا نصب نمی‌شود.
+    /// </summary>
+    [JsonPropertyName("checkForUpdates")]
+    public bool CheckForUpdates { get; set; } = true;
+
+    /// <summary>
+    /// آخرین باری که بررسی <b>موفق</b> بود. فقط موفق‌ها ثبت می‌شوند، وگرنه کسی که موقع بوت
+    /// آفلاین است تا یک روز دیگر هم بررسی نمی‌شود.
+    /// </summary>
+    [JsonPropertyName("lastUpdateCheckUtc")]
+    public DateTime? LastUpdateCheckUtc { get; set; }
+
     /// <summary>آدرس پیش‌فرض فروشگاه (بدون اسلش پایانی؛ <c>StoreClient</c> خودش اضافه می‌کند).</summary>
     public const string DefaultStoreUrl = "https://mul83rry.github.io/PlugLauncher";
 

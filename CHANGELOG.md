@@ -3,6 +3,27 @@
 The release workflow reads the section matching the tag out of this file and uses it as the
 release notes, so every version needs a `## <version>` heading here before it can be tagged.
 
+## 1.4.0 — 2026-09-07
+
+**It tells you when there is a new version**
+
+PlugLauncher had no way of saying a release existed; the only way to find out was to go and look
+at the repository. Now it checks once a day, in the background, and says so if there is one.
+
+- A tray notification names the new version. Clicking it opens the release page.
+- The notification is gone in ten seconds, so the **Settings** button also keeps a dot on it for
+  the rest of the session — otherwise an update found while you were away from the machine would
+  never be seen.
+- Settings has the version it is running, a **Check now** button, and a **Check automatically**
+  checkbox to turn the whole thing off.
+- **Nothing is downloaded or installed.** The button opens the release page and stops there,
+  because installing over an installer install and replacing an unzipped folder are two different
+  operations and the app cannot tell which one you did.
+
+What it costs: one `GET` to `api.github.com` per day, with no data about you in it and no account
+involved. A check that fails — no connection, GitHub unreachable — is not recorded as a check, so
+being offline at boot does not cost you the next day's.
+
 ## 1.3.0 — 2026-09-07
 
 **Two plugins can no longer fight over a keyword**
