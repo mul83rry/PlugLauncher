@@ -1,8 +1,8 @@
 {
-    "generatedAt":  "2026-09-07T10:34:47Z",
-    "total":  7,
+    "generatedAt":  "2026-09-07T17:20:50Z",
+    "total":  8,
     "page":  1,
-    "pageSize":  7,
+    "pageSize":  8,
     "items":  [
                   {
                       "id":  "com.pluglauncher.calculator",
@@ -35,6 +35,22 @@
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.dev-toolbox/1.0.0/com.pluglauncher.dev-toolbox-1.0.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.dev-toolbox/1.0.0/icon.png"
+                  },
+                  {
+                      "id":  "com.pluglauncher.keyboard-layout",
+                      "name":  "Keyboard Layout",
+                      "description":  "Text typed with the wrong keyboard layout — type kb sghl to get سلام",
+                      "version":  "1.0.0",
+                      "author":  "PlugLauncher",
+                      "keywords":  [
+                                       "kb"
+                                   ],
+                      "size":  5836,
+                      "sha256":  "c1f9d914080f146e3edebe6dccdd7658700e075fb1b1e2394436bbebbc3130d9",
+                      "publishedAt":  "2026-09-07T17:20:50Z",
+                      "downloads":  0,
+                      "downloadUrl":  "packages/com.pluglauncher.keyboard-layout/1.0.0/com.pluglauncher.keyboard-layout-1.0.0.plz",
+                      "iconUrl":  "packages/com.pluglauncher.keyboard-layout/1.0.0/icon.png"
                   },
                   {
                       "id":  "com.pluglauncher.password",
