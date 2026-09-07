@@ -1,34 +1,21 @@
 ﻿<#
 .SYNOPSIS
-    یک فایل .plz را روی فروشگاه منتشر می‌کند.
+    یک فایل .plz را روی فروشگاه (GitHub Pages) منتشر می‌کند.
 
 .DESCRIPTION
-    حالت پیش‌فرض «استاتیک» است: بسته در ./dist گذاشته می‌شود، فروشگاه استاتیک دوباره ساخته
-    می‌شود، خروجی در worktree ی برنچ gh-pages می‌نشیند و یک کامیت/پوش می‌خورد. نه کلیدی لازم
-    است نه سروری.
-
-    حالت -Api همان مسیر قدیمی (POST به سرویس ASP.NET با هدر X-Api-Key) است و فقط برای وقتی
-    نگه داشته شده که بخواهی به فروشگاه VPS برگردی.
+    بسته در ./dist گذاشته می‌شود، فروشگاه استاتیک دوباره ساخته می‌شود، خروجی در worktree ی برنچ
+    gh-pages می‌نشیند و یک کامیت/پوش می‌خورد. نه کلیدی لازم است، نه سروری.
 
 .EXAMPLE
     ./tools/publish-plugin.ps1 -File dist/com.pluglauncher.password-1.1.0.plz
     ./tools/publish-plugin.ps1 -File dist/x.plz -NoPush
-    ./tools/publish-plugin.ps1 -File dist/x.plz -Api -ApiKey $env:PLUGSTORE_KEY -Overwrite
 #>
-[CmdletBinding(DefaultParameterSetName = "Static")]
+[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$File,
-
-    # --- حالت استاتیک (گیت‌هاب Pages) ---
-    [Parameter(ParameterSetName = "Static")][string]$Worktree = "../PlugLauncher-pages",
-    [Parameter(ParameterSetName = "Static")][string]$Message,
-    [Parameter(ParameterSetName = "Static")][switch]$NoPush,
-
-    # --- حالت API (سرور VPS) ---
-    [Parameter(ParameterSetName = "Api", Mandatory = $true)][switch]$Api,
-    [Parameter(ParameterSetName = "Api")][string]$Server = "https://thehokm.cloud/pluglauncher",
-    [Parameter(ParameterSetName = "Api")][string]$ApiKey = $env:PLUGSTORE_KEY,
-    [Parameter(ParameterSetName = "Api")][switch]$Overwrite
+    [string]$Worktree = "../PlugLauncher-pages",
+    [string]$Message,
+    [switch]$NoPush
 )
 
 $ErrorActionPreference = "Stop"
@@ -37,30 +24,6 @@ if (-not (Test-Path $File)) { throw "فایل بسته پیدا نشد: $File" }
 $package = (Resolve-Path $File).Path
 $repo = Split-Path -Parent $PSScriptRoot
 
-# ---------------------------------------------------------------- حالت API (قدیمی)
-if ($Api) {
-    if (-not $ApiKey) { throw "کلید انتشار داده نشده (پارامتر -ApiKey یا متغیر PLUGSTORE_KEY)." }
-
-    $url = "$($Server.TrimEnd('/'))/api/v1/plugins"
-    if ($Overwrite) { $url += "?overwrite=true" }
-
-    $bytes = [System.IO.File]::ReadAllBytes($package)
-
-    try {
-        $response = Invoke-RestMethod -Uri $url -Method Post -Body $bytes `
-            -ContentType "application/zip" -Headers @{ "X-Api-Key" = $ApiKey }
-
-        Write-Host "منتشر شد: $($response.id) v$($response.version) ($($response.size) بایت)"
-        return $response
-    }
-    catch {
-        $detail = $_.ErrorDetails.Message
-        if ($detail) { Write-Host "خطا از سرور: $detail" -ForegroundColor Red }
-        throw
-    }
-}
-
-# ---------------------------------------------------------------- حالت استاتیک
 $distDir = Join-Path $repo "dist"
 $staticDir = Join-Path $distDir "store-static"
 New-Item -ItemType Directory -Force -Path $distDir | Out-Null

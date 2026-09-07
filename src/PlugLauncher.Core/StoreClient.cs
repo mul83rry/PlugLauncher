@@ -1,11 +1,11 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace PlugLauncher.Core;
 
-/// <summary>یک بسته در فروشگاه (همان چیزی که API فروشگاه برمی‌گرداند).</summary>
+/// <summary>یک بسته در فروشگاه (همان شکلی که در <c>index.json</c> آمده است).</summary>
 public sealed class StorePlugin
 {
     [JsonPropertyName("id")] public string Id { get; set; } = string.Empty;
@@ -22,7 +22,7 @@ public sealed class StorePlugin
     [JsonPropertyName("iconUrl")] public string? IconUrl { get; set; }
 }
 
-/// <summary>پاسخ صفحه‌بندی‌شده‌ی فروشگاه.</summary>
+/// <summary>ساختار <c>index.json</c>: تعداد کل + فهرست بسته‌ها.</summary>
 public sealed class StorePage
 {
     [JsonPropertyName("total")] public int Total { get; set; }
@@ -34,6 +34,9 @@ public sealed class StorePage
 /// <summary>
 /// کلاینت فروشگاه: گرفتن فهرست، دانلود بسته، بررسی صحت sha256 و نصب در پوشه‌ی پلاگین‌های کاربر.
 /// هیچ‌وقت خارج از <c>%APPDATA%\PlugLauncher\plugins</c> چیزی نمی‌نویسد.
+///
+/// فروشگاه یک هاست استاتیک است و فقط دو نوع درخواست دارد: <c>index.json</c> و بعد فایل بسته/آیکن
+/// از روی آدرس نسبی که در همان فهرست آمده. نه API ای در کار است، نه کلیدی، نه سروری.
 /// </summary>
 public sealed class StoreClient(string baseUrl, FileLogger? logger = null) : IDisposable
 {
@@ -46,12 +49,6 @@ public sealed class StoreClient(string baseUrl, FileLogger? logger = null) : IDi
     };
 
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
-
-    /// <summary>
-    /// نوع فروشگاهی که این آدرس جواب داد: فایل ثابت <c>index.json</c> (هاست استاتیک مثل GitHub
-    /// Pages) یا API کامل. بار اول تشخیص داده می‌شود و تا پایان عمر کلاینت نگه داشته می‌شود.
-    /// </summary>
-    private bool? _staticIndex;
 
     public string BaseUrl => _http.BaseAddress!.ToString();
 
@@ -69,25 +66,11 @@ public sealed class StoreClient(string baseUrl, FileLogger? logger = null) : IDi
 
     private async Task<IReadOnlyList<StorePlugin>> LoadCatalogAsync(CancellationToken cancellationToken)
     {
-        if (_staticIndex is null or true)
-        {
-            var index = await TryGetStringAsync("index.json", cancellationToken).ConfigureAwait(false);
-            if (index is not null)
-            {
-                _staticIndex = true;
-                return ParseCatalog(index);
-            }
+        var index = await TryGetStringAsync("index.json", cancellationToken).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException(
+                        "The store index (index.json) could not be read. Check your connection or the store address in settings.json.");
 
-            if (_staticIndex is true)
-                throw new InvalidOperationException("The store index (index.json) could not be read.");
-        }
-
-        var api = await TryGetStringAsync("api/v1/plugins?pageSize=100", cancellationToken).ConfigureAwait(false)
-                  ?? throw new InvalidOperationException(
-                      "The store did not answer: neither index.json nor the plugins API is reachable.");
-
-        _staticIndex = false;
-        return ParseCatalog(api);
+        return ParseCatalog(index);
     }
 
     /// <summary>
@@ -115,7 +98,7 @@ public sealed class StoreClient(string baseUrl, FileLogger? logger = null) : IDi
         }
     }
 
-    /// <summary>هم پاسخ صفحه‌بندی‌شده‌ی API و هم یک آرایه‌ی خام از بسته‌ها پذیرفته می‌شود.</summary>
+    /// <summary>هم شکل <c>{ total, items }</c> و هم یک آرایه‌ی خام از بسته‌ها پذیرفته می‌شود.</summary>
     private static IReadOnlyList<StorePlugin> ParseCatalog(string json)
     {
         var trimmed = json.AsSpan().TrimStart();
@@ -159,11 +142,10 @@ public sealed class StoreClient(string baseUrl, FileLogger? logger = null) : IDi
 
         try
         {
-            var url = string.IsNullOrWhiteSpace(plugin.DownloadUrl)
-                ? $"api/v1/plugins/{Uri.EscapeDataString(plugin.Id)}/download"
-                : plugin.DownloadUrl;
+            if (string.IsNullOrWhiteSpace(plugin.DownloadUrl))
+                throw new InvalidOperationException($"The store index has no download url for \"{plugin.Id}\".");
 
-            using (var response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            using (var response = await _http.GetAsync(plugin.DownloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                        .ConfigureAwait(false))
             {
                 response.EnsureSuccessStatusCode();
