@@ -22,8 +22,16 @@ public sealed class AppSettings
     [JsonPropertyName("queryTimeoutMs")]
     public int QueryTimeoutMs { get; set; } = 3000;
 
+    /// <summary>اجرای خودکار هنگام ورود به ویندوز. منبع حقیقت خودِ رجیستری است و این مقدار آینه‌ی آن.</summary>
     [JsonPropertyName("startWithWindows")]
     public bool StartWithWindows { get; set; }
+
+    /// <summary>
+    /// آیا یک‌بار موقع اجرا از کاربر پرسیده شده که اجرای خودکار را روشن کند یا نه.
+    /// بدون این، «نه» گفتن هیچ اثری نداشت و همان سؤال هر بار تکرار می‌شد.
+    /// </summary>
+    [JsonPropertyName("startupPromptAnswered")]
+    public bool StartupPromptAnswered { get; set; }
 
     /// <summary>آدرس پیش‌فرض فروشگاه (بدون اسلش پایانی؛ <c>StoreClient</c> خودش اضافه می‌کند).</summary>
     public const string DefaultStoreUrl = "https://mul83rry.github.io/PlugLauncher";

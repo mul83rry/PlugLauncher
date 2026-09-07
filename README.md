@@ -33,6 +33,11 @@ If the runtime is missing, Windows shows a dialog with a download link when you 
 button in settings. Closing the window only hides it — the app stays in the tray so the hotkey
 keeps working.
 
+On the first run it asks whether to start with Windows, and does not ask again either way. The
+**Start with Windows** checkbox in settings is where you change the answer; it writes to
+`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, so no administrator rights are needed and
+nothing is left behind for other users of the machine.
+
 ## Building from source
 
 ```bash

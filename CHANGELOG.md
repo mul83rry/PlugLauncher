@@ -3,6 +3,21 @@
 The release workflow reads the section matching the tag out of this file and uses it as the
 release notes, so every version needs a `## <version>` heading here before it can be tagged.
 
+## 1.1.0 — 2026-09-07
+
+**Start with Windows**
+
+- The app now registers itself under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` so it
+  can start when you sign in. `HKCU` and not `HKLM`, so no administrator rights are involved.
+- The first time you run it, it asks whether you want that. Whichever you answer, it does not
+  ask again — the checkbox in settings is where you change your mind.
+- Settings has a **Start with Windows** checkbox. Version 1.0.0 claimed it did, but the setting
+  existed only in `settings.json` and nothing ever read or wrote it.
+- The checkbox reads the registry rather than `settings.json`, so turning the entry off from
+  Task Manager → Startup shows up correctly.
+- Moving the PlugLauncher folder used to leave a startup entry pointing at a path that no longer
+  exists. The entry is now compared against the running executable and rewritten when it differs.
+
 ## 1.0.0 — 2026-09-07
 
 First public release.

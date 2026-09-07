@@ -51,6 +51,55 @@ public partial class App : Application
         CreateTrayIcon();
 
         await _engine.LoadAllAsync();
+
+        // بعد از لود پلاگین‌ها، چون MessageBox رشته را نگه می‌دارد و قبلش استارتاپ را کند می‌کرد
+        SyncStartupRegistration();
+    }
+
+    /// <summary>
+    /// رجیستری را با تنظیمات هماهنگ می‌کند و اگر اجرای خودکار روشن نیست، یک‌بار از کاربر می‌پرسد.
+    /// </summary>
+    private void SyncStartupRegistration()
+    {
+        if (_engine is null) return;
+
+        var settings = _engine.Settings;
+
+        if (StartupRegistration.IsEnabled())
+        {
+            // کاربر ممکن است از خود ویندوز (Task Manager → Startup) روشنش کرده باشد
+            if (settings.StartWithWindows) return;
+
+            settings.StartWithWindows = true;
+            settings.StartupPromptAnswered = true;
+            _engine.SaveSettings();
+            return;
+        }
+
+        // روشن بوده ولی الان نیست: یا پوشه جابه‌جا شده و مقدار قبلی به مسیر مرده اشاره می‌کند،
+        // یا کسی از بیرون پاکش کرده. بی‌صدا دوباره نوشته می‌شود، چون کاربر قبلاً «بله» گفته.
+        if (settings.StartWithWindows)
+        {
+            if (StartupRegistration.Enable()) return;
+
+            settings.StartWithWindows = false;
+            _engine.SaveSettings();
+            return;
+        }
+
+        if (settings.StartupPromptAnswered) return;
+
+        var answer = MessageBox.Show(
+            "Start PlugLauncher automatically when you sign in to Windows?\n\n" +
+            "The hotkey only works while PlugLauncher is running. You can change this later in settings.",
+            "PlugLauncher",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        // چه بله چه خیر، دیگر پرسیده نمی‌شود؛ چک‌باکس تنظیمات جای تغییر نظر است
+        settings.StartupPromptAnswered = true;
+        settings.StartWithWindows = answer == MessageBoxResult.Yes && StartupRegistration.Enable();
+        _engine.SaveSettings();
     }
 
     /// <summary>

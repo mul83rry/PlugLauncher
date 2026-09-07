@@ -46,6 +46,15 @@
                                VerticalAlignment="Center"
                                Margin="10,0,0,0"
                                FontSize="12" />
+
+                    <CheckBox x:Name="StartWithWindowsBox"
+                              Content="Start with Windows"
+                              Foreground="{StaticResource TextBrush}"
+                              VerticalAlignment="Center"
+                              FontSize="13"
+                              Margin="24,0,0,0"
+                              Checked="OnStartWithWindowsToggled"
+                              Unchecked="OnStartWithWindowsToggled" />
                 </StackPanel>
 
                 <!-- Tools -->

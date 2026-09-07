@@ -12,6 +12,9 @@ public partial class SettingsWindow : Window
 {
     private readonly PluginEngine _engine;
 
+    /// <summary>موقع پر کردن اولیه‌ی کنترل‌ها، هندلرها نباید چیزی بنویسند.</summary>
+    private bool _loading;
+
     public SettingsWindow(PluginEngine engine)
     {
         _engine = engine;
@@ -19,8 +22,37 @@ public partial class SettingsWindow : Window
 
         Icon = LoadWindowIcon();
 
+        _loading = true;
         HotkeyBox.Text = _engine.Settings.Hotkey;
+        // از رجیستری خوانده می‌شود نه از settings.json، چون کاربر می‌تواند از Task Manager هم عوضش کند
+        StartWithWindowsBox.IsChecked = StartupRegistration.IsEnabled();
+        _loading = false;
+
         Refresh();
+    }
+
+    private void OnStartWithWindowsToggled(object sender, RoutedEventArgs e)
+    {
+        if (_loading) return;
+
+        var wanted = StartWithWindowsBox.IsChecked == true;
+
+        if (!StartupRegistration.Apply(wanted))
+        {
+            MessageBox.Show(
+                "Could not change the Windows startup entry. The log has the details.",
+                "Start with Windows", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+            _loading = true;
+            StartWithWindowsBox.IsChecked = !wanted;
+            _loading = false;
+            return;
+        }
+
+        _engine.Settings.StartWithWindows = wanted;
+        // دست زدن به چک‌باکس یعنی جواب داده شده؛ دیگر موقع اجرا پرسیده نشود
+        _engine.Settings.StartupPromptAnswered = true;
+        _engine.SaveSettings();
     }
 
     /// <summary>
