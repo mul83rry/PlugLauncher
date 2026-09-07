@@ -40,7 +40,8 @@
   سمت کلاینت بررسی می‌شود. ابزارها: `tools/pack-plugin.ps1` و `tools/publish-plugin.ps1`.
 - [x] **T17** API فروشگاه روی VPS — پروژه‌ی `src/PlugLauncher.Store` (ASP.NET Core Minimal API، بدون دیتابیس؛
   فهرست از روی ساختار دیسک ساخته می‌شود). زنده روی `https://thehokm.cloud/pluglauncher/`؛ سرویس systemd با
-  کاربر اختصاصی و `ProtectSystem=strict`، پشت nginx. جزئیات در `docs/STORE.md`.
+  کاربر اختصاصی و `ProtectSystem=strict`، پشت nginx. **بازنشسته شد (۱۶ شهریور ۱۴۰۵)** — فروشگاه
+  به GitHub Pages منتقل و هم پروژه و هم سرویس حذف شدند؛ پایین را ببین.
 - [x] **T18** کلاینت فروشگاه داخل اپ — `StoreClient` در Core (جستجو، دانلود، بررسی sha256، استخراج امن) +
   تب «فروشگاه» در صفحه‌ی تنظیمات با نصب/به‌روزرسانی و آدرس قابل تغییر سرور.
 
@@ -309,6 +310,23 @@ git یا هر ابزار دیگری نیاز پیدا کند**. کاربر فق�
 **تست UI (دستی — با کاربر)**: بعد از فعال شدن Pages، تب Store باید هر ۴ بسته را با آیکن بیاورد،
 جستجو کار کند، نصب بدون خطا تمام شود و پلاگین بعد از ری‌استارت لود شود؛ و با اینترنت قطع، خطای
 تمیز بدهد نه کرش. چک‌لیست کامل در `docs/GO-PUBLIC.md` بخش ۴.
+
+### حذف کامل سرور فروشگاه (۱۶ شهریور ۱۴۰۵)
+
+بعد از اینکه Pages پایدار جواب داد، هم کد سرور و هم خود سرویس برداشته شدند:
+
+- پروژه‌ی `src/PlugLauncher.Store` (ASP.NET Core Minimal API: `Program.cs`، `PackageStore`،
+  `PackageValidator`، `IndexPage`) حذف و از `PlugLauncher.slnx` بیرون آمد. سولوشن الان سه پروژه
+  دارد: App، Core، Contracts. خروجی‌های `publish/store` هم پاک شدند.
+- روی VPS: `pluglauncher-store.service` استاپ/دیسیبل و یونیتش حذف شد، بلوک
+  `location /pluglauncher/` از `sites-enabled/hokm-server` برداشته و nginx ریلود شد،
+  `/opt/pluglauncher-store`، `/var/lib/pluglauncher-store` و `/etc/pluglauncher-store.env` پاک و
+  کاربر سیستمی `pluglauncher` حذف شد. پورت ۵۱۰۰ دیگر listener ندارد.
+- قبل از حذف یک پشتیبان کامل (داده + یونیت + env + کانفیگ nginx) در
+  `/root/pluglauncher-store-backup-20260907.tar.gz` گذاشته شد.
+- آدرس قدیمی حالا به `index.html` ی سایت اصلی می‌رسد (۲۰۰ با `text/html`)، نه ۴۰۴. یعنی
+  اگر نصبی هنوز آن آدرس را داشته باشد جواب JSON نمی‌گیرد و خطای پارس می‌دهد — به همین دلیل
+  مهاجرت `LegacyStoreUrl` در `SettingsStore.Load` همچنان لازم است و نگه داشته شد.
 
 ### کارهای باز (اختیاری، فاز ۵)
 

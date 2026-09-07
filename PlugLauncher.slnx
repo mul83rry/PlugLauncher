@@ -3,6 +3,5 @@
     <Project Path="src/PlugLauncher.App/PlugLauncher.App.csproj" />
     <Project Path="src/PlugLauncher.Contracts/PlugLauncher.Contracts.csproj" />
     <Project Path="src/PlugLauncher.Core/PlugLauncher.Core.csproj" />
-    <Project Path="src/PlugLauncher.Store/PlugLauncher.Store.csproj" />
   </Folder>
 </Solution>
