@@ -1,0 +1,24 @@
+<Project>
+
+  <!--
+    The single place the release version lives. tools/build-release.ps1 reads it from here,
+    the workflow reads it from the tag, and the two are checked against each other before a
+    release is built — so a tag can never ship a differently numbered exe.
+  -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <Product>PlugLauncher</Product>
+    <Company>PlugLauncher</Company>
+    <Authors>Hosein Asadi</Authors>
+    <Copyright>Copyright (c) 2026 Hosein Asadi</Copyright>
+    <RepositoryUrl>https://github.com/mul83rry/PlugLauncher</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+
+    <!--
+      Roslyn ships translated resources for a dozen languages and they land next to the exe
+      as satellite folders. Nothing in PlugLauncher is localised, so they are dead weight.
+    -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+</Project>

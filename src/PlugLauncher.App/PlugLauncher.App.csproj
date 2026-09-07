@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\PlugLauncher.Core\PlugLauncher.Core.csproj" />
@@ -15,12 +15,18 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>PlugLauncher</AssemblyName>
     <RootNamespace>PlugLauncher.App</RootNamespace>
+    <ApplicationIcon>assets\pluglauncher.ico</ApplicationIcon>
   </PropertyGroup>
 
   <!-- WinForms فقط برای NotifyIcon لازم است؛ using سراسری‌اش با WPF تداخل نام دارد -->
   <ItemGroup>
     <Using Remove="System.Windows.Forms" />
     <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <!-- آیکن کنار exe هم لازم است: سینی و پنجره‌ی تنظیمات از فایل می‌خوانند -->
+  <ItemGroup>
+    <Content Include="assets\pluglauncher.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- پلاگین‌های همراه برنامه کنار فایل اجرایی کپی می‌شوند -->

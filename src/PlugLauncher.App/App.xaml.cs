@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Forms;
 using PlugLauncher.Core;
@@ -83,13 +83,32 @@ public partial class App : Application
 
         _trayIcon = new NotifyIcon
         {
-            Icon = System.Drawing.SystemIcons.Application,
+            Icon = LoadAppIcon(),
             Text = "PlugLauncher",
             Visible = true,
             ContextMenuStrip = menu
         };
 
         _trayIcon.DoubleClick += (_, _) => _window?.ShowLauncher();
+    }
+
+    /// <summary>
+    /// آیکن برنامه از فایل کنار exe. اندازه صریحاً کوچک خواسته می‌شود تا ویندوز فریم ۱۶ را
+    /// بردارد و آیکن ۳۲ را کوچک نکند. اگر فایل نبود یا خوانده نشد، آیکن پیش‌فرض ویندوز.
+    /// </summary>
+    internal static System.Drawing.Icon LoadAppIcon()
+    {
+        try
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "assets", "pluglauncher.ico");
+            if (File.Exists(path)) return new System.Drawing.Icon(path, SystemInformation.SmallIconSize);
+        }
+        catch (Exception ex)
+        {
+            new FileLogger("app").Warn($"could not load the application icon: {ex.Message}");
+        }
+
+        return System.Drawing.SystemIcons.Application;
     }
 
     protected override void OnExit(ExitEventArgs e)

@@ -1,4 +1,4 @@
-<Window x:Class="PlugLauncher.App.SettingsWindow"
+﻿<Window x:Class="PlugLauncher.App.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="PlugLauncher Settings"
@@ -53,6 +53,7 @@
                     <Button Content="Open plugins folder" Style="{StaticResource GhostButton}" Click="OnOpenPluginsFolder" />
                     <Button Content="Reload" Style="{StaticResource GhostButton}" Margin="6,0,0,0" Click="OnReload" />
                     <Button Content="Open log file" Style="{StaticResource GhostButton}" Margin="6,0,0,0" Click="OnOpenLog" />
+                    <Button Content="Exit PlugLauncher" Style="{StaticResource GhostButton}" Margin="24,0,0,0" Click="OnExitApp" />
                 </StackPanel>
 
                 <!-- Plugin list -->

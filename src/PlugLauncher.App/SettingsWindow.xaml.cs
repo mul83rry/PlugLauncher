@@ -1,8 +1,9 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using PlugLauncher.Core;
 
 namespace PlugLauncher.App;
@@ -16,8 +17,27 @@ public partial class SettingsWindow : Window
         _engine = engine;
         InitializeComponent();
 
+        Icon = LoadWindowIcon();
+
         HotkeyBox.Text = _engine.Settings.Hotkey;
         Refresh();
+    }
+
+    /// <summary>
+    /// این پنجره در تسک‌بار و alt-tab دیده می‌شود، پس آیکن لازم دارد؛ پنجره‌ی لانچر نه
+    /// (<c>ShowInTaskbar=False</c> است و اصلاً چروم ندارد).
+    /// </summary>
+    private static ImageSource? LoadWindowIcon()
+    {
+        try
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "assets", "pluglauncher.ico");
+            return File.Exists(path) ? BitmapFrame.Create(new Uri(path)) : null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private void Refresh()
@@ -79,6 +99,19 @@ public partial class SettingsWindow : Window
         }
 
         Process.Start(new ProcessStartInfo(PluginPaths.LogFile) { UseShellExecute = true });
+    }
+
+    /// <summary>
+    /// راه خروج قابل دیدن. آیکن سینی هم منوی Exit دارد، ولی در ویندوز ۱۱ پیش‌فرض داخل بخش
+    /// مخفی نوار وظیفه می‌نشیند و عملاً پیدا نمی‌شود.
+    /// </summary>
+    private void OnExitApp(object sender, RoutedEventArgs e)
+    {
+        var answer = MessageBox.Show(
+            "Quit PlugLauncher? The hotkey will stop working until you start it again.",
+            "Exit", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+        if (answer == MessageBoxResult.Yes) Application.Current.Shutdown();
     }
 
     private async void OnReload(object sender, RoutedEventArgs e)
