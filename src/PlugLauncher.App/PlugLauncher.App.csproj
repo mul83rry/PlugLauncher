@@ -31,7 +31,12 @@
 
   <!-- پلاگین‌های همراه برنامه کنار فایل اجرایی کپی می‌شوند -->
   <ItemGroup>
-    <None Include="..\..\plugins\**\*" LinkBase="plugins" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Only these three ship with the app. Everything else in plugins/ goes to the store
+         instead, so a fresh install starts with three and the user adds what they want.
+         A folder listed here is installed for everyone, whether they asked for it or not. -->
+    <None Include="..\..\plugins\calculator\**\*" LinkBase="plugins\calculator" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\plugins\password\**\*" LinkBase="plugins\password" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\plugins\programs\**\*" LinkBase="plugins\programs" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

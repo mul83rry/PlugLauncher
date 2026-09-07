@@ -24,20 +24,29 @@ restarting is the whole development loop — no build step and no DLLs. A slow o
 drops out of the results on its own and reports the compile error, with a line number, in
 settings.
 
-Seven plugins ship with the app:
+Three plugins ship with the app:
 
 | Keyword | Plugin | What it does |
 |---|---|---|
 | *(none)* | Programs | Start menu shortcuts |
 | *(none)* | Calculator | Evaluates the query as an expression |
-| `st` | Steam Games | Finds and launches installed games |
 | `pw` | Password Generator | Length, character sets, PIN and hex modes |
-| `ssh` | SSH Hosts | Hosts from `~/.ssh/config`, opens a terminal on the one you pick |
-| `dev` | Dev Toolbox | uuid, base64, url, hashes, epoch, JSON, JWT, random bytes, slugs |
-| `sys` | System | Lock, restart, the msc/cpl consoles, and memory/disk/IP read-outs |
 
 **Plugin store**
 
 A store tab in settings installs plugins from a static index on GitHub Pages. Downloads are
 checked against the `sha256` in the index, extraction is protected against zip slip, and an
 install is staged in a temporary folder so a failed one cannot damage a working plugin.
+
+Four more plugins are there to install:
+
+| Keyword | Plugin | What it does |
+|---|---|---|
+| `st` | Steam Games | Finds and launches installed games |
+| `ssh` | SSH Hosts | Hosts from `~/.ssh/config`, opens a terminal on the one you pick |
+| `dev` | Dev Toolbox | uuid, base64, url, hashes, epoch, JSON, JWT, random bytes, slugs |
+| `sys` | System | Lock, restart, the msc/cpl consoles, and memory/disk/IP read-outs |
+
+**License**
+
+MIT.

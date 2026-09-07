@@ -92,21 +92,33 @@ it as an artifact, without creating a release.
 | Log | `%APPDATA%\PlugLauncher\logs\plugLauncher.log` |
 | Optional user theme | `%APPDATA%\PlugLauncher\theme\theme.xaml` |
 
-## Bundled plugins
+## Plugins
+
+Three ship with the app, so a fresh install is useful immediately without being full of things
+you did not ask for:
 
 | Keyword | Plugin | What it does |
 |---|---|---|
 | *(none)* | Programs | Start menu shortcuts |
 | *(none)* | Calculator | Evaluates the query as an expression |
-| `st` | Steam Games | Finds and launches installed games |
 | `pw` | Password Generator | Length, character sets, PIN and hex modes |
+
+The rest live in the store tab in settings, one click each:
+
+| Keyword | Plugin | What it does |
+|---|---|---|
+| `st` | Steam Games | Finds and launches installed games |
 | `ssh` | SSH Hosts | Hosts from `~/.ssh/config`, opens a terminal on the one you pick |
 | `dev` | Dev Toolbox | uuid, base64, url, hashes, epoch, JSON, JWT, random bytes, slugs |
 | `sys` | System | Lock, restart, the msc/cpl consoles, and memory/disk/IP read-outs |
 
-More can be installed from the store tab in settings, which reads a static index published at
-[mul83rry.github.io/PlugLauncher](https://mul83rry.github.io/PlugLauncher/). See
-[docs/STORE.md](docs/STORE.md) for how packages are built and published.
+The store is a static index published at
+[mul83rry.github.io/PlugLauncher](https://mul83rry.github.io/PlugLauncher/) — no server, no
+account. See [docs/STORE.md](docs/STORE.md) for how packages are built and published.
+
+The three bundled plugins are in the store as well. A plugin installed from the store lands in
+`%APPDATA%\PlugLauncher\plugins\` and takes precedence over the copy next to the executable, so
+installing one is how you update a bundled plugin without waiting for the next release.
 
 ## Writing a plugin
 
@@ -175,6 +187,10 @@ return Plugin.Create(
 - **References**: the whole framework and `PlugLauncher.Contracts` are available to the script.
   Extra DLLs go in the manifest's `references` array.
 - **Compile errors** appear in settings, next to the plugin, with a line number.
+
+## License
+
+[MIT](LICENSE). Copyright (c) 2026 Hosein Asadi.
 
 ---
 
