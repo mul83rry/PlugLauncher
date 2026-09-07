@@ -1,0 +1,12 @@
+{
+  "id": "com.pluglauncher.dev-toolbox",
+  "name": "Dev Toolbox",
+  "description": "uuid, base64, url, hash, epoch, json, jwt — type dev and pick one",
+  "version": "1.0.0",
+  "author": "PlugLauncher",
+  "entry": "main.csx",
+  "keywords": [
+    "dev"
+  ],
+  "icon": "assets/icon.png"
+}

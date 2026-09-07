@@ -1,0 +1,12 @@
+{
+  "id": "com.pluglauncher.system",
+  "name": "System",
+  "description": "Lock, restart, Task Manager, Device Manager, IP and disk read-outs — type sys",
+  "version": "1.0.0",
+  "author": "PlugLauncher",
+  "entry": "main.csx",
+  "keywords": [
+    "sys"
+  ],
+  "icon": "assets/icon.png"
+}

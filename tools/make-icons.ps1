@@ -49,6 +49,17 @@ function Fill([System.Drawing.Graphics]$g, [System.Drawing.Color]$color, $path) 
     $brush.Dispose(); $path.Dispose()
 }
 
+function Stroke([System.Drawing.Graphics]$g, [System.Drawing.Color]$color, [single]$width, $points) {
+    $pen = New-Object System.Drawing.Pen $color, $width
+    $pen.StartCap = 'Round'
+    $pen.EndCap = 'Round'
+    $pen.LineJoin = 'Round'
+    $g.DrawLines($pen, [System.Drawing.PointF[]]$points)
+    $pen.Dispose()
+}
+
+function P([single]$x, [single]$y) { return [System.Drawing.PointF]::new($x, $y) }
+
 # ===== calculator: teal body, keys and display punched back out in the plate colour =====
 $c = New-Canvas
 Fill $c.Graphics $teal (New-RoundedPath 30 16 68 96 11)
@@ -72,3 +83,29 @@ for ($i = 0; $i -lt $tiles.Count; $i++) {
     Fill $c.Graphics $color (New-RoundedPath $tiles[$i][0] $tiles[$i][1] 40 40 9)
 }
 Save-Canvas $c 'plugins/programs/assets/icon.png'
+# ===== ssh hosts: a terminal window with the prompt punched back out of it =====
+$c = New-Canvas
+Fill $c.Graphics $teal (New-RoundedPath 14 28 100 72 12)
+Stroke $c.Graphics $plate 9 @((P 36 54), (P 52 64), (P 36 74))
+Stroke $c.Graphics $plate 9 @((P 62 74), (P 86 74))
+Save-Canvas $c 'plugins/ssh-hosts/assets/icon.png'
+
+# ===== dev toolbox: </> with the slash dimmed so the brackets read first =====
+$c = New-Canvas
+Stroke $c.Graphics $teal 10 @((P 48 38), (P 26 64), (P 48 90))
+Stroke $c.Graphics $teal 10 @((P 80 38), (P 102 64), (P 80 90))
+Stroke $c.Graphics $dim 9 @((P 70 32), (P 58 96))
+Save-Canvas $c 'plugins/dev-toolbox/assets/icon.png'
+
+# ===== system: a chip, pins on all four sides =====
+$c = New-Canvas
+Fill $c.Graphics $teal (New-RoundedPath 34 34 60 60 10)
+Fill $c.Graphics $plate (New-RoundedPath 50 50 28 28 6)
+
+foreach ($offset in 44, 60, 76) {
+    Fill $c.Graphics $teal (New-RoundedPath $offset 18 8 16 3)
+    Fill $c.Graphics $teal (New-RoundedPath $offset 94 8 16 3)
+    Fill $c.Graphics $teal (New-RoundedPath 18 $offset 16 8 3)
+    Fill $c.Graphics $teal (New-RoundedPath 94 $offset 16 8 3)
+}
+Save-Canvas $c 'plugins/system/assets/icon.png'

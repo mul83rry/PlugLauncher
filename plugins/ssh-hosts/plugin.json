@@ -1,0 +1,12 @@
+{
+  "id": "com.pluglauncher.ssh-hosts",
+  "name": "SSH Hosts",
+  "description": "Connect to any host in ~/.ssh/config — type ssh and pick one",
+  "version": "1.0.0",
+  "author": "PlugLauncher",
+  "entry": "main.csx",
+  "keywords": [
+    "ssh"
+  ],
+  "icon": "assets/icon.png"
+}
