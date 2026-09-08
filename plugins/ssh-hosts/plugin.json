@@ -2,11 +2,21 @@
   "id": "com.pluglauncher.ssh-hosts",
   "name": "SSH Hosts",
   "description": "Connect to any host in ~/.ssh/config — type ssh and pick one",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "PlugLauncher",
   "entry": "main.csx",
   "keywords": [
     "ssh"
+  ],
+  "usage": [
+    {
+      "example": "ssh prod",
+      "description": "filter hosts by alias, hostname or user"
+    },
+    {
+      "example": "ssh root@10.0.0.5",
+      "description": "connect to a host that is not in the config"
+    }
   ],
   "icon": "assets/icon.png"
 }

@@ -2,11 +2,21 @@
   "id": "com.pluglauncher.keyboard-layout",
   "name": "Keyboard Layout",
   "description": "Text typed with the wrong keyboard layout — type kb sghl to get سلام",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "PlugLauncher",
   "entry": "main.csx",
   "keywords": [
     "kb"
+  ],
+  "usage": [
+    {
+      "example": "kb sghl",
+      "description": "read those keys on your other layout — gives سلام"
+    },
+    {
+      "example": "kb",
+      "description": "convert whatever is on the clipboard"
+    }
   ],
   "icon": "assets/icon.png"
 }

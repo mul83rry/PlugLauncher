@@ -14,6 +14,10 @@ public partial class MainWindow : Window
     private readonly FileLogger _log = new("window");
     private readonly GlobalHotkey _hotkey = new();
     private readonly DispatcherTimer _debounce;
+    private readonly DispatcherTimer _refresh;
+
+    /// <summary>تا این لحظه اجازه‌ی تازه‌سازی خودکار هست؛ با هر تغییرِ متن از نو شارژ می‌شود.</summary>
+    private DateTime _refreshUntil = DateTime.MinValue;
 
     private CancellationTokenSource? _queryCts;
     private bool _suppressHideOnDeactivate;
@@ -33,6 +37,14 @@ public partial class MainWindow : Window
         _debounce.Tick += async (_, _) =>
         {
             _debounce.Stop();
+            await RunQueryAsync();
+        };
+
+        _refresh = new DispatcherTimer(DispatcherPriority.Background);
+        _refresh.Tick += async (_, _) =>
+        {
+            _refresh.Stop();
+            if (!IsVisible) return;
             await RunQueryAsync();
         };
 
@@ -98,6 +110,8 @@ public partial class MainWindow : Window
     public void HideLauncher()
     {
         _debounce.Stop();
+        _refresh.Stop();
+        _refreshUntil = DateTime.MinValue;
         _queryCts?.Cancel();
         Hide();
         SearchBox.Text = string.Empty;
@@ -123,6 +137,10 @@ public partial class MainWindow : Window
         SettingsButton.Visibility = string.IsNullOrEmpty(SearchBox.Text) ? Visibility.Visible : Visibility.Collapsed;
 
         _debounce.Stop();
+
+        // هر تغییرِ متن یک کوئری تازه است، پس بودجه‌ی تازه‌سازی هم از نو شروع می‌شود
+        _refresh.Stop();
+        _refreshUntil = DateTime.UtcNow + RefreshBudget;
 
         if (string.IsNullOrWhiteSpace(SearchBox.Text))
         {
@@ -169,6 +187,39 @@ public partial class MainWindow : Window
         ResultsList.SelectedIndex = rows.Count > 0 ? 0 : -1;
         ResultsList.Visibility = rows.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         UpdateHint();
+        ScheduleRefresh(rows);
+    }
+
+    /// <summary>کف فاصله‌ی دو تازه‌سازی خودکار؛ پلاگین نمی‌تواند از این تندتر بخواهد.</summary>
+    private const int MinRefreshMs = 250;
+
+    /// <summary>سقف زمانی تازه‌سازی خودکار برای یک متنِ ثابت.</summary>
+    private static readonly TimeSpan RefreshBudget = TimeSpan.FromMinutes(2);
+
+    /// <summary>
+    /// اگر ردیفی گفته باشد کارش هنوز تمام نشده (<c>RefreshAfterMs</c>)، همین کوئری خودش دوباره
+    /// اجرا می‌شود تا نتیجه‌ی نهایی بدون Enter زدن کاربر بیاید.
+    ///
+    /// سه سقف جلوی حلقه‌ی بی‌پایان را می‌گیرد: فاصله کف دارد، هر متن دو دقیقه بودجه دارد، و با
+    /// بسته شدن پنجره همه‌چیز می‌ایستد. سومی مهم‌ترین است — پنجره فقط وقتی باز است که کاربر
+    /// جلویش نشسته، پس هیچ پلاگینی نمی‌تواند در پس‌زمینه بچرخد.
+    /// </summary>
+    private void ScheduleRefresh(IReadOnlyList<LauncherRow> rows)
+    {
+        _refresh.Stop();
+        if (DateTime.UtcNow > _refreshUntil) return;
+
+        var soonest = rows
+            .Select(r => r.Item?.Result.RefreshAfterMs)
+            .Where(ms => ms is not null)
+            .Select(ms => Math.Max(ms!.Value, MinRefreshMs))
+            .DefaultIfEmpty(0)
+            .Min();
+
+        if (soonest <= 0) return;
+
+        _refresh.Interval = TimeSpan.FromMilliseconds(soonest);
+        _refresh.Start();
     }
 
     // ===== تکمیل خودکار درون‌خطی =====

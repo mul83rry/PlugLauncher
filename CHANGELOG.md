@@ -21,10 +21,26 @@ What is taking the space, without leaving the launcher:
   on — and Enter on a kind lists its extensions, and Enter on an extension lists the biggest
   files of that kind. Enter on a file shows it in Explorer.
 - A scan keeps only sums, so a whole drive costs nothing in memory. It costs seconds instead, and
-  a scan that does not finish inside the query keeps running in the background while the row says
-  how far it is; Enter on it asks again.
+  a scan that does not finish inside the query keeps running in the background while the row
+  counts up; the answer appears on its own when it is ready.
 - Numbers are kept for five minutes. After that the old ones are still shown, marked as old,
   while a fresh scan runs.
+
+**Slow results arrive by themselves**
+
+A plugin can put `RefreshAfterMs` on a result to say its work is still going. The launcher runs
+the same query again after that long and swaps the row for whatever came back, so nothing has to
+be pressed twice to see a long job finish. Three limits keep a faulty plugin from spinning: never
+faster than 250 ms, two minutes of it per typed query, and everything stops when the window
+closes.
+
+**Plugins can carry their own cheat sheet**
+
+`plugin.json` takes a `usage` list of examples. Type a plugin's keyword and pause, and its
+examples appear under the results; Enter on one writes it into the search box instead of running
+it. So `du` shows the way to `du C:\ types Archives` without anybody memorising it, and `sys`,
+`ssh`, `kb` and `st` gained the same. Up to six show, and they never take the place of a real
+result.
 
 ## 1.4.0 — 2026-09-07
 

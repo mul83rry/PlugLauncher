@@ -176,12 +176,54 @@ public sealed class PluginEngine
         var tasks = targets.Select(t => QueryOneAsync(t.Plugin, t.Query, cancellationToken));
         var batches = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-        return batches
+        var items = batches
             .SelectMany(b => b)
             .OrderByDescending(i => i.Score)
             .ThenBy(i => i.Title, StringComparer.CurrentCultureIgnoreCase)
             .Take(Settings.MaxResults)
             .ToList();
+
+        // بعد از Take اضافه می‌شوند، نه قبلش: راهنما نباید جای نتیجه‌ی واقعی را بگیرد و
+        // نباید هم قربانی سقف نتایج شود. ترتیب همین‌جا نهایی است، پس امتیاز لازم ندارند.
+        items.AddRange(UsageRowsFor(targets));
+        return items;
+    }
+
+    /// <summary>حداکثر تعداد خط راهنمایی که از مانیفست نشان داده می‌شود.</summary>
+    private const int MaxUsageRows = 6;
+
+    /// <summary>
+    /// خط‌های <c>usage</c> مانیفست فقط در یک لحظه می‌آیند: کاربر کلیدواژه را تایپ کرده و بعدش
+    /// چیزی ننوشته. با اولین حرفِ بعدی کنار می‌روند تا سر راه نتیجه نباشند.
+    /// </summary>
+    private static List<SearchItem> UsageRowsFor(List<(PluginDescriptor Plugin, PluginQuery Query)> targets)
+    {
+        var rows = new List<SearchItem>();
+
+        foreach (var (plugin, query) in targets)
+        {
+            if (!query.HasKeyword || !query.IsEmpty) continue;
+
+            foreach (var usage in plugin.Manifest.Usage)
+            {
+                if (string.IsNullOrWhiteSpace(usage.Example)) continue;
+                if (rows.Count >= MaxUsageRows) break;
+
+                rows.Add(new SearchItem
+                {
+                    Plugin = plugin,
+                    Result = new PluginResult
+                    {
+                        Title = usage.Example,
+                        Subtitle = usage.Description,
+                        // اجرا نمی‌شود؛ فقط داخل باکس می‌نشیند و پنجره باز می‌ماند
+                        ReplaceQuery = usage.Example
+                    }
+                });
+            }
+        }
+
+        return rows;
     }
 
     /// <summary>

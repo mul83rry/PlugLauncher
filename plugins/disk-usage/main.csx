@@ -11,7 +11,7 @@
 // extension, and the eight biggest files of each extension. Nothing else is remembered, so a
 // scan of a whole drive costs nothing in memory. It costs time — seconds for a drive — and the
 // launcher gives a query three seconds, so a scan that is not done in time keeps running in the
-// background and the row says so; Enter on it asks again.
+// background and the row says so; the list refreshes itself until the answer is ready.
 //
 // A finished scan is kept for five minutes. After that the old numbers are still shown while a
 // fresh scan runs, rather than making you wait for a folder you have already seen.
@@ -443,14 +443,17 @@ PluginResult Progress(Scan scan, PluginQuery query, string title)
     var bytes = Interlocked.Read(ref scan.BytesSoFar);
     var seconds = (DateTime.UtcNow - scan.Started).TotalSeconds;
 
-    // The same text again would not count as a change, so a trailing space is toggled.
+    // The launcher comes back on its own while this row is on screen, so the numbers climb and
+    // the real answer arrives without anyone pressing anything. Enter is still offered as a
+    // fallback: the same text would not count as a change, so a trailing space is toggled.
     var again = query.Raw.EndsWith(' ') ? query.Raw.TrimEnd() : query.Raw + " ";
 
     return new PluginResult
     {
         Id = "scanning:" + scan.Root,
         Title = title,
-        Subtitle = $"{Count(files, "file")}, {Human(bytes)} so far  ·  {seconds:0}s  ·  Enter asks again",
+        Subtitle = $"{Count(files, "file")}, {Human(bytes)} so far  ·  {seconds:0}s",
+        RefreshAfterMs = 400,
         ReplaceQuery = again,
         Score = 310
     };

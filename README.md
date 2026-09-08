@@ -177,6 +177,9 @@ my-plugin/
   "version": "1.0.0",
   "entry": "main.csx",
   "keywords": [ "mp" ],
+  "usage": [
+    { "example": "mp something", "description": "what that does" }
+  ],
   "icon": "assets/icon.png"
 }
 ```
@@ -184,6 +187,10 @@ my-plugin/
 - With `keywords` set, the plugin only runs when the query starts with one of them (`mp something`).
   The keyword has to be the whole first word: `mp` and `mp x` match, `mpx` does not.
 - With `keywords` empty the plugin is **global** and sees every query, the way `calculator` does.
+- `usage` is the plugin's own cheat sheet. The moment the user has typed the keyword and nothing
+  else, those lines appear under the results; Enter on one puts the example in the search box
+  instead of running it. Six is the most that show. Nobody has to remember your syntax, and you
+  write no code for it.
 - A keyword has one owner. If two plugins claim the same one, the older install keeps it and the
   newer plugin is not loaded at all — settings shows it as **Keyword taken** with the name of the
   plugin holding it, and a tray notification says so at startup. Change `keywords` and hit
@@ -235,6 +242,11 @@ return Plugin.Create(
   share of a whole; leave it `null` for everything else.
 - **`ReplaceQuery`** on a result makes Enter put that text in the search box instead of running
   anything, which is how a plugin offers drill-down: the Disk Usage plugin is nothing but this.
+- **`RefreshAfterMs`** on a result asks the launcher to run the same query again after that many
+  milliseconds. Return a progress row with it while the real work runs in the background, and
+  drop it once the answer is ready — the list fills in by itself. The launcher will not go faster
+  than 250 ms, gives up on any one query after two minutes, and stops the moment the window
+  closes, so a plugin that always asks for a refresh cannot spin in the background.
 
 ## License
 

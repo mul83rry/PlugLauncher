@@ -8,5 +8,27 @@
   "keywords": [
     "du"
   ],
+  "usage": [
+    {
+      "example": "du C:\\",
+      "description": "the folders inside, biggest first"
+    },
+    {
+      "example": "du C:\\ types",
+      "description": "the same bytes grouped by kind of file"
+    },
+    {
+      "example": "du C:\\ types Archives",
+      "description": "the extensions inside one kind"
+    },
+    {
+      "example": "du C:\\ ext .zip",
+      "description": "the biggest files with one extension"
+    },
+    {
+      "example": "du ~\\Downloads",
+      "description": "any folder, and ~ means your profile"
+    }
+  ],
   "icon": "assets/icon.png"
 }

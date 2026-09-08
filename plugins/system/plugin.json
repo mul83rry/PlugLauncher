@@ -2,11 +2,25 @@
   "id": "com.pluglauncher.system",
   "name": "System",
   "description": "Lock, restart, Task Manager, Device Manager, IP and disk read-outs — type sys",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "PlugLauncher",
   "entry": "main.csx",
   "keywords": [
     "sys"
+  ],
+  "usage": [
+    {
+      "example": "sys lock",
+      "description": "lock the screen"
+    },
+    {
+      "example": "sys dev",
+      "description": "Device Manager"
+    },
+    {
+      "example": "sys ram",
+      "description": "memory, disk, uptime and IP — Enter copies the value"
+    }
   ],
   "icon": "assets/icon.png"
 }
