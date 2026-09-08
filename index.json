@@ -119,16 +119,18 @@
                       "keywords":  [
                                        "pw"
                                    ],
-                      "size":  5337,
-                      "sha256":  "bb88b7ea4a14cecf3171901a40cf35c84b5e11cb2d12564853ccf235a80ac0cb",
-                      "publishedAt":  "2026-09-08T09:15:17Z",
+                      "size":  5373,
+                      "sha256":  "a31d1c87f23f4781dc8d4b7999b380ff35e23a5614b3ee8b829a29d04f534606",
+                      "publishedAt":  "2026-09-08T09:25:22Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.password/1.1.1/com.pluglauncher.password-1.1.1.plz",
                       "iconUrl":  "packages/com.pluglauncher.password/1.1.1/icon.png",
                       "platforms":  [
-
+                                        "windows",
+                                        "macos",
+                                        "linux"
                                     ],
-                      "minCore":  ""
+                      "minCore":  "1.5.0"
                   },
                   {
                       "id":  "com.pluglauncher.programs",
