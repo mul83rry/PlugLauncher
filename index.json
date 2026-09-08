@@ -88,17 +88,17 @@
                       "id":  "com.pluglauncher.password",
                       "name":  "Password Generator",
                       "description":  "Strong passwords — type pw and pick a length and options from the list",
-                      "version":  "1.1.0",
+                      "version":  "1.1.1",
                       "author":  "PlugLauncher",
                       "keywords":  [
                                        "pw"
                                    ],
-                      "size":  5464,
-                      "sha256":  "0cc0d0adefbda218654648a9c44f6d6c9e2fe3391b9d8974b9c23e729ae1db40",
-                      "publishedAt":  "2026-09-06T11:40:03Z",
+                      "size":  5337,
+                      "sha256":  "bb88b7ea4a14cecf3171901a40cf35c84b5e11cb2d12564853ccf235a80ac0cb",
+                      "publishedAt":  "2026-09-08T09:15:17Z",
                       "downloads":  0,
-                      "downloadUrl":  "packages/com.pluglauncher.password/1.1.0/com.pluglauncher.password-1.1.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.password/1.1.0/icon.png"
+                      "downloadUrl":  "packages/com.pluglauncher.password/1.1.1/com.pluglauncher.password-1.1.1.plz",
+                      "iconUrl":  "packages/com.pluglauncher.password/1.1.1/icon.png"
                   },
                   {
                       "id":  "com.pluglauncher.programs",
