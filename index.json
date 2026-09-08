@@ -1,5 +1,5 @@
 {
-    "generatedAt":  "2026-09-08T09:25:22Z",
+    "generatedAt":  "2026-09-08T09:25:23Z",
     "total":  10,
     "page":  1,
     "pageSize":  10,
@@ -136,19 +136,19 @@
                       "id":  "com.pluglauncher.programs",
                       "name":  "Programs",
                       "description":  "Search applications installed in the Start menu",
-                      "version":  "1.2.0",
+                      "version":  "1.2.1",
                       "author":  "PlugLauncher",
                       "keywords":  [
 
                                    ],
-                      "size":  3230,
-                      "sha256":  "a89caca09bdf8c10d122b510523f4edf11b9c8c2fe4599282f92d088819601cb",
-                      "publishedAt":  "2026-09-06T11:40:03Z",
+                      "size":  3250,
+                      "sha256":  "d11d0b9d0009810d8a9866091b227158f17eb32be2d0a73756014bd3385e7816",
+                      "publishedAt":  "2026-09-08T09:25:22Z",
                       "downloads":  0,
-                      "downloadUrl":  "packages/com.pluglauncher.programs/1.2.0/com.pluglauncher.programs-1.2.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.programs/1.2.0/icon.png",
+                      "downloadUrl":  "packages/com.pluglauncher.programs/1.2.1/com.pluglauncher.programs-1.2.1.plz",
+                      "iconUrl":  "packages/com.pluglauncher.programs/1.2.1/icon.png",
                       "platforms":  [
-
+                                        "windows"
                                     ],
                       "minCore":  ""
                   },
