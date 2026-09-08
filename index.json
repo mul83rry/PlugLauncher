@@ -1,5 +1,5 @@
 {
-    "generatedAt":  "2026-09-08T08:55:44Z",
+    "generatedAt":  "2026-09-08T09:15:15Z",
     "total":  10,
     "page":  1,
     "pageSize":  10,
@@ -8,17 +8,17 @@
                       "id":  "com.pluglauncher.calculator",
                       "name":  "Calculator",
                       "description":  "Evaluates math expressions; Enter copies the result",
-                      "version":  "1.2.0",
+                      "version":  "1.2.1",
                       "author":  "PlugLauncher",
                       "keywords":  [
 
                                    ],
-                      "size":  2912,
-                      "sha256":  "4b190a566d1cb22fe6de2aa9855a2c345606613eb0e78e216200b4f652a2d46d",
-                      "publishedAt":  "2026-09-06T11:40:03Z",
+                      "size":  2902,
+                      "sha256":  "657190f6bb64f5e4cc41b14b75ebd91b4687bcb7a47c1d8e1a94893cd6eda5eb",
+                      "publishedAt":  "2026-09-08T09:15:15Z",
                       "downloads":  0,
-                      "downloadUrl":  "packages/com.pluglauncher.calculator/1.2.0/com.pluglauncher.calculator-1.2.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.calculator/1.2.0/icon.png"
+                      "downloadUrl":  "packages/com.pluglauncher.calculator/1.2.1/com.pluglauncher.calculator-1.2.1.plz",
+                      "iconUrl":  "packages/com.pluglauncher.calculator/1.2.1/icon.png"
                   },
                   {
                       "id":  "com.pluglauncher.curl",
