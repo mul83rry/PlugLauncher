@@ -1,5 +1,5 @@
 {
-    "generatedAt":  "2026-09-08T10:19:51Z",
+    "generatedAt":  "2026-09-08T11:03:11Z",
     "total":  10,
     "page":  1,
     "pageSize":  10,
@@ -79,14 +79,16 @@
                       "keywords":  [
                                        "du"
                                    ],
-                      "size":  9498,
-                      "sha256":  "4237575182a810703add56741b6da66db6ad2d236d81270406ccea9bfe4a029a",
-                      "publishedAt":  "2026-09-08T09:25:21Z",
+                      "size":  9853,
+                      "sha256":  "c61c98a66ebaa456f75e80b48a53f1297b2aa1c808e831a8621e1d4ba3fd01cf",
+                      "publishedAt":  "2026-09-08T11:02:59Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/com.pluglauncher.disk-usage-1.0.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/icon.png",
                       "platforms":  [
-                                        "windows"
+                                        "windows",
+                                        "macos",
+                                        "linux"
                                     ],
                       "minCore":  "1.5.0"
                   },
@@ -161,14 +163,16 @@
                       "keywords":  [
                                        "ssh"
                                    ],
-                      "size":  5576,
-                      "sha256":  "7b914e520a656ed71a66287d4461b2a33bdcbb55873304b51b94a1a972a63fd1",
-                      "publishedAt":  "2026-09-08T09:25:23Z",
+                      "size":  6276,
+                      "sha256":  "3589e3704fbe2fd67601bd3a91418e8e87c0fa8a8e912a0934e2288ea043cb7b",
+                      "publishedAt":  "2026-09-08T11:02:59Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.ssh-hosts/1.1.0/com.pluglauncher.ssh-hosts-1.1.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.ssh-hosts/1.1.0/icon.png",
                       "platforms":  [
-                                        "windows"
+                                        "windows",
+                                        "macos",
+                                        "linux"
                                     ],
                       "minCore":  "1.5.0"
                   },
@@ -181,16 +185,18 @@
                       "keywords":  [
                                        "st"
                                    ],
-                      "size":  3391,
-                      "sha256":  "06f680a17f02c124da2c31af47361908e88a6664c451d578f7f6e677738ab3eb",
-                      "publishedAt":  "2026-09-08T09:25:24Z",
+                      "size":  3903,
+                      "sha256":  "ec38d310f5915b23ec5c7f131459ae878817e586bfd882800486c77484fbeedc",
+                      "publishedAt":  "2026-09-08T11:02:59Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.steam-games/1.2.0/com.pluglauncher.steam-games-1.2.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.steam-games/1.2.0/icon.png",
                       "platforms":  [
-                                        "windows"
+                                        "windows",
+                                        "macos",
+                                        "linux"
                                     ],
-                      "minCore":  ""
+                      "minCore":  "1.5.0"
                   },
                   {
                       "id":  "com.pluglauncher.system",
