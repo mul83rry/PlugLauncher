@@ -318,19 +318,30 @@ List<PluginResult> Slug(string text)
 }
 
 // ---------- hints ----------
-// A row with ReplaceQuery runs nothing: Enter just rewrites the search box, so a command
-// can be tried without having to remember its name first.
-(string Command, string Example, string What)[] Commands =
+// A row with ReplaceQuery runs nothing: Enter (or Tab) just rewrites the search box, so a
+// command can be tried without having to remember its name first.
+//
+// Needs marks a command that says nothing useful without a payload — "dev b64" on its own
+// used to answer with the base64 of nothing, which is an empty row. Now it answers with the
+// finished command instead, ready to be taken with Tab.
+//
+// Secondary keeps a command out of the unfiltered list, which only has room for eight rows —
+// a ninth would be dropped silently, which is worse than being one keystroke away. The two
+// decoders and rand are the ones that carry: "dev b" offers b64 and b64d together, "dev r"
+// finds rand, and uuid right at the top already covers most of what rand is wanted for.
+(string Command, string Example, string What, bool Needs, bool Secondary)[] Commands =
 [
-    ("uuid", "uuid 3",              "random GUIDs — a count of 1 to 10"),
-    ("b64",  "b64 hello",           "base64 encode; b64d decodes, base64url included"),
-    ("url",  "url a b&c",           "percent encode; urld decodes"),
-    ("hash", "hash hello",          "sha256, sha1 and md5 of the text"),
-    ("ts",   "ts",                  "epoch and ISO for now; ts 1767225600 converts a number back"),
-    ("json", "json {\"a\":1}",      "validate, then pretty print or minify"),
-    ("jwt",  "jwt eyJhbGciOi",      "decode a token's header and payload (no verification)"),
-    ("rand", "rand 16",             "random bytes as hex and base64"),
-    ("slug", "slug Hello World",    "url slug, snake_case and SCREAMING_SNAKE_CASE")
+    ("uuid", "uuid 3",           "random GUIDs — a count of 1 to 10",                           false, false),
+    ("b64",  "b64 hello",        "base64 encode, standard and base64url",                       true,  false),
+    ("b64d", "b64d aGVsbG8=",    "base64 decode, as text and as hex",                           true,  true),
+    ("url",  "url a b&c",        "percent encode",                                              true,  false),
+    ("urld", "urld a%20b",       "percent decode",                                              true,  true),
+    ("hash", "hash hello",       "sha256, sha1 and md5 of the text",                            true,  false),
+    ("ts",   "ts",               "epoch and ISO for now; ts 1767225600 converts a number back", false, false),
+    ("json", "json {\"a\":1}",   "validate, then pretty print or minify",                       true,  false),
+    ("jwt",  "jwt eyJhbGciOi",   "decode a token's header and payload (no verification)",       true,  false),
+    ("rand", "rand 16",          "random bytes as hex and base64",                              false, true),
+    ("slug", "slug Hello World", "url slug, snake_case and SCREAMING_SNAKE_CASE",               true,  false)
 ];
 
 List<PluginResult> Hints(string filter)
@@ -338,9 +349,13 @@ List<PluginResult> Hints(string filter)
     var rows = new List<PluginResult>();
     var score = 100;
 
-    foreach (var (command, example, what) in Commands)
+    foreach (var (command, example, what, _, secondary) in Commands)
     {
-        if (filter.Length > 0 && !command.StartsWith(filter, StringComparison.OrdinalIgnoreCase)) continue;
+        if (filter.Length == 0)
+        {
+            if (secondary) continue;
+        }
+        else if (!command.StartsWith(filter, StringComparison.OrdinalIgnoreCase)) continue;
 
         rows.Add(new PluginResult
         {
@@ -355,6 +370,25 @@ List<PluginResult> Hints(string filter)
     return rows;
 }
 
+// The canonical name behind whatever was typed, or null when nothing here answers to it.
+string? Canonical(string command) => command switch
+{
+    "uuid" or "guid" => "uuid",
+    "b64" or "base64" => "b64",
+    "b64d" or "unbase64" => "b64d",
+    "url" or "urlencode" => "url",
+    "urld" or "urldecode" => "urld",
+    "hash" or "sum" => "hash",
+    "ts" or "time" or "epoch" => "ts",
+    "json" => "json",
+    "jwt" => "jwt",
+    "rand" or "random" => "rand",
+    "slug" or "kebab" => "slug",
+    _ => null
+};
+
+bool NeedsArgument(string canonical) => Commands.Any(c => c.Command == canonical && c.Needs);
+
 // ---------- plugin ----------
 return Plugin.Create(query =>
 {
@@ -366,24 +400,34 @@ return Plugin.Create(query =>
     var command = (space < 0 ? search : search.Substring(0, space)).ToLowerInvariant();
     var argument = space < 0 ? "" : search.Substring(space + 1);
 
-    List<PluginResult> rows = command switch
-    {
-        "uuid" or "guid" => Uuid(argument),
-        "b64" or "base64" => Base64Encode(argument),
-        "b64d" or "unbase64" => Base64Decode(argument),
-        "url" or "urlencode" => [Row("url", Uri.EscapeDataString(argument), "percent encoded  ·  Enter to copy", 200)],
-        "urld" or "urldecode" => UrlDecode(argument),
-        "hash" or "sum" => Hash(argument),
-        "ts" or "time" or "epoch" => Timestamp(argument),
-        "json" => argument.Trim().Length == 0 ? Hints("json") : Json(argument),
-        "jwt" => argument.Trim().Length == 0 ? Hints("jwt") : Jwt(argument),
-        "rand" or "random" => Random(argument),
-        "slug" or "kebab" => argument.Trim().Length == 0 ? Hints("slug") : Slug(argument),
-        _ => Hints(command)
-    };
+    var canonical = Canonical(command);
 
-    // an unknown command with no matching hint should still say something
-    if (rows.Count == 0) rows = Hints("");
+    // A half-typed name and a real command still waiting for its payload want the same answer:
+    // the finished command, so the next word never has to be guessed.
+    if (canonical is null || (NeedsArgument(canonical) && argument.Trim().Length == 0))
+    {
+        var hints = Hints(canonical ?? command);
+        if (hints.Count > 0) return hints;
+
+        List<PluginResult> unknown = [Problem($"No command starts with \"{command}\"", "one of these instead"), .. Hints("")];
+        return unknown;
+    }
+
+    List<PluginResult> rows = canonical switch
+    {
+        "uuid" => Uuid(argument),
+        "b64" => Base64Encode(argument),
+        "b64d" => Base64Decode(argument),
+        "url" => [Row("url", Uri.EscapeDataString(argument), "percent encoded  ·  Enter to copy", 200)],
+        "urld" => UrlDecode(argument),
+        "hash" => Hash(argument),
+        "ts" => Timestamp(argument),
+        "json" => Json(argument),
+        "jwt" => Jwt(argument),
+        "rand" => Random(argument),
+        "slug" => Slug(argument),
+        _ => Hints("")
+    };
 
     return rows;
 });

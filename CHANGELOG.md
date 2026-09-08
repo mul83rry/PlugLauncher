@@ -51,6 +51,15 @@ it. So `du` shows the way to `du C:\ types Archives` without anybody memorising 
 `ssh`, `kb` and `st` gained the same. Up to six show, and they never take the place of a real
 result.
 
+**Dev Toolbox stopped going blank**
+
+`dev b64` on its own used to answer with the base64 of nothing, which is an empty row. Now every
+command that needs something to work on says what to type instead: `dev b64` offers
+`dev b64 hello`, and Tab takes it. Half a name works the same way — `dev b` offers `b64` and
+`b64d` together, `dev u` offers `uuid` and `url` — and `dev qqq` says no command starts with that
+rather than quietly listing everything. The decoders and `rand` moved one keystroke away so the
+list of commands fits on screen; before this, `slug` was on that list and never visible.
+
 ## 1.4.0 — 2026-09-07
 
 **It tells you when there is a new version**
