@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Forms;
 using PlugLauncher.Core;
+using PlugLauncher.Platform;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 
@@ -203,9 +204,10 @@ public partial class App : Application
     {
         if (_engine is null) return;
 
+        var log = new FileLogger("startup");
         var settings = _engine.Settings;
 
-        if (StartupRegistration.IsEnabled())
+        if (Os.AutoStart.IsEnabled())
         {
             // کاربر ممکن است از خود ویندوز (Task Manager → Startup) روشنش کرده باشد
             if (settings.StartWithWindows) return;
@@ -220,7 +222,7 @@ public partial class App : Application
         // یا کسی از بیرون پاکش کرده. بی‌صدا دوباره نوشته می‌شود، چون کاربر قبلاً «بله» گفته.
         if (settings.StartWithWindows)
         {
-            if (StartupRegistration.Enable()) return;
+            if (Enable(log)) return;
 
             settings.StartWithWindows = false;
             _engine.SaveSettings();
@@ -238,8 +240,20 @@ public partial class App : Application
 
         // چه بله چه خیر، دیگر پرسیده نمی‌شود؛ چک‌باکس تنظیمات جای تغییر نظر است
         settings.StartupPromptAnswered = true;
-        settings.StartWithWindows = answer == MessageBoxResult.Yes && StartupRegistration.Enable();
+        settings.StartWithWindows = answer == MessageBoxResult.Yes && Enable(log);
         _engine.SaveSettings();
+    }
+
+    private static bool Enable(FileLogger log)
+    {
+        if (Os.AutoStart.Set(true, out var problem))
+        {
+            log.Info($"start with {Os.Name} enabled");
+            return true;
+        }
+
+        log.Warn($"could not enable start with {Os.Name}: {problem}");
+        return false;
     }
 
     /// <summary>

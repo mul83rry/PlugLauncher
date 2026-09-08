@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PlugLauncher.Core\PlugLauncher.Core.csproj" />
     <ProjectReference Include="..\PlugLauncher.Contracts\PlugLauncher.Contracts.csproj" />
+    <ProjectReference Include="..\PlugLauncher.Platform\PlugLauncher.Platform.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

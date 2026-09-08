@@ -544,11 +544,20 @@ git یا هر ابزار دیگری نیاز پیدا کند**. کاربر فق�
 
 ### گام ۲ — لایه‌ی پلتفرم
 
-- [ ] پروژه‌ی `PlugLauncher.Platform` روی `net10.0` با `IHotkeys`، `IAutoStart`، `IOpener`
-- [ ] ویندوز: `RegisterHotKey` · کلید Run · `explorer.exe /select,`
-- [ ] مک: `RegisterEventHotKey` (Carbon) + اجازه‌ی Accessibility · LaunchAgent plist · `open -R`
-- [ ] لینوکس: `XGrabKey` روی X11 · فایل `.desktop` در `~/.config/autostart` · `xdg-open`
-- [ ] رفتار روشن وقتی هات‌کی ثبت نمی‌شود (Wayland): برنامه باید بگوید، نه اینکه لال بماند
+- [x] پروژه‌ی `PlugLauncher.Platform` روی `net10.0` با `IHotkeys`، `IAutoStart`، `IOpener`.
+  انتخاب پیاده‌سازی در زمان اجرا، نه با `#if`، چون یک بیلد باید هر سه جا اجرا شود.
+- [x] `Hotkey` نامِ کلید را نگه می‌دارد نه کدش. ویندوز کد مجازی دارد، مک کد Carbon و لینوکس
+  keysym؛ ترجمه کارِ همان سیستم است. نام‌های WPF («Space»، «D1»، «Oem3») هم خوانده می‌شوند تا
+  هات‌کی ذخیره‌شده‌ی کسی از دست نرود.
+- [x] ویندوز: `RegisterHotKey` روی **پنجره‌ی خودش** (message-only) نه پنجره‌ی اصلی — وگرنه لایه‌ی
+  پلتفرم دوباره به UI گره می‌خورد. کلید Run و `explorer.exe /select,` هم منتقل شدند؛
+  `StartupRegistration` و `Interop/GlobalHotkey` حذف شدند.
+- [x] مک و لینوکس: `IAutoStart` و `IOpener` نوشته شدند (LaunchAgent plist و فایل `.desktop`،
+  `open -R` و `xdg-open`). تست‌نشده — ماشینش نیست.
+- [ ] مک: `RegisterEventHotKey` (Carbon) + اجازه‌ی Accessibility
+- [ ] لینوکس: `XGrabKey` روی X11
+- [x] رفتار وقتی هات‌کی ثبت نمی‌شود: `NoHotkeys` دلیل را برمی‌گرداند و پنجره همان جمله را نشان
+  می‌دهد. لانچری که باز نمی‌شود باید بگوید چرا، نه اینکه لال بماند.
 
 ### گام ۳ — پوسته‌ی Avalonia به‌جای WPF
 

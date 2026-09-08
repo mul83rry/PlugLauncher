@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using PlugLauncher.App.Interop;
 using PlugLauncher.Core;
+using PlugLauncher.Platform;
 
 namespace PlugLauncher.App;
 
@@ -12,7 +13,7 @@ public partial class MainWindow : Window
 {
     private readonly PluginEngine _engine;
     private readonly FileLogger _log = new("window");
-    private readonly GlobalHotkey _hotkey = new();
+    private readonly IHotkeys _hotkey = Os.CreateHotkeys();
     private readonly DispatcherTimer _debounce;
     private readonly DispatcherTimer _refresh;
 
@@ -85,25 +86,36 @@ public partial class MainWindow : Window
 
         WindowEffects.TryApplyAcrylic(this);
 
-        _hotkey.Pressed += (_, _) =>
+        var typed = _engine.Settings.Hotkey;
+
+        if (!Hotkey.TryParse(typed, out var hotkey))
+        {
+            Complain(typed, $"\"{typed}\" is not a key combination the launcher understands");
+            return;
+        }
+
+        var registered = _hotkey.TryRegister(hotkey, () =>
         {
             _log.Info("hotkey pressed");
             ToggleLauncher();
-        };
+        }, out var problem);
 
-        if (_hotkey.Register(this, _engine.Settings.Hotkey))
-        {
-            _log.Info($"hotkey \"{_engine.Settings.Hotkey}\" registered");
-        }
-        else
-        {
-            _log.Error($"could not register hotkey \"{_engine.Settings.Hotkey}\"");
-            MessageBox.Show(
-                $"Could not register the hotkey \"{_engine.Settings.Hotkey}\" — another application probably owns it.",
-                "PlugLauncher",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
-        }
+        if (registered) _log.Info($"hotkey \"{hotkey}\" registered");
+        else Complain(typed, problem);
+    }
+
+    /// <summary>
+    /// هات‌کی که ثبت نشود یعنی برنامه‌ای که هیچ راهی برای باز شدن ندارد، پس این یکی از معدود
+    /// جاهایی است که ارزش دارد جلوی کاربر بایستد.
+    /// </summary>
+    private void Complain(string typed, string problem)
+    {
+        _log.Error($"could not register hotkey \"{typed}\": {problem}");
+        MessageBox.Show(
+            $"Could not register the hotkey \"{typed}\" — {problem}.",
+            "PlugLauncher",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
     }
 
     // ===== نمایش / مخفی‌سازی =====

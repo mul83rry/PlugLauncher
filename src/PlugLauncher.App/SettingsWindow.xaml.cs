@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using PlugLauncher.Core;
+using PlugLauncher.Platform;
 
 namespace PlugLauncher.App;
 
@@ -32,7 +33,7 @@ public partial class SettingsWindow : Window
         _loading = true;
         HotkeyBox.Text = _engine.Settings.Hotkey;
         // از رجیستری خوانده می‌شود نه از settings.json، چون کاربر می‌تواند از Task Manager هم عوضش کند
-        StartWithWindowsBox.IsChecked = StartupRegistration.IsEnabled();
+        StartWithWindowsBox.IsChecked = Os.AutoStart.IsEnabled();
         AutoUpdateBox.IsChecked = _engine.Settings.CheckForUpdates;
         _loading = false;
 
@@ -111,10 +112,10 @@ public partial class SettingsWindow : Window
 
         var wanted = StartWithWindowsBox.IsChecked == true;
 
-        if (!StartupRegistration.Apply(wanted))
+        if (!Os.AutoStart.Set(wanted, out var problem))
         {
             MessageBox.Show(
-                "Could not change the Windows startup entry. The log has the details.",
+                $"Could not change the startup entry: {problem}",
                 "Start with Windows", MessageBoxButton.OK, MessageBoxImage.Warning);
 
             _loading = true;
