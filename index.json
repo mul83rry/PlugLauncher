@@ -1,5 +1,5 @@
 {
-    "generatedAt":  "2026-09-08T09:25:23Z",
+    "generatedAt":  "2026-09-08T09:25:24Z",
     "total":  10,
     "page":  1,
     "pageSize":  10,
@@ -181,14 +181,14 @@
                       "keywords":  [
                                        "st"
                                    ],
-                      "size":  3377,
-                      "sha256":  "d70483a10b1437a8124a6813154105c4cc3e15aae3329f8fea28e712ca4f3bd8",
-                      "publishedAt":  "2026-09-08T07:33:18Z",
+                      "size":  3391,
+                      "sha256":  "06f680a17f02c124da2c31af47361908e88a6664c451d578f7f6e677738ab3eb",
+                      "publishedAt":  "2026-09-08T09:25:24Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.steam-games/1.2.0/com.pluglauncher.steam-games-1.2.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.steam-games/1.2.0/icon.png",
                       "platforms":  [
-
+                                        "windows"
                                     ],
                       "minCore":  ""
                   },
