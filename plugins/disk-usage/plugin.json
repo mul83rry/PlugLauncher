@@ -22,6 +22,10 @@
       "description": "the extensions inside one kind"
     },
     {
+      "example": "du C:\\ ext",
+      "description": "every extension in there, biggest first"
+    },
+    {
       "example": "du C:\\ ext .zip",
       "description": "the biggest files with one extension"
     },

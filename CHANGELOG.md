@@ -34,6 +34,15 @@ be pressed twice to see a long job finish. Three limits keep a faulty plugin fro
 faster than 250 ms, two minutes of it per typed query, and everything stops when the window
 closes.
 
+**Suggestions that follow what you are typing**
+
+A row that offers a next step now says the whole command, and Tab takes it. Where it continues
+what is in the box the rest appears as a ghost, so you can see the ending before you commit to
+it. Disk Usage uses this the whole way down: `du C:\ ` names both `types` and `ext`, `du C:\ ext`
+lists the extensions that are actually in that folder, typing `.z` narrows them to `.zip`, and
+half a word — `du C:\ ty` — offers the verb it is the start of. Nothing has to be known in
+advance and nothing has to be typed exactly.
+
 **Plugins can carry their own cheat sheet**
 
 `plugin.json` takes a `usage` list of examples. Type a plugin's keyword and pause, and its

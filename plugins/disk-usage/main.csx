@@ -4,6 +4,7 @@
 //   du C:\                   -> the folders inside, biggest first          (Enter goes in)
 //   du C:\ types             -> the same bytes grouped by kind of file      (Enter opens a kind)
 //   du C:\ types Archives    -> the extensions inside that kind             (Enter opens one)
+//   du C:\ ext               -> every extension in there, biggest first
 //   du C:\ ext .zip          -> the biggest files with that extension       (Enter shows it in Explorer)
 //   du ~                     -> your profile folder
 //
@@ -232,11 +233,16 @@ Request Parse(string search)
             break;
         }
 
-        if (words[i].Equals("ext", StringComparison.OrdinalIgnoreCase) && i < words.Length - 1)
+        if (words[i].Equals("ext", StringComparison.OrdinalIgnoreCase))
         {
             request.View = "ext";
-            var ext = words[i + 1];
-            request.Argument = ext.StartsWith('.') || ext.Equals("none", StringComparison.OrdinalIgnoreCase) ? ext : "." + ext;
+
+            // Nothing after "ext" is not an error, it is somebody who has not decided yet.
+            var ext = i < words.Length - 1 ? words[i + 1] : "";
+            request.Argument = ext.Length == 0 || ext.StartsWith('.')
+                               || ext.Equals("none", StringComparison.OrdinalIgnoreCase)
+                ? ext
+                : "." + ext;
             text = string.Join(' ', words.Take(i));
             break;
         }
@@ -331,6 +337,14 @@ List<PluginResult> Folders(Scan scan, string keyword)
     rows.Add(Drill("types:" + scan.Root, "By file type", string.Join("  ·  ", kinds),
                    $"{keyword} {scan.Root} types", null, 290));
 
+    var top = scan.ByExtension
+        .OrderByDescending(kv => kv.Value)
+        .Take(3)
+        .Select(kv => $"{Ext(kv.Key)} {Human(kv.Value)}");
+
+    rows.Add(Drill("extlist:" + scan.Root, "By extension", string.Join("  ·  ", top),
+                   $"{keyword} {scan.Root} ext", null, 289));
+
     var score = 280;
     foreach (var (child, bytes) in scan.ByChild.OrderByDescending(kv => kv.Value))
     {
@@ -355,9 +369,15 @@ List<PluginResult> Folders(Scan scan, string keyword)
     return rows;
 }
 
-List<PluginResult> Types(Scan scan, string keyword)
+/// <summary>
+/// The kinds present, biggest first. <paramref name="filter"/> is what has been typed after
+/// "types" when it does not name a kind outright — "du C:\ types Ar" narrows to Archives rather
+/// than reporting that no such kind exists.
+/// </summary>
+List<PluginResult> Types(Scan scan, string keyword, string filter = "")
 {
-    var rows = new List<PluginResult> { Header(scan, scan.Root, "by file type") };
+    var head = filter.Length == 0 ? scan.Root : $"{scan.Root}  ·  {filter}…";
+    var rows = new List<PluginResult> { Header(scan, head, "by file type") };
     var score = 280;
 
     var kinds = scan.ByExtension
@@ -366,7 +386,16 @@ List<PluginResult> Types(Scan scan, string keyword)
             Kind: g.Key,
             Bytes: g.Sum(kv => kv.Value),
             Top: g.OrderByDescending(kv => kv.Value).Take(3).Select(kv => $"{Ext(kv.Key)} {Human(kv.Value)}")))
-        .OrderByDescending(x => x.Bytes);
+        .Where(x => filter.Length == 0 || x.Kind.StartsWith(filter, StringComparison.OrdinalIgnoreCase))
+        .OrderByDescending(x => x.Bytes)
+        .ToList();
+
+    if (kinds.Count == 0)
+    {
+        rows.Add(Note($"No kind here starts with \"{filter}\"",
+                      "Kinds: " + string.Join(", ", Kinds.Values.Distinct().Order()), 90));
+        return rows;
+    }
 
     foreach (var kind in kinds)
     {
@@ -403,11 +432,64 @@ List<PluginResult> Kind(Scan scan, string keyword, string kind)
     return rows;
 }
 
-List<PluginResult> Extension(Scan scan, string extension)
+/// <summary>
+/// Every extension present, biggest first, narrowed by whatever has been typed after "ext".
+/// This is what makes ".z" lead to ".zip" without anybody having to know the list beforehand.
+/// </summary>
+List<PluginResult> Extensions(Scan scan, string keyword, string filter)
 {
-    var key = extension.Equals("none", StringComparison.OrdinalIgnoreCase) ? "" : extension;
-    var rows = new List<PluginResult> { Header(scan, $"{scan.Root}  ·  {Ext(key)}", "biggest files") };
+    var head = filter.Length == 0 ? scan.Root : $"{scan.Root}  ·  {filter}…";
+    var rows = new List<PluginResult> { Header(scan, head, "by extension") };
     var score = 280;
+
+    var matches = scan.ByExtension
+        .Where(kv => filter.Length == 0 || kv.Key.StartsWith(filter, StringComparison.OrdinalIgnoreCase))
+        .OrderByDescending(kv => kv.Value)
+        .ToList();
+
+    if (matches.Count == 0)
+    {
+        rows.Add(Note($"No extension here starts with \"{filter}\"", $"{keyword} {scan.Root} ext lists them all", 90));
+        return rows;
+    }
+
+    foreach (var (extension, bytes) in matches)
+    {
+        var count = scan.CountByExtension.GetValueOrDefault(extension);
+        rows.Add(Drill("ext:" + scan.Root + ":" + extension, Ext(extension),
+                       $"{Human(bytes)}  ·  {Count(count, "file")}  ·  {Percent(bytes, scan.Bytes)}",
+                       $"{keyword} {scan.Root} ext {(extension.Length == 0 ? "none" : extension)}",
+                       Share(bytes, scan.Bytes), score--));
+    }
+
+    return rows;
+}
+
+List<PluginResult> Extension(Scan scan, string keyword, string extension)
+{
+    if (extension.Length == 0) return Extensions(scan, keyword, "");
+
+    var key = extension.Equals("none", StringComparison.OrdinalIgnoreCase) ? "" : extension;
+
+    // Not an extension that is actually here: read it as the start of one instead of dead-ending.
+    if (!scan.BiggestByExtension.ContainsKey(key)) return Extensions(scan, keyword, extension);
+
+    var rows = new List<PluginResult> { Header(scan, $"{scan.Root}  ·  {Ext(key)}", "biggest files") };
+
+    // ".d" is a real extension here and also the start of ".dll". The files asked for come
+    // first, but the longer names are offered too instead of being unreachable from here.
+    var score = 279;
+    foreach (var (other, bytes) in scan.ByExtension
+                 .Where(kv => kv.Key.Length > key.Length && kv.Key.StartsWith(key, StringComparison.OrdinalIgnoreCase))
+                 .OrderByDescending(kv => kv.Value)
+                 .Take(2))
+    {
+        rows.Add(Drill("also:" + scan.Root + ":" + other, Ext(other),
+                       $"{Human(bytes)}  ·  {Percent(bytes, scan.Bytes)}  ·  also starts with {Ext(key)}",
+                       $"{keyword} {scan.Root} ext {other}", Share(bytes, scan.Bytes), score--));
+    }
+
+    score = 270;
 
     if (!scan.BiggestByExtension.TryGetValue(key, out var biggest))
     {
@@ -459,6 +541,58 @@ PluginResult Progress(Scan scan, PluginQuery query, string title)
     };
 }
 
+// ===== half-typed verbs =====
+
+readonly string[] Verbs = ["types", "ext"];
+
+/// <summary>
+/// "C:\ ty" is not a folder called "ty" inside C:\ — it is somebody halfway through typing
+/// "types". Only accepted when what comes before really is a folder, so an actual folder named
+/// "e" still wins over the start of "ext".
+/// </summary>
+bool TrySplitVerb(string text, out string folder, out string partial)
+{
+    folder = "";
+    partial = "";
+
+    var cut = text.LastIndexOf(' ');
+    if (cut <= 0) return false;
+
+    var word = text[(cut + 1)..];
+    if (word.Length == 0 || !Verbs.Any(v => v.StartsWith(word, StringComparison.OrdinalIgnoreCase))) return false;
+
+    var rest = text[..cut].Trim();
+    if (rest.Length == 0) return false;
+
+    try { folder = Path.GetFullPath(rest); } catch { return false; }
+    if (!Directory.Exists(folder)) return false;
+
+    folder = folder.Length > 3 ? folder.TrimEnd(Path.DirectorySeparatorChar) : folder;
+    partial = word;
+    return true;
+}
+
+/// <summary>The verbs that still match what is being typed, written out in full so they teach
+/// the syntax rather than just applying it.</summary>
+List<PluginResult> Options(string keyword, string folder, string partial)
+{
+    var rows = new List<PluginResult>();
+    var score = 300;
+
+    if ("types".StartsWith(partial, StringComparison.OrdinalIgnoreCase))
+        rows.Add(Drill("opt:types", $"{keyword} {folder} types", "the same bytes grouped by kind of file",
+                       $"{keyword} {folder} types", null, score--));
+
+    if ("ext".StartsWith(partial, StringComparison.OrdinalIgnoreCase))
+        rows.Add(Drill("opt:ext", $"{keyword} {folder} ext", "every extension in there, biggest first",
+                       $"{keyword} {folder} ext", null, score--));
+
+    return rows;
+}
+
+bool KindExists(Scan scan, string kind)
+    => scan.ByExtension.Keys.Any(k => KindOf(k).Equals(kind, StringComparison.OrdinalIgnoreCase));
+
 // ===== entry =====
 
 return Plugin.Create(async (query, cancellationToken) =>
@@ -474,7 +608,11 @@ return Plugin.Create(async (query, cancellationToken) =>
     catch { return [Note("That is not a path", request.Path)]; }
 
     if (!Directory.Exists(root))
+    {
+        if (TrySplitVerb(request.Path, out var folder, out var partial)) return Options(keyword, folder, partial);
+
         return [Note("Folder not found", root, 200), .. Drives(keyword, 100)];
+    }
 
     // A drive root keeps its trailing slash; anything else loses it, so "C:\Users\" and
     // "C:\Users" are one scan and one cache entry.
@@ -496,8 +634,11 @@ return Plugin.Create(async (query, cancellationToken) =>
     List<PluginResult> rows = request.View switch
     {
         "types" => Types(usable, keyword),
-        "kind" => Kind(usable, keyword, request.Argument),
-        "ext" => Extension(usable, request.Argument),
+        // A kind that is not here is read as the start of one, so "types Ar" offers Archives
+        "kind" => KindExists(usable, request.Argument)
+            ? Kind(usable, keyword, request.Argument)
+            : Types(usable, keyword, request.Argument),
+        "ext" => Extension(usable, keyword, request.Argument),
         _ => Folders(usable, keyword)
     };
 

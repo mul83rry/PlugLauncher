@@ -245,6 +245,18 @@ public partial class MainWindow : Window
 
         if (ResultsList.SelectedItem is not LauncherRow row || string.IsNullOrEmpty(typed)) return;
 
+        // ردیف راهنما خودش می‌گوید باکس باید چه بشود، پس حدس زدن لازم نیست. اگر ادامه‌ی چیزی که
+        // تایپ شده نباشد (مثلاً کاربر «c:/» نوشته و پیشنهاد «C:\» است) هیچ سایه‌ای نشان نمی‌دهیم؛
+        // Tab باز هم کار می‌کند و کل متن را جایگزین می‌کند.
+        var suggestion = row.Item?.Result.ReplaceQuery;
+        if (!string.IsNullOrEmpty(suggestion))
+        {
+            HintRest.Text = suggestion.StartsWith(typed, StringComparison.CurrentCultureIgnoreCase)
+                ? suggestion[typed.Length..]
+                : string.Empty;
+            return;
+        }
+
         // آخرین کلمه‌ی تایپ‌شده مبنای تکمیل است
         var lastSpace = typed.LastIndexOf(' ');
         var fragment = lastSpace < 0 ? typed : typed[(lastSpace + 1)..];
@@ -261,6 +273,15 @@ public partial class MainWindow : Window
         if (!string.IsNullOrEmpty(_layoutFix))
         {
             SearchBox.Text = _layoutFix;
+            SearchBox.CaretIndex = SearchBox.Text.Length;
+            return;
+        }
+
+        // روی یک ردیف راهنما، Tab همان کاری را می‌کند که Enter — متن پیشنهادی را می‌گذارد و
+        // پنجره باز می‌ماند. این‌طور حتی وقتی سایه نشان داده نشده هم پذیرفتنِ پیشنهاد کار می‌کند.
+        if (ResultsList.SelectedItem is LauncherRow row && row.Item?.Result.ReplaceQuery is { Length: > 0 } suggestion)
+        {
+            SearchBox.Text = suggestion;
             SearchBox.CaretIndex = SearchBox.Text.Length;
             return;
         }

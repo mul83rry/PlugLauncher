@@ -242,6 +242,9 @@ return Plugin.Create(
   share of a whole; leave it `null` for everything else.
 - **`ReplaceQuery`** on a result makes Enter put that text in the search box instead of running
   anything, which is how a plugin offers drill-down: the Disk Usage plugin is nothing but this.
+  Tab accepts the selected one too, and when it continues what is already typed the rest of it
+  shows as a ghost in the box. Make it the whole command, not a fragment — the row is then both
+  the answer and a lesson in the syntax.
 - **`RefreshAfterMs`** on a result asks the launcher to run the same query again after that many
   milliseconds. Return a progress row with it while the real work runs in the background, and
   drop it once the answer is ready — the list fills in by itself. The launcher will not go faster
