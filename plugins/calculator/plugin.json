@@ -2,7 +2,7 @@
   "id": "com.pluglauncher.calculator",
   "name": "Calculator",
   "description": "Evaluates math expressions; Enter copies the result",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "PlugLauncher",
   "entry": "main.csx",
   "keywords": [],

@@ -48,21 +48,6 @@ const int VkShift = 0x10;
 // met here cannot leak into what the user types next.
 const uint NoKeyStateChange = 0x4;
 
-void Copy(string value)
-{
-    for (var attempt = 0; attempt < 3; attempt++)
-    {
-        try { System.Windows.Clipboard.SetText(value); return; }
-        catch { Thread.Sleep(40); }
-    }
-}
-
-string ClipboardText()
-{
-    try { return System.Windows.Clipboard.ContainsText() ? System.Windows.Clipboard.GetText() : string.Empty; }
-    catch { return string.Empty; }
-}
-
 List<IntPtr> InstalledLayouts()
 {
     var count = Native.GetKeyboardLayoutList(0, null);
@@ -160,7 +145,7 @@ return Plugin.Create(query =>
 
     if (string.IsNullOrWhiteSpace(text))
     {
-        text = ClipboardText();
+        text = Clipboard.Text();
         fromClipboard = true;
     }
 
@@ -197,7 +182,7 @@ return Plugin.Create(query =>
                 Title = converted,
                 Subtitle = $"{LayoutName(from)} → {LayoutName(to)}   ·   Enter copies",
                 Score = score,
-                Action = () => Copy(converted)
+                Action = () => Clipboard.Copy(converted)
             });
         }
     }

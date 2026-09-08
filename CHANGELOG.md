@@ -54,6 +54,13 @@ be pressed twice to see a long job finish. Three limits keep a faulty plugin fro
 faster than 250 ms, two minutes of it per typed query, and everything stops when the window
 closes.
 
+**A plugin gets the clipboard from the launcher**
+
+`Clipboard.Copy(text)` and `Clipboard.Text()` in `PlugLauncher.Contracts`. Plugins used to call
+`System.Windows.Clipboard` themselves, which tied a plugin like the calculator — nothing about it
+is Windows — to WPF, and left the same three-attempt retry copied into seven scripts. It lives in
+the launcher now, in one place. A plugin that copies needs this version.
+
 **Pasting something that is more than one line keeps all of it**
 
 The search box is a single line, and a single-line box on Windows keeps the first line of a paste

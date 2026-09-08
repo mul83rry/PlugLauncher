@@ -159,21 +159,11 @@ string Cut(string text, int max)
     return flat.Length > max ? flat[..(max - 1)] + "…" : flat;
 }
 
-void Copy(string value)
-{
-    // the WPF clipboard occasionally loses the race with whatever owned it last
-    for (var attempt = 0; attempt < 3; attempt++)
-    {
-        try { System.Windows.Clipboard.SetText(value); return; }
-        catch { Thread.Sleep(40); }
-    }
-}
-
 PluginResult Note(string title, string subtitle = "", int score = 500)
     => new PluginResult { Id = "note:" + title, Title = title, Subtitle = subtitle, Score = score };
 
 PluginResult Copyable(string id, string title, string subtitle, int score)
-    => new PluginResult { Id = id, Title = title, Subtitle = subtitle, Score = score, Action = () => Copy(title) };
+    => new PluginResult { Id = id, Title = title, Subtitle = subtitle, Score = score, Action = () => Clipboard.Copy(title) };
 
 PluginResult Go(string id, string title, string subtitle, string command, int score)
     => new PluginResult { Id = id, Title = title, Subtitle = subtitle, Score = score, ReplaceQuery = command };
@@ -628,7 +618,7 @@ PluginResult Status(Run run)
         Title = head,
         Subtitle = $"{run.Request.Method} {Cut(run.Request.Url, 55)}  ·  {detail}  ·  headers, body, again",
         Score = 500,
-        Action = () => Copy(run.Request.Url)
+        Action = () => Clipboard.Copy(run.Request.Url)
     };
 }
 
@@ -729,7 +719,7 @@ List<PluginResult> Body(Run run)
             ? $"the first {Human(BodyLimit)} of {Human(run.Bytes)}  ·  Enter copies that much"
             : $"{Human(run.Bytes)}  ·  Enter copies the whole body",
         Score = 300,
-        Action = () => Copy(run.Body)
+        Action = () => Clipboard.Copy(run.Body)
     });
 
     return rows;

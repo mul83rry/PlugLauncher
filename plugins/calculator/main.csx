@@ -40,7 +40,7 @@ return Plugin.Create(query =>
             Title = result,
             Subtitle = $"{expression} — press Enter to copy",
             Score = 200,
-            Action = () => System.Windows.Clipboard.SetText(result)
+            Action = () => Clipboard.Copy(result)
         }
     };
 });

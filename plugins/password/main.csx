@@ -172,16 +172,6 @@ string Strength(Options o)
     return $"~{bits} bits · {label}";
 }
 
-void Copy(string value)
-{
-    // WPF clipboard occasionally loses the race with whatever owned it last
-    for (var attempt = 0; attempt < 3; attempt++)
-    {
-        try { System.Windows.Clipboard.SetText(value); return; }
-        catch { Thread.Sleep(40); }
-    }
-}
-
 // ---------- hint rows ----------
 // A row with ReplaceQuery does not generate anything: pressing Enter on it just rewrites the
 // search box. That way an option can be tried without having to remember its name first.
@@ -254,7 +244,7 @@ return Plugin.Create(query =>
             Title = password,
             Subtitle = subtitle,
             Score = 200 - i,
-            Action = () => Copy(password)
+            Action = () => Clipboard.Copy(password)
         });
     }
 

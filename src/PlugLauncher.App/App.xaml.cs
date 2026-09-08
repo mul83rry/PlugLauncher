@@ -45,6 +45,8 @@ public partial class App : Application
 
         LoadUserTheme();
 
+        ProvideClipboard(log);
+
         _engine = new PluginEngine();
         _window = new MainWindow(_engine);
 
@@ -63,6 +65,43 @@ public partial class App : Application
 
         // انتظارش کشیده نمی‌شود: اگر شبکه کند باشد نباید استارتاپ را نگه دارد
         _ = CheckForUpdatesAsync();
+    }
+
+    /// <summary>
+    /// دادن کلیپ‌بورد ویندوز به پلاگین‌ها. تا اینجا هر پلاگینی خودش سراغ WPF می‌رفت و همان حلقه‌ی
+    /// سه‌بار تلاش را کپی کرده بود — کلیپ‌بورد ویندوز گاهی با مالک قبلی‌اش سرِ نوبت دعوا دارد.
+    /// حالا یک‌جاست، و پلاگین‌ها فقط <see cref="Contracts.Clipboard"/> را می‌بینند.
+    /// </summary>
+    private void ProvideClipboard(FileLogger log)
+    {
+        Contracts.Clipboard.Use(
+            text =>
+            {
+                if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(() => Write(text)); return; }
+                Write(text);
+            },
+            () =>
+            {
+                if (!Dispatcher.CheckAccess()) return Dispatcher.Invoke(Read);
+                return Read();
+            });
+
+        void Write(string text)
+        {
+            for (var attempt = 0; attempt < 3; attempt++)
+            {
+                try { System.Windows.Clipboard.SetText(text); return; }
+                catch { Thread.Sleep(40); }
+            }
+
+            log.Warn("could not put text on the clipboard");
+        }
+
+        string Read()
+        {
+            try { return System.Windows.Clipboard.ContainsText() ? System.Windows.Clipboard.GetText() : string.Empty; }
+            catch { return string.Empty; }
+        }
     }
 
     /// <summary>

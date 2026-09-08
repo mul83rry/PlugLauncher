@@ -47,15 +47,6 @@ bool Confirmed(string question)
            System.Windows.MessageBoxButton.YesNo,
            System.Windows.MessageBoxImage.Warning) == System.Windows.MessageBoxResult.Yes;
 
-void Copy(string value)
-{
-    for (var attempt = 0; attempt < 3; attempt++)
-    {
-        try { System.Windows.Clipboard.SetText(value); return; }
-        catch { Thread.Sleep(40); }
-    }
-}
-
 // ---------- the command table ----------
 class Command
 {
@@ -235,7 +226,7 @@ List<Command> Readouts()
     var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
     rows.Add(Make("uptime", $"Uptime: {(int)uptime.TotalDays}d {uptime.Hours}h {uptime.Minutes}m",
         "Since the last boot  ·  Enter to copy", "uptime boot info", 30,
-        () => Copy($"{(int)uptime.TotalDays}d {uptime.Hours}h {uptime.Minutes}m")));
+        () => Clipboard.Copy($"{(int)uptime.TotalDays}d {uptime.Hours}h {uptime.Minutes}m")));
 
     var memory = new MemoryStatus { Length = (uint)Marshal.SizeOf<MemoryStatus>() };
     if (Native.GlobalMemoryStatusEx(ref memory))
@@ -243,7 +234,7 @@ List<Command> Readouts()
         var used = memory.TotalPhys - memory.AvailPhys;
         var text = $"{Gigabytes(used)} of {Gigabytes(memory.TotalPhys)}";
         rows.Add(Make("ram", $"Memory: {text}", $"{memory.MemoryLoad}% in use  ·  Enter to copy",
-            "ram memory info", 30, () => Copy(text)));
+            "ram memory info", 30, () => Clipboard.Copy(text)));
     }
 
     foreach (var drive in DriveInfo.GetDrives())
@@ -255,7 +246,7 @@ List<Command> Readouts()
             var text = $"{Gigabytes((ulong)drive.AvailableFreeSpace)} free of {Gigabytes((ulong)drive.TotalSize)}";
             rows.Add(Make($"disk-{drive.Name}", $"Disk {drive.Name.TrimEnd('\\')} {text}",
                 $"{drive.DriveFormat}  ·  Enter to copy", "disk drive space free info", 28,
-                () => Copy(text)));
+                () => Clipboard.Copy(text)));
         }
         catch
         {
@@ -267,13 +258,13 @@ List<Command> Readouts()
     {
         var ip = address.Split(' ')[0];
         rows.Add(Make($"ip-{ip}", $"IP: {address}", "Local address  ·  Enter to copy",
-            "ip address network info", 28, () => Copy(ip)));
+            "ip address network info", 28, () => Clipboard.Copy(ip)));
     }
 
     rows.Add(Make("machine", $"{Environment.MachineName}  ·  {Environment.UserName}",
         $"{Environment.OSVersion.VersionString}  ·  {Environment.ProcessorCount} cores  ·  Enter to copy",
         "computer name user machine host info", 25,
-        () => Copy(Environment.MachineName)));
+        () => Clipboard.Copy(Environment.MachineName)));
 
     return rows;
 }

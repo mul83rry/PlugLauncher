@@ -183,16 +183,6 @@ void Connect(string target)
     });
 }
 
-void Copy(string value)
-{
-    // the WPF clipboard occasionally loses the race with whatever owned it last
-    for (var attempt = 0; attempt < 3; attempt++)
-    {
-        try { System.Windows.Clipboard.SetText(value); return; }
-        catch { Thread.Sleep(40); }
-    }
-}
-
 // ---------- scoring ----------
 // The alias is what people remember, so a hostname or user match is worth less.
 int ScoreOf(SshHost host, string term)
@@ -286,7 +276,7 @@ return Plugin.Create(query =>
             Title = "Copy the config path",
             Subtitle = "Enter copies it to the clipboard",
             Score = 4,
-            Action = () => Copy(ConfigPath())
+            Action = () => Clipboard.Copy(ConfigPath())
         });
     }
 

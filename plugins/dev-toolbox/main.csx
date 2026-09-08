@@ -18,16 +18,6 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.Json;
 
-void Copy(string value)
-{
-    // the WPF clipboard occasionally loses the race with whatever owned it last
-    for (var attempt = 0; attempt < 3; attempt++)
-    {
-        try { System.Windows.Clipboard.SetText(value); return; }
-        catch { Thread.Sleep(40); }
-    }
-}
-
 PluginResult Row(string id, string title, string subtitle, int score, string? copy = null)
 {
     var value = copy ?? title;
@@ -38,7 +28,7 @@ PluginResult Row(string id, string title, string subtitle, int score, string? co
         Title = title,
         Subtitle = subtitle,
         Score = score,
-        Action = () => Copy(value)
+        Action = () => Clipboard.Copy(value)
     };
 }
 
