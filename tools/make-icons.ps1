@@ -119,3 +119,12 @@ Fill $c.Graphics $plate (New-RoundedPath 68 52 30 30 6)
 Stroke $c.Graphics $teal 8 @((P 42 100), (P 86 100))
 Stroke $c.Graphics $teal 8 @((P 78 92), (P 86 100), (P 78 108))
 Save-Canvas $c 'plugins/keyboard-layout/assets/icon.png'
+
+# ===== disk usage: three bars of falling length — the biggest thing first =====
+$c = New-Canvas
+Fill $c.Graphics $teal (New-RoundedPath 22 30 84 16 6)
+Fill $c.Graphics $teal (New-RoundedPath 22 56 58 16 6)
+Fill $c.Graphics $dim  (New-RoundedPath 80 56 26 16 6)
+Fill $c.Graphics $teal (New-RoundedPath 22 82 30 16 6)
+Fill $c.Graphics $dim  (New-RoundedPath 52 82 54 16 6)
+Save-Canvas $c 'plugins/disk-usage/assets/icon.png'

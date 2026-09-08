@@ -148,6 +148,7 @@ The rest live in the store tab in settings, one click each:
 | `dev` | Dev Toolbox | uuid, base64, url, hashes, epoch, JSON, JWT, random bytes, slugs |
 | `sys` | System | Lock, restart, the msc/cpl consoles, and memory/disk/IP read-outs |
 | `kb` | Keyboard Layout | Text typed on the wrong layout — `kb sghl` gives `سلام`, using the layouts you actually have installed |
+| `du` | Disk Usage | What is taking the space — drives, then folders, then kinds of file, each with a bar. Needs 1.5.0 or later |
 
 The store is a static index published at
 [mul83rry.github.io/PlugLauncher](https://mul83rry.github.io/PlugLauncher/) — no server, no
@@ -204,6 +205,7 @@ return Plugin.Create(query =>
             Subtitle = "the second line of the row",
             IconPath = "assets/icon.png",       // relative to the plugin folder, or absolute
             Score    = 100,                     // higher sorts nearer the top
+            Fraction = 0.38,                    // optional: a bar behind the row, 0 to 1
             Action   = () => Process.Start(new ProcessStartInfo("https://example.com")
                              { UseShellExecute = true })
         }
@@ -229,6 +231,10 @@ return Plugin.Create(
 - **References**: the whole framework and `PlugLauncher.Contracts` are available to the script.
   Extra DLLs go in the manifest's `references` array.
 - **Compile errors** appear in settings, next to the plugin, with a line number.
+- **`Fraction`** on a result draws a faint bar behind the row. Use it for anything that is a
+  share of a whole; leave it `null` for everything else.
+- **`ReplaceQuery`** on a result makes Enter put that text in the search box instead of running
+  anything, which is how a plugin offers drill-down: the Disk Usage plugin is nothing but this.
 
 ## License
 

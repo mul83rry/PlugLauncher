@@ -20,11 +20,23 @@ public sealed class LauncherRow
     public Visibility SubtitleVisibility
         => string.IsNullOrWhiteSpace(Subtitle) ? Visibility.Collapsed : Visibility.Visible;
 
+    /// <summary>سهم ردیف از یک کل (۰ تا ۱)، یا null وقتی نواری نباید کشیده شود.</summary>
+    public double? Fraction { get; init; }
+
+    public Visibility BarVisibility => Fraction is null ? Visibility.Collapsed : Visibility.Visible;
+
+    // نوار با دو ستون ستاره‌ای کشیده می‌شود: سهم پرشده و باقی‌مانده. GridLength با ستاره‌ی صفر
+    // ستون را جمع می‌کند، پس ۰ و ۱ هر دو بدون حالت خاص درست می‌افتند.
+    private double Clamped => Math.Clamp(Fraction ?? 0, 0, 1);
+    public GridLength BarWidth => new(Clamped, GridUnitType.Star);
+    public GridLength BarRestWidth => new(1 - Clamped, GridUnitType.Star);
+
     public static LauncherRow FromResult(SearchItem item) => new()
     {
         Title = item.Title,
         Subtitle = item.Subtitle,
         Icon = IconLoader.Load(item.IconPath, item.Title),
+        Fraction = item.Result.Fraction,
         Item = item
     };
 

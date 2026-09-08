@@ -78,6 +78,20 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
+                            <!-- نوار سهم، پشت متن. اول نوشته شده تا زیر بقیه بیفتد. -->
+                            <Grid Grid.ColumnSpan="2"
+                                  Margin="-10,-6"
+                                  Visibility="{Binding BarVisibility}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{Binding BarWidth}" />
+                                    <ColumnDefinition Width="{Binding BarRestWidth}" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0"
+                                        CornerRadius="6"
+                                        Background="{StaticResource AccentBrush}"
+                                        Opacity="0.16" />
+                            </Grid>
+
                             <Border Grid.Column="0"
                                     Width="42" Height="42"
                                     Margin="0,0,16,0"

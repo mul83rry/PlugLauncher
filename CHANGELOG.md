@@ -3,6 +3,29 @@
 The release workflow reads the section matching the tag out of this file and uses it as the
 release notes, so every version needs a `## <version>` heading here before it can be tagged.
 
+## 1.5.0 — 2026-09-08
+
+**A result row can carry a bar**
+
+`PluginResult` has a new `Fraction` (0 to 1). The launcher draws it as a faint bar behind the
+row, the way Explorer shows how full a drive is. It is there for anything that is a share of a
+whole — disk space, battery, a download — and any plugin can set it.
+
+**New plugin: Disk Usage** (`du`, from the store — needs this version)
+
+What is taking the space, without leaving the launcher:
+
+- `du` lists the drives with their used share as a bar.
+- `du C:\` lists the folders inside, biggest first; Enter on one goes into it.
+- `du C:\ types` groups the same bytes by kind of file — Video, Archives, Programs, Code, and so
+  on — and Enter on a kind lists its extensions, and Enter on an extension lists the biggest
+  files of that kind. Enter on a file shows it in Explorer.
+- A scan keeps only sums, so a whole drive costs nothing in memory. It costs seconds instead, and
+  a scan that does not finish inside the query keeps running in the background while the row says
+  how far it is; Enter on it asks again.
+- Numbers are kept for five minutes. After that the old ones are still shown, marked as old,
+  while a fresh scan runs.
+
 ## 1.4.0 — 2026-09-07
 
 **It tells you when there is a new version**

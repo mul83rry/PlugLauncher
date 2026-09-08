@@ -1,0 +1,12 @@
+{
+  "id": "com.pluglauncher.disk-usage",
+  "name": "Disk Usage",
+  "description": "What is taking the space — drives, then folders, then file types, each a bar",
+  "version": "1.0.0",
+  "author": "PlugLauncher",
+  "entry": "main.csx",
+  "keywords": [
+    "du"
+  ],
+  "icon": "assets/icon.png"
+}
