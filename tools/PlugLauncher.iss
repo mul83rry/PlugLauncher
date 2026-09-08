@@ -76,14 +76,18 @@ Filename: "{app}\{#AppExe}"; Description: "Run {#AppName} now"; Flags: nowait po
 
 [Code]
 
-{ The app is framework-dependent, so without the Desktop Runtime it starts and dies with a
-  Windows dialog. Better to say so during setup than to let the shortcut look broken. }
-function DesktopRuntimeInstalled: Boolean;
+{ The app is framework-dependent, so without the runtime it starts and dies with a Windows
+  dialog. Better to say so during setup than to let the shortcut look broken.
+
+  The plain runtime, not the Desktop bundle: the interface is drawn by Avalonia now, and that
+  needs nothing beyond Microsoft.NETCore.App. Anyone who has the Desktop Runtime has this one
+  too, so nobody who could run the old version is turned away. }
+function RuntimeInstalled: Boolean;
 var
   FindRec: TFindRec;
 begin
   Result := False;
-  if FindFirst(ExpandConstant('{commonpf64}\dotnet\shared\Microsoft.WindowsDesktop.App\10.*'), FindRec) then
+  if FindFirst(ExpandConstant('{commonpf64}\dotnet\shared\Microsoft.NETCore.App\10.*'), FindRec) then
   try
     repeat
       if FindRec.Attributes and FILE_ATTRIBUTE_DIRECTORY <> 0 then
@@ -103,10 +107,10 @@ var
   ErrorCode: Integer;
 begin
   Result := True;
-  if DesktopRuntimeInstalled then
+  if RuntimeInstalled then
     Exit;
 
-  if MsgBox('PlugLauncher needs the .NET 10 Desktop Runtime (x64), which does not look like it '
+  if MsgBox('PlugLauncher needs the .NET 10 Runtime (x64), which does not look like it '
           + 'is installed. The app will not start without it.' + #13#10#13#10
           + 'Open the download page? Setup will carry on either way, and you can install the '
           + 'runtime afterwards.', mbConfirmation, MB_YESNO) = IDYES then

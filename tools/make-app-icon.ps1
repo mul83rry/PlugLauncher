@@ -158,3 +158,13 @@ finally {
 }
 
 Write-Host ("{0}  ({1} bytes, {2} sizes)" -f $output, (Get-Item $output).Length, $images.Count)
+
+# A plain PNG next to the .ico. The window and the tray icon are drawn by the UI toolkit now,
+# and its decoder is the same one on all three systems — .ico is a Windows format and only the
+# exe and the installer still need it.
+$png = Join-Path $root 'src/PlugLauncher.App/assets/pluglauncher.png'
+$bmp = New-Glyph 256
+$bmp.Save($png, [System.Drawing.Imaging.ImageFormat]::Png)
+$bmp.Dispose()
+
+Write-Host ("{0}  ({1} bytes)" -f $png, (Get-Item $png).Length)

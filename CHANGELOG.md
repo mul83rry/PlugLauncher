@@ -5,6 +5,38 @@ release notes, so every version needs a `## <version>` heading here before it ca
 
 ## 1.5.0 — 2026-09-08
 
+**One interface for Windows, macOS and Linux**
+
+The window, the settings, the tray icon and the list are drawn by Avalonia now instead of WPF.
+The app project no longer targets `net10.0-windows`, so nothing in the four projects is bound to
+one operating system any more; what is left of Windows lives behind `PlugLauncher.Platform`
+together with the macOS and Linux versions of the same three jobs.
+
+This is not a new coat of paint. The launcher looks and behaves the same — the glass window, the
+grey completion behind what you type, the keys, the segmented tabs. A few things underneath had
+to change to stop being Windows-only:
+
+- **The runtime you need is smaller.** The plain **.NET 10 Runtime** is now enough; the Desktop
+  Runtime was only ever needed because of WPF. If you already have the Desktop Runtime, nothing
+  to do — it contains the plain one.
+- **Notices come as a small panel in the corner** instead of a tray balloon. A balloon is a
+  Windows idea and there is no way to raise one from a portable toolkit. The panel stays for ten
+  seconds, says the same thing, and clicking it does the same thing.
+- **Only one copy runs at a time, held by a lock file** rather than a named mutex — a named
+  mutex is another Windows-only idea. If the app is killed, the system releases the file, so the
+  next start is never blocked by a stale lock.
+- **The user theme is `theme.json` instead of `theme.xaml`.** The old file was handed straight
+  to the WPF theme engine, and that engine is gone; a flat list of `"key": "#colour"` does the
+  same job and reads the same on all three systems. The key names have not changed.
+- **`Ask.Confirm` in the plugin contract.** The `system` plugin called
+  `System.Windows.MessageBox` directly to ask before restarting; now it asks the launcher, which
+  is the one that knows how to draw a dialog. Same as `Clipboard`.
+- Settings is no longer a modal dialog, and the launcher steps out of the way when it opens —
+  the launcher is always on top, so staying would mean sitting on top of the settings.
+
+macOS and Linux are not finished: the global hotkey is still only implemented on Windows, and
+without it the launcher has no way to open. Everything else in the shell is in place.
+
 **A result row can carry a bar**
 
 `PluginResult` has a new `Fraction` (0 to 1). The launcher draws it as a faint bar behind the

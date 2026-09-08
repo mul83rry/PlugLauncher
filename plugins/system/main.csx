@@ -40,12 +40,9 @@ void Elevated(string file, string arguments)
     }
 }
 
-bool Confirmed(string question)
-    => System.Windows.MessageBox.Show(
-           question,
-           "PlugLauncher",
-           System.Windows.MessageBoxButton.YesNo,
-           System.Windows.MessageBoxImage.Warning) == System.Windows.MessageBoxResult.Yes;
+// The launcher draws the dialog, not this script. Asking WPF directly — which is what this
+// used to do — tied a plugin to one windowing library, and that library is gone.
+bool Confirmed(string question) => Ask.Confirm("PlugLauncher", question);
 
 // ---------- the command table ----------
 class Command

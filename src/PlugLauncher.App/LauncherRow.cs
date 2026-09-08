@@ -1,5 +1,4 @@
-using System.Windows;
-using System.Windows.Media;
+using Avalonia.Media.Imaging;
 using PlugLauncher.Core;
 
 namespace PlugLauncher.App;
@@ -9,7 +8,7 @@ public sealed class LauncherRow
 {
     public required string Title { get; init; }
     public string Subtitle { get; init; } = string.Empty;
-    public ImageSource? Icon { get; init; }
+    public Bitmap? Icon { get; init; }
 
     /// <summary>وقتی ردیف، نتیجه‌ی یک کوئری است.</summary>
     public SearchItem? Item { get; init; }
@@ -17,19 +16,15 @@ public sealed class LauncherRow
     /// <summary>وقتی ردیف، خود پلاگین است (لیست حالت پیش‌فرض).</summary>
     public PluginDescriptor? Plugin { get; init; }
 
-    public Visibility SubtitleVisibility
-        => string.IsNullOrWhiteSpace(Subtitle) ? Visibility.Collapsed : Visibility.Visible;
+    public bool HasSubtitle => !string.IsNullOrWhiteSpace(Subtitle);
 
     /// <summary>سهم ردیف از یک کل (۰ تا ۱)، یا null وقتی نواری نباید کشیده شود.</summary>
     public double? Fraction { get; init; }
 
-    public Visibility BarVisibility => Fraction is null ? Visibility.Collapsed : Visibility.Visible;
+    public bool HasBar => Fraction is not null;
 
-    // نوار با دو ستون ستاره‌ای کشیده می‌شود: سهم پرشده و باقی‌مانده. GridLength با ستاره‌ی صفر
-    // ستون را جمع می‌کند، پس ۰ و ۱ هر دو بدون حالت خاص درست می‌افتند.
-    private double Clamped => Math.Clamp(Fraction ?? 0, 0, 1);
-    public GridLength BarWidth => new(Clamped, GridUnitType.Star);
-    public GridLength BarRestWidth => new(1 - Clamped, GridUnitType.Star);
+    /// <summary>همان سهم، ولی همیشه بین ۰ و ۱ — پلاگین می‌تواند عدد بی‌ربط بدهد.</summary>
+    public double BarShare => Math.Clamp(Fraction ?? 0, 0, 1);
 
     public static LauncherRow FromResult(SearchItem item) => new()
     {

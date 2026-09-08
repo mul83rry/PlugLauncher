@@ -1,0 +1,116 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:app="clr-namespace:PlugLauncher.App"
+        x:Class="PlugLauncher.App.MainWindow"
+        Title="PlugLauncher"
+        Width="820"
+        SizeToContent="Height"
+        SystemDecorations="None"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Topmost="True"
+        Background="Transparent"
+        WindowStartupLocation="Manual"
+        UseLayoutRounding="True">
+
+    <Window.Resources>
+        <app:ShareOfWidth x:Key="ShareOfWidth" />
+    </Window.Resources>
+
+    <Border Background="{StaticResource SurfaceBrush}" CornerRadius="12">
+        <Grid RowDefinitions="Auto,Auto,Auto">
+
+            <!-- ناحیه‌ی جستجو -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="22,16,14,14">
+
+                <!--
+                    متن پیشنهادی خاکستری، دقیقاً پشت متن تایپ‌شده. تکه‌ی اول همان چیزی است که
+                    کاربر نوشته و نامرئی است، فقط برای اینکه تکه‌ی دوم سرِ جای درست بیفتد.
+                -->
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            IsHitTestVisible="False"
+                            ClipToBounds="True">
+                    <TextBlock x:Name="HintTyped" FontSize="30" Foreground="Transparent" />
+                    <TextBlock x:Name="HintRest" FontSize="30" Foreground="{StaticResource HintTextBrush}" />
+                </StackPanel>
+
+                <TextBox x:Name="SearchBox"
+                         Grid.Column="0"
+                         Classes="search"
+                         AcceptsReturn="False"
+                         TextChanged="OnSearchTextChanged" />
+
+                <Button x:Name="SettingsButton"
+                        Grid.Column="1"
+                        Classes="ghost"
+                        Content="Settings"
+                        VerticalAlignment="Center"
+                        Click="OnSettingsClick" />
+            </Grid>
+
+            <Border Grid.Row="1"
+                    Height="1"
+                    Background="{StaticResource SeparatorBrush}"
+                    Margin="14,0" />
+
+            <!-- لیست نتایج -->
+            <ListBox x:Name="ResultsList"
+                     Grid.Row="2"
+                     Classes="results"
+                     Margin="0,8,0,10"
+                     MaxHeight="430"
+                     SelectionChanged="OnSelectionChanged"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="Auto,*">
+
+                            <!-- نوار سهم، پشت متن. اول نوشته شده تا زیر بقیه بیفتد. -->
+                            <Panel x:Name="BarHost"
+                                   Grid.Column="0"
+                                   Grid.ColumnSpan="2"
+                                   Margin="-10,-6"
+                                   IsVisible="{Binding HasBar}">
+                                <Border HorizontalAlignment="Left"
+                                        CornerRadius="6"
+                                        Background="{StaticResource AccentBrush}"
+                                        Opacity="0.16">
+                                    <Border.Width>
+                                        <MultiBinding Converter="{StaticResource ShareOfWidth}">
+                                            <Binding Path="BarShare" />
+                                            <Binding Path="$parent[Panel].Bounds.Width" />
+                                        </MultiBinding>
+                                    </Border.Width>
+                                </Border>
+                            </Panel>
+
+                            <Border Grid.Column="0"
+                                    Width="42" Height="42"
+                                    Margin="0,0,16,0"
+                                    CornerRadius="6">
+                                <Image Source="{Binding Icon}"
+                                       Stretch="Uniform"
+                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
+                            </Border>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="19"
+                                           Foreground="{StaticResource TextBrush}"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding Subtitle}"
+                                           FontSize="12.5"
+                                           Margin="0,2,0,0"
+                                           Foreground="{StaticResource SubtleTextBrush}"
+                                           TextTrimming="CharacterEllipsis"
+                                           IsVisible="{Binding HasSubtitle}" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </Border>
+</Window>

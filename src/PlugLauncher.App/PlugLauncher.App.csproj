@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\PlugLauncher.Core\PlugLauncher.Core.csproj" />
@@ -6,28 +6,37 @@
     <ProjectReference Include="..\PlugLauncher.Platform\PlugLauncher.Platform.csproj" />
   </ItemGroup>
 
+  <!--
+    net10.0 بدون پسوند ویندوز. تا دیروز اینجا net10.0-windows بود و همین یک کلمه، کل برنامه را
+    به ویندوز می‌بست؛ حالا هیچ‌کدام از سه پروژه‌ی دیگر هم چنین پسوندی ندارند.
+  -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
-    <!-- فقط برای آیکن سینی (NotifyIcon) -->
-    <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>PlugLauncher</AssemblyName>
     <RootNamespace>PlugLauncher.App</RootNamespace>
     <ApplicationIcon>assets\pluglauncher.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <!--
+      AVLN3001: هر دو پنجره سازنده‌ی بدون آرگومان ندارند، چون بدون موتور پلاگین‌ها معنی
+      ندارند. هشدارش برای کسی است که XAML را در زمان اجرا لود می‌کند؛ ما نمی‌کنیم.
+    -->
+    <NoWarn>AVLN3001</NoWarn>
   </PropertyGroup>
 
-  <!-- WinForms فقط برای NotifyIcon لازم است؛ using سراسری‌اش با WPF تداخل نام دارد -->
   <ItemGroup>
-    <Using Remove="System.Windows.Forms" />
-    <Using Remove="System.Drawing" />
+    <PackageReference Include="Avalonia" Version="11.3.20" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.20" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.20" />
   </ItemGroup>
 
   <!-- آیکن کنار exe هم لازم است: سینی و پنجره‌ی تنظیمات از فایل می‌خوانند -->
   <ItemGroup>
     <Content Include="assets\pluglauncher.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="assets\pluglauncher.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- پلاگین‌های همراه برنامه کنار فایل اجرایی کپی می‌شوند -->

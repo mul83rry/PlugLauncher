@@ -28,7 +28,7 @@ jobs:
       - name: Check the bundled plugins were copied
         shell: pwsh
         run: |
-          $output = "src/PlugLauncher.App/bin/Release/net10.0-windows/plugins"
+          $output = "src/PlugLauncher.App/bin/Release/net10.0/plugins"
           $count = @(Get-ChildItem $output -Directory -ErrorAction SilentlyContinue).Count
           if ($count -eq 0) { throw "No plugins were copied next to the exe." }
 

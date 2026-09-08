@@ -1,9 +1,7 @@
-﻿using System.Diagnostics;
 using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using PlugLauncher.Core;
 using PlugLauncher.Platform;
 
@@ -28,12 +26,15 @@ public partial class SettingsWindow : Window
         _engine = engine;
         InitializeComponent();
 
-        Icon = LoadWindowIcon();
+        Icon = App.LoadAppIcon();
 
         _loading = true;
         HotkeyBox.Text = _engine.Settings.Hotkey;
-        // از رجیستری خوانده می‌شود نه از settings.json، چون کاربر می‌تواند از Task Manager هم عوضش کند
-        StartWithWindowsBox.IsChecked = Os.AutoStart.IsEnabled();
+        // اسمِ سیستم داخل متن است، چون این چک‌باکس روی هر سه سیستم چیز متفاوتی می‌نویسد —
+        // کلید رجیستری، فایل plist، یا فایل desktop
+        StartWithSystemBox.Content = $"Start with {Os.DisplayName}";
+        // از خود سیستم خوانده می‌شود نه از settings.json، چون کاربر می‌تواند از بیرون هم عوضش کند
+        StartWithSystemBox.IsChecked = Os.AutoStart.IsEnabled();
         AutoUpdateBox.IsChecked = _engine.Settings.CheckForUpdates;
         _loading = false;
 
@@ -43,7 +44,7 @@ public partial class SettingsWindow : Window
         Refresh();
     }
 
-    private void OnAutoUpdateToggled(object sender, RoutedEventArgs e)
+    private void OnAutoUpdateToggled(object? sender, RoutedEventArgs e)
     {
         if (_loading) return;
 
@@ -55,10 +56,10 @@ public partial class SettingsWindow : Window
     /// بررسی دستی. عمداً محدودیت «روزی یک‌بار» را دور می‌زند — کاربر خودش دکمه را زده و انتظار
     /// جواب تازه دارد، نه جواب دیروز.
     /// </summary>
-    private async void OnCheckForUpdates(object sender, RoutedEventArgs e)
+    private async void OnCheckForUpdates(object? sender, RoutedEventArgs e)
     {
         UpdateCheckButton.IsEnabled = false;
-        UpdateDownloadButton.Visibility = Visibility.Collapsed;
+        UpdateDownloadButton.IsVisible = false;
         UpdateStatus.Text = "Checking…";
         _update = null;
 
@@ -94,32 +95,30 @@ public partial class SettingsWindow : Window
     {
         _update = update;
         UpdateStatus.Text = $"Version {update.Version.ToString(3)} is available";
-        UpdateDownloadButton.Visibility = Visibility.Visible;
+        UpdateDownloadButton.IsVisible = true;
     }
 
     /// <summary>
     /// صفحه‌ی ریلیز باز می‌شود، نه یک فایل مشخص: نصب با installer و اجرای zip دو مسیر متفاوت‌اند
     /// و برنامه نمی‌داند کاربر با کدام‌یک آمده است.
     /// </summary>
-    private void OnOpenUpdatePage(object sender, RoutedEventArgs e)
+    private void OnOpenUpdatePage(object? sender, RoutedEventArgs e)
     {
         if (_update is not null) App.OpenUrl(_update.ReleaseUrl);
     }
 
-    private void OnStartWithWindowsToggled(object sender, RoutedEventArgs e)
+    private void OnStartWithSystemToggled(object? sender, RoutedEventArgs e)
     {
         if (_loading) return;
 
-        var wanted = StartWithWindowsBox.IsChecked == true;
+        var wanted = StartWithSystemBox.IsChecked == true;
 
         if (!Os.AutoStart.Set(wanted, out var problem))
         {
-            MessageBox.Show(
-                $"Could not change the startup entry: {problem}",
-                "Start with Windows", MessageBoxButton.OK, MessageBoxImage.Warning);
+            Dialog.Info($"Start with {Os.DisplayName}", $"Could not change the startup entry: {problem}");
 
             _loading = true;
-            StartWithWindowsBox.IsChecked = !wanted;
+            StartWithSystemBox.IsChecked = !wanted;
             _loading = false;
             return;
         }
@@ -130,30 +129,13 @@ public partial class SettingsWindow : Window
         _engine.SaveSettings();
     }
 
-    /// <summary>
-    /// این پنجره در تسک‌بار و alt-tab دیده می‌شود، پس آیکن لازم دارد؛ پنجره‌ی لانچر نه
-    /// (<c>ShowInTaskbar=False</c> است و اصلاً چروم ندارد).
-    /// </summary>
-    private static ImageSource? LoadWindowIcon()
-    {
-        try
-        {
-            var path = Path.Combine(AppContext.BaseDirectory, "assets", "pluglauncher.ico");
-            return File.Exists(path) ? BitmapFrame.Create(new Uri(path)) : null;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     private void Refresh()
     {
         PluginsList.ItemsSource = _engine.Plugins.Select(p => new PluginRow(p, _engine.Settings.IsEnabled(p.Id))).ToList();
         FooterText.Text = $"Plugins folder: {PluginPaths.UserPlugins}";
     }
 
-    private async void OnPluginToggled(object sender, RoutedEventArgs e)
+    private async void OnPluginToggled(object? sender, RoutedEventArgs e)
     {
         if (sender is not CheckBox { Tag: string pluginId } box) return;
 
@@ -161,17 +143,11 @@ public partial class SettingsWindow : Window
         Refresh();
     }
 
-    private void OnUninstall(object sender, RoutedEventArgs e)
+    private void OnUninstall(object? sender, RoutedEventArgs e)
     {
         if (sender is not Button { Tag: string pluginId }) return;
 
-        var confirm = MessageBox.Show(
-            $"Remove plugin \"{pluginId}\" and all of its files?",
-            "Remove plugin",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        if (confirm != MessageBoxResult.Yes) return;
+        if (!Dialog.Confirm("Remove plugin", $"Remove plugin \"{pluginId}\" and all of its files?")) return;
 
         try
         {
@@ -180,48 +156,50 @@ public partial class SettingsWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Could not remove: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Dialog.Info("Error", $"Could not remove: {ex.Message}");
         }
     }
 
-    private void OnSaveHotkey(object sender, RoutedEventArgs e)
+    private void OnSaveHotkey(object? sender, RoutedEventArgs e)
     {
-        _engine.Settings.Hotkey = HotkeyBox.Text.Trim();
+        _engine.Settings.Hotkey = (HotkeyBox.Text ?? string.Empty).Trim();
         _engine.SaveSettings();
         HotkeyStatus.Text = "Saved — takes effect after restart";
     }
 
-    private void OnOpenPluginsFolder(object sender, RoutedEventArgs e)
+    private void OnOpenPluginsFolder(object? sender, RoutedEventArgs e)
     {
         Directory.CreateDirectory(PluginPaths.UserPlugins);
-        Process.Start(new ProcessStartInfo(PluginPaths.UserPlugins) { UseShellExecute = true });
+        Open(PluginPaths.UserPlugins);
     }
 
-    private void OnOpenLog(object sender, RoutedEventArgs e)
+    private void OnOpenLog(object? sender, RoutedEventArgs e)
     {
         if (!File.Exists(PluginPaths.LogFile))
         {
-            MessageBox.Show("Nothing has been logged yet.", "Log", MessageBoxButton.OK, MessageBoxImage.Information);
+            Dialog.Info("Log", "Nothing has been logged yet.");
             return;
         }
 
-        Process.Start(new ProcessStartInfo(PluginPaths.LogFile) { UseShellExecute = true });
+        Open(PluginPaths.LogFile);
+    }
+
+    private static void Open(string path)
+    {
+        if (!Os.Opener.Open(path, out var problem)) Dialog.Info("PlugLauncher", $"Could not open {path}: {problem}");
     }
 
     /// <summary>
     /// راه خروج قابل دیدن. آیکن سینی هم منوی Exit دارد، ولی در ویندوز ۱۱ پیش‌فرض داخل بخش
     /// مخفی نوار وظیفه می‌نشیند و عملاً پیدا نمی‌شود.
     /// </summary>
-    private void OnExitApp(object sender, RoutedEventArgs e)
+    private void OnExitApp(object? sender, RoutedEventArgs e)
     {
-        var answer = MessageBox.Show(
-            "Quit PlugLauncher? The hotkey will stop working until you start it again.",
-            "Exit", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-        if (answer == MessageBoxResult.Yes) Application.Current.Shutdown();
+        if (Dialog.Confirm("Exit", "Quit PlugLauncher? The hotkey will stop working until you start it again."))
+            App.Quit();
     }
 
-    private async void OnReload(object sender, RoutedEventArgs e)
+    private async void OnReload(object? sender, RoutedEventArgs e)
     {
         await _engine.ReloadAsync();
         Refresh();
@@ -237,8 +215,7 @@ public partial class SettingsWindow : Window
         public bool IsEnabled { get; set; } = isEnabled;
         public string? Error => descriptor.Error;
 
-        public Visibility ErrorVisibility
-            => string.IsNullOrWhiteSpace(descriptor.Error) ? Visibility.Collapsed : Visibility.Visible;
+        public bool HasError => !string.IsNullOrWhiteSpace(descriptor.Error);
 
         public string StateText => descriptor.State switch
         {
@@ -250,7 +227,7 @@ public partial class SettingsWindow : Window
             _ => "Not loaded"
         };
 
-        public Brush StateBrush => descriptor.State switch
+        public IBrush StateBrush => descriptor.State switch
         {
             PluginState.Loaded => new SolidColorBrush(Color.FromRgb(0x6D, 0xC7, 0x7A)),
             PluginState.Failed => new SolidColorBrush(Color.FromRgb(0xE0, 0x5B, 0x5B)),

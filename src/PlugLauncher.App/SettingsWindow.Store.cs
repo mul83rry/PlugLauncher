@@ -1,10 +1,9 @@
 using System.ComponentModel;
 using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media.Imaging;
 using PlugLauncher.Core;
 
 namespace PlugLauncher.App;
@@ -16,20 +15,20 @@ public partial class SettingsWindow
     private bool _storeLoaded;
 
     /// <summary>اولین باری که کاربر وارد تب فروشگاه می‌شود فهرست گرفته می‌شود، نه در باز شدن پنجره.</summary>
-    private async void OnTabChanged(object sender, SelectionChangedEventArgs e)
+    private async void OnTabChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (e.OriginalSource is not TabControl tab) return;
+        if (sender is not TabControl tab) return;
         if (tab.SelectedIndex != 1 || _storeLoaded) return;
 
         _storeLoaded = true;
         await LoadStoreAsync(null);
     }
 
-    private async void OnStoreSearch(object sender, RoutedEventArgs e) => await LoadStoreAsync(StoreSearchBox.Text);
+    private async void OnStoreSearch(object? sender, RoutedEventArgs e) => await LoadStoreAsync(StoreSearchBox.Text);
 
-    private async void OnStoreRefresh(object sender, RoutedEventArgs e) => await LoadStoreAsync(StoreSearchBox.Text);
+    private async void OnStoreRefresh(object? sender, RoutedEventArgs e) => await LoadStoreAsync(StoreSearchBox.Text);
 
-    private async void OnStoreSearchKeyDown(object sender, KeyEventArgs e)
+    private async void OnStoreSearchKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter) return;
 
@@ -77,7 +76,7 @@ public partial class SettingsWindow
         }
     }
 
-    private async void OnInstallFromStore(object sender, RoutedEventArgs e)
+    private async void OnInstallFromStore(object? sender, RoutedEventArgs e)
     {
         if (sender is not Button { Tag: string pluginId } button) return;
         if (StoreList.ItemsSource is not List<StoreRow> rows) return;
@@ -100,7 +99,7 @@ public partial class SettingsWindow
         {
             button.IsEnabled = true;
             StoreStatus.Text = $"Install failed: {ex.Message}";
-            MessageBox.Show(ex.Message, "Install plugin", MessageBoxButton.OK, MessageBoxImage.Error);
+            Dialog.Info("Install plugin", ex.Message);
         }
     }
 
@@ -158,7 +157,7 @@ public partial class SettingsWindow
                                   (installedVersion is null ||
                                    !installedVersion.Equals(Plugin.Version, StringComparison.OrdinalIgnoreCase));
 
-        public ImageSource? Icon { get; private set; }
+        public Bitmap? Icon { get; private set; }
 
         /// <summary>دانلود آیکن بسته؛ خطا نادیده گرفته می‌شود و ردیف بدون آیکن می‌ماند.</summary>
         public async Task LoadIconAsync(StoreClient client, CancellationToken cancellationToken)
@@ -169,15 +168,7 @@ public partial class SettingsWindow
             try
             {
                 using var stream = new MemoryStream(bytes);
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.StreamSource = stream;
-                image.DecodePixelHeight = 80;
-                image.EndInit();
-                image.Freeze();
-
-                Icon = image;
+                Icon = Bitmap.DecodeToHeight(stream, 80);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Icon)));
             }
             catch

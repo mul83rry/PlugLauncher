@@ -1,0 +1,233 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        تمِ تیره‌ی برنامه. کلیدها همان کلیدهای قبلی‌اند، چون فایل تمِ کاربر با همین نام‌ها
+        صدایشان می‌زند و کسی که رنگی را عوض کرده باشد نباید دوباره دنبال اسم جدید بگردد.
+    -->
+    <Styles.Resources>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#E61E1E1E" />
+        <SolidColorBrush x:Key="SelectionBrush" Color="#26FFFFFF" />
+        <SolidColorBrush x:Key="HoverBrush" Color="#14FFFFFF" />
+        <SolidColorBrush x:Key="TextBrush" Color="#FFF2F2F2" />
+        <SolidColorBrush x:Key="SubtleTextBrush" Color="#FF9A9A9A" />
+        <SolidColorBrush x:Key="HintTextBrush" Color="#FF6E6E6E" />
+        <SolidColorBrush x:Key="SeparatorBrush" Color="#26FFFFFF" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#FF4C8DFF" />
+        <SolidColorBrush x:Key="DangerBrush" Color="#FFE05B5B" />
+        <SolidColorBrush x:Key="PanelBrush" Color="#FF232323" />
+        <SolidColorBrush x:Key="CardBrush" Color="#FF2A2A2A" />
+        <SolidColorBrush x:Key="WindowBrush" Color="#FF1B1B1B" />
+        <SolidColorBrush x:Key="StripBrush" Color="#FF242424" />
+        <SolidColorBrush x:Key="ActiveTabBrush" Color="#FF343434" />
+
+        <!--
+            تب سگمنتی: هدرها داخل یک نوار گِرد می‌نشینند و تب فعال یک قرص روشن می‌شود.
+            این یکی قالب کامل دارد چون شکلش با هیچ ترکیبی از پراپرتی‌ها درنمی‌آید.
+        -->
+        <ControlTheme x:Key="SegmentedTabItem" TargetType="TabItem">
+            <Setter Property="Foreground" Value="{StaticResource SubtleTextBrush}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="Root"
+                            Background="Transparent"
+                            CornerRadius="6"
+                            Margin="2"
+                            Padding="18,7">
+                        <ContentPresenter Content="{TemplateBinding Header}"
+                                          ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+
+            <Style Selector="^:pointerover">
+                <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            </Style>
+            <Style Selector="^:pointerover /template/ Border#Root">
+                <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+            </Style>
+
+            <Style Selector="^:selected">
+                <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+            <Style Selector="^:selected /template/ Border#Root">
+                <Setter Property="Background" Value="{StaticResource ActiveTabBrush}" />
+            </Style>
+        </ControlTheme>
+
+        <ControlTheme x:Key="SegmentedTabControl" TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="ItemContainerTheme" Value="{StaticResource SegmentedTabItem}" />
+            <Setter Property="ItemsPanel">
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </Setter>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid RowDefinitions="Auto,*">
+                        <!-- نوار هدرها؛ عرضش به اندازه‌ی تب‌هاست، نه کل پنجره -->
+                        <Border Grid.Row="0"
+                                Background="{StaticResource StripBrush}"
+                                CornerRadius="8"
+                                Padding="2"
+                                HorizontalAlignment="Left"
+                                Margin="0,0,0,14">
+                            <ItemsPresenter Name="PART_ItemsPresenter"
+                                            ItemsPanel="{TemplateBinding ItemsPanel}" />
+                        </Border>
+
+                        <ContentPresenter Grid.Row="1"
+                                          Name="PART_SelectedContentHost"
+                                          Content="{TemplateBinding SelectedContent}"
+                                          ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+    </Styles.Resources>
+
+    <!--
+        بقیه‌ی کنترل‌ها قالب پیش‌فرض Fluent را نگه می‌دارند و فقط همان تکه‌ای از قالب که رنگ
+        می‌دهد عوض می‌شود. بازنویسی کامل قالب یعنی به ارث بردن هر باگی که Fluent بعداً درست
+        می‌کند.
+    -->
+
+    <!-- ===== دکمه‌ی شفاف (تنظیمات و ...) ===== -->
+    <Style Selector="Button.ghost">
+        <Setter Property="Foreground" Value="{StaticResource SubtleTextBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <Style Selector="Button.ghost /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style Selector="Button.ghost:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+        <Setter Property="TextElement.Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="Button.ghost:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SelectionBrush}" />
+    </Style>
+
+    <Style Selector="Button.ghost:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="TextElement.Foreground" Value="{StaticResource HintTextBrush}" />
+    </Style>
+
+    <Style Selector="Button.danger">
+        <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+    </Style>
+
+    <!-- ===== ردیف نتیجه ===== -->
+    <Style Selector="ListBox.results">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <Style Selector="ListBox.results ListBoxItem">
+        <Setter Property="Padding" Value="18,10" />
+        <Setter Property="Margin" Value="8,1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+
+    <Style Selector="ListBox.results ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+
+    <Style Selector="ListBox.results ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+    </Style>
+
+    <Style Selector="ListBox.results ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SelectionBrush}" />
+    </Style>
+
+    <Style Selector="ListBox.results ListBoxItem:selected:focus /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SelectionBrush}" />
+    </Style>
+
+    <Style Selector="ListBox.results ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SelectionBrush}" />
+    </Style>
+
+    <!-- ===== باکس جستجو: بدون هیچ قابی، فقط متن ===== -->
+    <Style Selector="TextBox.search">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="CaretBrush" Value="{StaticResource TextBrush}" />
+        <Setter Property="SelectionBrush" Value="{StaticResource AccentBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="TextBox.search /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style Selector="TextBox.search:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style Selector="TextBox.search:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <!-- ===== باکس معمولی (هات‌کی، جستجوی فروشگاه) ===== -->
+    <Style Selector="TextBox.field">
+        <Setter Property="Background" Value="{StaticResource CardBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="CaretBrush" Value="{StaticResource TextBrush}" />
+        <Setter Property="SelectionBrush" Value="{StaticResource AccentBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource SeparatorBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+
+    <Style Selector="TextBox.field /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{StaticResource CardBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource SeparatorBrush}" />
+    </Style>
+
+    <Style Selector="TextBox.field:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{StaticResource CardBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource SeparatorBrush}" />
+    </Style>
+
+    <Style Selector="TextBox.field:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{StaticResource CardBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+    </Style>
+
+    <!-- ===== چک‌باکس ===== -->
+    <Style Selector="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+
+</Styles>

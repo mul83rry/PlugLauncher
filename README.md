@@ -24,11 +24,10 @@ same build — take either:
 Neither one needs administrator rights. The app writes to `%APPDATA%\PlugLauncher` and, only if
 you turn on **Start with Windows**, to `HKCU\...\CurrentVersion\Run` — nothing else.
 
-**Requirement: [.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0)**
-— the runtime, not the SDK. Pick **.NET Desktop Runtime**, `x64`, from the "Run desktop apps"
-column. The plain *.NET Runtime* and the *ASP.NET Core Runtime* are **not** enough, because WPF
-only ships in the Desktop bundle. .NET 9 or older will not work either: the app does not roll
-forward across a major version.
+**Requirement: [.NET 10 Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0)** —
+the runtime, not the SDK. The plain **.NET Runtime**, `x64`, is enough; the *Desktop Runtime*
+works too and includes it. .NET 9 or older will not work: the app does not roll forward across a
+major version.
 
 The installer checks for the runtime and offers the download page before it copies anything. If
 you take the zip instead, Windows shows a dialog with a download link the first time you start
@@ -114,7 +113,8 @@ packaging change before committing to a tag.
 |---|---|
 | `src/PlugLauncher.Contracts` | The plugin contract (`IPlugin`, `PluginResult`, `PluginQuery`, `IPluginContext`) — all a plugin author ever sees |
 | `src/PlugLauncher.Core` | Plugin discovery, Roslyn compilation with an on-disk cache, query execution, usage stats, settings |
-| `src/PlugLauncher.App` | The WPF interface: the glass window, the global hotkey, settings, the tray icon |
+| `src/PlugLauncher.Platform` | The parts that differ per operating system behind one door: global hotkey, start-at-login, opening files |
+| `src/PlugLauncher.App` | The interface, in Avalonia: the glass window, settings, the tray icon |
 
 ## Paths
 
@@ -126,7 +126,7 @@ packaging change before committing to a tag.
 | Usage stats | `%APPDATA%\PlugLauncher\usage.json` |
 | Script compile cache | `%APPDATA%\PlugLauncher\cache\scripts\` |
 | Log | `%APPDATA%\PlugLauncher\logs\plugLauncher.log` |
-| Optional user theme | `%APPDATA%\PlugLauncher\theme\theme.xaml` |
+| Optional user theme | `%APPDATA%\PlugLauncher\theme\theme.json` — a flat `{ "AccentBrush": "#FF4C8DFF" }`; the key names are the ones in `Theme.axaml` |
 
 ## Plugins
 

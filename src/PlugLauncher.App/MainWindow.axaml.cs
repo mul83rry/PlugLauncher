@@ -1,9 +1,10 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Threading;
-using PlugLauncher.App.Interop;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Threading;
 using PlugLauncher.Core;
 using PlugLauncher.Platform;
 
@@ -21,7 +22,10 @@ public partial class MainWindow : Window
     private DateTime _refreshUntil = DateTime.MinValue;
 
     private CancellationTokenSource? _queryCts;
-    private bool _suppressHideOnDeactivate;
+    private bool _hotkeyTried;
+
+    private ClipboardBridge? _clipboard;
+    private SettingsWindow? _settings;
 
     /// <summary>متن اصلاح‌شده‌ی چیدمان کیبورد برای کوئری فعلی، اگر نتایج از روی آن آمده باشند.</summary>
     private string? _layoutFix;
@@ -33,6 +37,15 @@ public partial class MainWindow : Window
     {
         _engine = engine;
         InitializeComponent();
+
+        // شیشه‌ای، و اگر سیستم بلد نبود شیشه‌ی مات‌تر، و اگر آن هم نه فقط شفاف. ترتیب مهم است:
+        // اولین چیزی که سیستم بتواند برمی‌دارد.
+        TransparencyLevelHint =
+        [
+            WindowTransparencyLevel.AcrylicBlur,
+            WindowTransparencyLevel.Blur,
+            WindowTransparencyLevel.Transparent
+        ];
 
         _debounce = new DispatcherTimer(DispatcherPriority.Input) { Interval = TimeSpan.FromMilliseconds(120) };
         _debounce.Tick += async (_, _) =>
@@ -49,42 +62,66 @@ public partial class MainWindow : Window
             await RunQueryAsync();
         };
 
-        Deactivated += (_, _) =>
-        {
-            if (!_suppressHideOnDeactivate) HideLauncher();
-        };
+        Deactivated += (_, _) => HideLauncher();
 
-        DataObject.AddPastingHandler(SearchBox, OnSearchPaste);
+        SearchBox.AddHandler(TextBox.PastingFromClipboardEvent, OnSearchPaste, RoutingStrategies.Bubble);
+
+        // Tunnel، وگرنه Tab را سیستمِ جابه‌جایی فوکوس قبل از ما برمی‌دارد
+        SearchBox.AddHandler(KeyDownEvent, OnSearchKeyDown, RoutingStrategies.Tunnel);
+
+        ResultsList.DoubleTapped += async (_, _) => await ActivateSelectedAsync();
     }
+
+    internal void UseClipboard(ClipboardBridge clipboard) => _clipboard = clipboard;
 
     /// <summary>
     /// یک جعبه‌ی تک‌خطی از چند خطِ پیست‌شده فقط خط اول را نگه می‌دارد و بقیه را بی‌صدا دور می‌ریزد.
     /// دستور curlِ چندخطی، مسیرِ کپی‌شده از یک لاگ، کوئریِ SQL: چیزی که آدم پیست می‌کند اغلب
     /// بیش از یک خط است، پس خطوط را به هم می‌چسبانیم تا هیچ‌چیز گم نشود.
     /// </summary>
-    private void OnSearchPaste(object sender, DataObjectPastingEventArgs e)
+    private async void OnSearchPaste(object? sender, RoutedEventArgs e)
     {
-        var format = e.SourceDataObject.GetDataPresent(DataFormats.UnicodeText, true) ? DataFormats.UnicodeText
-                   : e.SourceDataObject.GetDataPresent(DataFormats.Text, true) ? DataFormats.Text
-                   : null;
-        if (format is null) return;
+        var clipboard = Clipboard;
+        if (clipboard is null) return;
 
-        if (e.SourceDataObject.GetData(format, true) is not string text) return;
-        if (!text.Contains('\n') && !text.Contains('\r')) return;
+        // قبل از هر await، وگرنه پیستِ پیش‌فرض زودتر انجام شده است
+        e.Handled = true;
+
+        string text;
+        try
+        {
+            text = await clipboard.TryGetTextAsync() ?? string.Empty;
+        }
+        catch (Exception ex)
+        {
+            _log.Warn($"could not read the clipboard: {ex.Message}");
+            return;
+        }
+
+        if (text.Length == 0) return;
 
         var flat = text.Replace('\r', '\n').Replace('\n', ' ').Trim();
         while (flat.Contains("  ")) flat = flat.Replace("  ", " ");
 
-        var single = new DataObject();
-        single.SetData(DataFormats.UnicodeText, flat);
-        e.DataObject = single;
+        var current = SearchBox.Text ?? string.Empty;
+        var from = Math.Clamp(Math.Min(SearchBox.SelectionStart, SearchBox.SelectionEnd), 0, current.Length);
+        var to = Math.Clamp(Math.Max(SearchBox.SelectionStart, SearchBox.SelectionEnd), 0, current.Length);
+
+        SearchBox.Text = current[..from] + flat + current[to..];
+        SearchBox.CaretIndex = from + flat.Length;
     }
 
-    protected override void OnSourceInitialized(EventArgs e)
+    protected override void OnOpened(EventArgs e)
     {
-        base.OnSourceInitialized(e);
+        base.OnOpened(e);
 
-        WindowEffects.TryApplyAcrylic(this);
+        // اگر سیستم شفافیت را برنداشت، پس‌زمینه‌ی تخت. بدون این، پنجره‌ی نیمه‌شفاف روی چیزی که
+        // پشتش نیست کشیده می‌شود و سیاه درمی‌آید.
+        if (ActualTransparencyLevel == WindowTransparencyLevel.None)
+            Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x1E));
+
+        if (_hotkeyTried) return;
+        _hotkeyTried = true;
 
         var typed = _engine.Settings.Hotkey;
 
@@ -111,11 +148,7 @@ public partial class MainWindow : Window
     private void Complain(string typed, string problem)
     {
         _log.Error($"could not register hotkey \"{typed}\": {problem}");
-        MessageBox.Show(
-            $"Could not register the hotkey \"{typed}\" — {problem}.",
-            "PlugLauncher",
-            MessageBoxButton.OK,
-            MessageBoxImage.Warning);
+        Dialog.Info("PlugLauncher", $"Could not register the hotkey \"{typed}\" — {problem}.");
     }
 
     // ===== نمایش / مخفی‌سازی =====
@@ -129,19 +162,22 @@ public partial class MainWindow : Window
     public void ShowLauncher()
     {
         SearchBox.Text = string.Empty;
+        _clipboard?.Refresh();
         ShowDefaultRows();
         PositionOnActiveScreen();
 
         Show();
         Activate();
         Topmost = true;
-        ForegroundHelper.ForceForeground(this);
+
+        // فوکوس گرفتنِ برنامه‌ای که فورگراند نیست روی هر سیستم قانون خودش را دارد؛ اگر لایه‌ی
+        // پلتفرم بلد نباشد، همان Activate بالا تنها چیزی است که هست.
+        Os.Windowing.TryFocus(TryGetPlatformHandle()?.Handle ?? 0);
 
         SearchBox.Focus();
-        Keyboard.Focus(SearchBox);
 
-        _log.Info($"showing window: visible={IsVisible} active={IsActive} left={Left:F0} top={Top:F0} " +
-                  $"width={ActualWidth:F0} height={ActualHeight:F0}");
+        _log.Info($"showing window: visible={IsVisible} active={IsActive} " +
+                  $"left={Position.X} top={Position.Y} width={Width:F0} height={Height:F0}");
     }
 
     public void HideLauncher()
@@ -159,19 +195,30 @@ public partial class MainWindow : Window
     /// <summary>وسط‌چین افقی روی همان نمایشگری که موس در آن است، کمی بالاتر از وسط عمودی.</summary>
     private void PositionOnActiveScreen()
     {
-        var screen = System.Windows.Forms.Screen.FromPoint(System.Windows.Forms.Control.MousePosition);
-        var dpi = VisualTreeHelper.GetDpi(this);
-        var area = screen.WorkingArea;
+        var screen = Os.Windowing.TryCursor(out var x, out var y)
+            ? Screens.ScreenFromPoint(new PixelPoint(x, y))
+            : null;
 
-        Left = (area.Left + (area.Width - Width * dpi.DpiScaleX) / 2) / dpi.DpiScaleX;
-        Top = (area.Top + area.Height * 0.2) / dpi.DpiScaleY;
+        screen ??= Screens.Primary ?? Screens.All.FirstOrDefault();
+        if (screen is null) return;
+
+        // جای پنجره به پیکسل شمرده می‌شود ولی عرضش به واحد مستقل از تراکم صفحه، پس یکی از دو
+        // طرف باید تبدیل شود
+        var area = screen.WorkingArea;
+        var width = (int)(Width * screen.Scaling);
+
+        Position = new PixelPoint(
+            area.X + (area.Width - width) / 2,
+            area.Y + (int)(area.Height * 0.2));
     }
 
     // ===== جستجو =====
 
-    private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+    private void OnSearchTextChanged(object? sender, TextChangedEventArgs e)
     {
-        SettingsButton.Visibility = string.IsNullOrEmpty(SearchBox.Text) ? Visibility.Visible : Visibility.Collapsed;
+        var typed = SearchBox.Text ?? string.Empty;
+
+        SettingsButton.IsVisible = typed.Length == 0;
 
         _debounce.Stop();
 
@@ -179,7 +226,7 @@ public partial class MainWindow : Window
         _refresh.Stop();
         _refreshUntil = DateTime.UtcNow + RefreshBudget;
 
-        if (string.IsNullOrWhiteSpace(SearchBox.Text))
+        if (string.IsNullOrWhiteSpace(typed))
         {
             _queryCts?.Cancel();
             _layoutFix = null;
@@ -192,7 +239,7 @@ public partial class MainWindow : Window
 
     private async Task RunQueryAsync()
     {
-        var query = SearchBox.Text;
+        var query = SearchBox.Text ?? string.Empty;
 
         _queryCts?.Cancel();
         _queryCts = new CancellationTokenSource();
@@ -222,7 +269,7 @@ public partial class MainWindow : Window
     {
         ResultsList.ItemsSource = rows;
         ResultsList.SelectedIndex = rows.Count > 0 ? 0 : -1;
-        ResultsList.Visibility = rows.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        ResultsList.IsVisible = rows.Count > 0;
         UpdateHint();
         ScheduleRefresh(rows);
     }
@@ -261,7 +308,7 @@ public partial class MainWindow : Window
 
     // ===== تکمیل خودکار درون‌خطی =====
 
-    private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (ResultsList.SelectedItem is not null) ResultsList.ScrollIntoView(ResultsList.SelectedItem);
         UpdateHint();
@@ -269,7 +316,7 @@ public partial class MainWindow : Window
 
     private void UpdateHint()
     {
-        var typed = SearchBox.Text;
+        var typed = SearchBox.Text ?? string.Empty;
         HintTyped.Text = typed;
         HintRest.Text = string.Empty;
 
@@ -280,7 +327,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (ResultsList.SelectedItem is not LauncherRow row || string.IsNullOrEmpty(typed)) return;
+        if (ResultsList.SelectedItem is not LauncherRow row || typed.Length == 0) return;
 
         // ردیف راهنما خودش می‌گوید باکس باید چه بشود، پس حدس زدن لازم نیست. اگر ادامه‌ی چیزی که
         // تایپ شده نباشد (مثلاً کاربر «c:/» نوشته و پیشنهاد «C:\» است) هیچ سایه‌ای نشان نمی‌دهیم؛
@@ -309,8 +356,7 @@ public partial class MainWindow : Window
         // با چیدمان اشتباه، Tab خودِ متن باکس را درست می‌کند نه اینکه ادامه‌اش را بچسباند
         if (!string.IsNullOrEmpty(_layoutFix))
         {
-            SearchBox.Text = _layoutFix;
-            SearchBox.CaretIndex = SearchBox.Text.Length;
+            Replace(_layoutFix);
             return;
         }
 
@@ -318,20 +364,24 @@ public partial class MainWindow : Window
         // پنجره باز می‌ماند. این‌طور حتی وقتی سایه نشان داده نشده هم پذیرفتنِ پیشنهاد کار می‌کند.
         if (ResultsList.SelectedItem is LauncherRow row && row.Item?.Result.ReplaceQuery is { Length: > 0 } suggestion)
         {
-            SearchBox.Text = suggestion;
-            SearchBox.CaretIndex = SearchBox.Text.Length;
+            Replace(suggestion);
             return;
         }
 
         if (string.IsNullOrEmpty(HintRest.Text)) return;
 
-        SearchBox.Text = HintTyped.Text + HintRest.Text;
-        SearchBox.CaretIndex = SearchBox.Text.Length;
+        Replace(HintTyped.Text + HintRest.Text);
+    }
+
+    private void Replace(string text)
+    {
+        SearchBox.Text = text;
+        SearchBox.CaretIndex = text.Length;
     }
 
     // ===== کیبورد =====
 
-    private async void OnSearchKeyDown(object sender, KeyEventArgs e)
+    private async void OnSearchKeyDown(object? sender, KeyEventArgs e)
     {
         switch (e.Key)
         {
@@ -364,16 +414,15 @@ public partial class MainWindow : Window
 
     private void MoveSelection(int delta)
     {
-        if (ResultsList.Items.Count == 0) return;
+        var count = ResultsList.ItemCount;
+        if (count == 0) return;
 
         var next = ResultsList.SelectedIndex + delta;
-        if (next < 0) next = ResultsList.Items.Count - 1;
-        if (next >= ResultsList.Items.Count) next = 0;
+        if (next < 0) next = count - 1;
+        if (next >= count) next = 0;
 
         ResultsList.SelectedIndex = next;
     }
-
-    private async void OnResultDoubleClick(object sender, MouseButtonEventArgs e) => await ActivateSelectedAsync();
 
     private async Task ActivateSelectedAsync()
     {
@@ -383,8 +432,7 @@ public partial class MainWindow : Window
         if (row.Plugin is not null)
         {
             var keyword = row.Plugin.Manifest.Keywords.FirstOrDefault();
-            SearchBox.Text = string.IsNullOrEmpty(keyword) ? string.Empty : keyword + " ";
-            SearchBox.CaretIndex = SearchBox.Text.Length;
+            Replace(string.IsNullOrEmpty(keyword) ? string.Empty : keyword + " ");
             return;
         }
 
@@ -393,8 +441,7 @@ public partial class MainWindow : Window
         // ردیف راهنما: به‌جای اجرا، نحوِ پیشنهادی را در باکس می‌گذارد و پنجره باز می‌ماند
         if (!string.IsNullOrEmpty(row.Item.Result.ReplaceQuery))
         {
-            SearchBox.Text = row.Item.Result.ReplaceQuery;
-            SearchBox.CaretIndex = SearchBox.Text.Length;
+            Replace(row.Item.Result.ReplaceQuery);
             SearchBox.Focus();
             return;
         }
@@ -405,34 +452,41 @@ public partial class MainWindow : Window
 
     // ===== تنظیمات =====
 
-    private void OnSettingsClick(object sender, RoutedEventArgs e) => OpenSettings();
+    private void OnSettingsClick(object? sender, RoutedEventArgs e) => OpenSettings();
 
     /// <summary>
-    /// نقطه‌ی کنار «Settings» تنها نشانه‌ی ماندگار به‌روزرسانی است — بالن سینی چند ثانیه بعد
-    /// می‌رود و ممکن است اصلاً دیده نشود. جزئیاتش داخل خود تنظیمات است، چون پنجره‌ی لانچر باید
-    /// ساکت بماند.
+    /// نقطه‌ی کنار «Settings» تنها نشانه‌ی ماندگار به‌روزرسانی است — پیام گوشه‌ی صفحه چند ثانیه
+    /// بعد می‌رود و ممکن است اصلاً دیده نشود. جزئیاتش داخل خود تنظیمات است، چون پنجره‌ی لانچر
+    /// باید ساکت بماند.
     /// </summary>
     public void MarkUpdateAvailable(UpdateInfo update)
     {
         _knownUpdate = update;
         SettingsButton.Content = "Settings ●";
-        SettingsButton.ToolTip = $"PlugLauncher {update.Version.ToString(3)} is available";
+        ToolTip.SetTip(SettingsButton, $"PlugLauncher {update.Version.ToString(3)} is available");
     }
 
+    /// <summary>
+    /// تنظیمات مودال نیست و لانچر هم موقع باز شدنش کنار می‌رود.
+    ///
+    /// پنجره‌ی مودال به یک صاحبِ دیده‌شده نیاز دارد و لانچر اغلب پنهان است — مثلاً وقتی از منوی
+    /// سینی باز می‌شود. و لانچر همیشه روی همه‌چیز است، پس اگر بماند دقیقاً روی تنظیمات می‌نشیند.
+    /// </summary>
     public void OpenSettings()
     {
-        _suppressHideOnDeactivate = true;
-        try
+        HideLauncher();
+
+        if (_settings is not null)
         {
-            var window = new SettingsWindow(_engine, _knownUpdate) { Owner = IsVisible ? this : null };
-            window.ShowDialog();
-        }
-        finally
-        {
-            _suppressHideOnDeactivate = false;
+            _settings.Activate();
+            return;
         }
 
-        ShowDefaultRows();
+        _settings = new SettingsWindow(_engine, _knownUpdate);
+        _settings.Closed += (_, _) => _settings = null;
+
+        _settings.Show();
+        _settings.Activate();
     }
 
     protected override void OnClosed(EventArgs e)

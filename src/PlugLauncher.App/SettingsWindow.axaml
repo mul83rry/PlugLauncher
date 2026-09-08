@@ -1,26 +1,18 @@
-﻿<Window x:Class="PlugLauncher.App.SettingsWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="PlugLauncher.App.SettingsWindow"
         Title="PlugLauncher Settings"
         Width="780" Height="620"
-        WindowStartupLocation="CenterOwner"
-        Background="#FF1B1B1B"
-        FontFamily="Segoe UI">
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource WindowBrush}">
 
-    <TabControl Style="{StaticResource SegmentedTabControl}"
+    <TabControl Theme="{StaticResource SegmentedTabControl}"
                 Margin="18,16,18,14"
                 SelectionChanged="OnTabChanged">
 
         <!-- ================= Installed plugins ================= -->
         <TabItem Header="Installed">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+            <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
 
                 <!-- Hotkey -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
@@ -29,45 +21,30 @@
                                VerticalAlignment="Center"
                                FontSize="13"
                                Margin="0,0,10,0" />
-                    <TextBox x:Name="HotkeyBox"
-                             Width="200"
-                             Background="#FF2A2A2A"
-                             Foreground="{StaticResource TextBrush}"
-                             CaretBrush="{StaticResource TextBrush}"
-                             BorderBrush="{StaticResource SeparatorBrush}"
-                             BorderThickness="1"
-                             Padding="8,6"
-                             FontSize="13" />
-                    <Button Content="Save"
-                            Style="{StaticResource GhostButton}"
-                            Margin="8,0,0,0"
-                            Click="OnSaveHotkey" />
+                    <TextBox x:Name="HotkeyBox" Classes="field" Width="200" />
+                    <Button Content="Save" Classes="ghost" Margin="8,0,0,0" Click="OnSaveHotkey" />
                     <TextBlock x:Name="HotkeyStatus"
                                Foreground="{StaticResource SubtleTextBrush}"
                                VerticalAlignment="Center"
                                Margin="10,0,0,0"
                                FontSize="12" />
 
-                    <CheckBox x:Name="StartWithWindowsBox"
-                              Content="Start with Windows"
-                              Foreground="{StaticResource TextBrush}"
+                    <CheckBox x:Name="StartWithSystemBox"
                               VerticalAlignment="Center"
-                              FontSize="13"
                               Margin="24,0,0,0"
-                              Checked="OnStartWithWindowsToggled"
-                              Unchecked="OnStartWithWindowsToggled" />
+                              IsCheckedChanged="OnStartWithSystemToggled" />
                 </StackPanel>
 
                 <!-- Tools -->
                 <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
-                    <Button Content="Open plugins folder" Style="{StaticResource GhostButton}" Click="OnOpenPluginsFolder" />
-                    <Button Content="Reload" Style="{StaticResource GhostButton}" Margin="6,0,0,0" Click="OnReload" />
-                    <Button Content="Open log file" Style="{StaticResource GhostButton}" Margin="6,0,0,0" Click="OnOpenLog" />
-                    <Button Content="Exit PlugLauncher" Style="{StaticResource GhostButton}" Margin="24,0,0,0" Click="OnExitApp" />
+                    <Button Content="Open plugins folder" Classes="ghost" Click="OnOpenPluginsFolder" />
+                    <Button Content="Reload" Classes="ghost" Margin="6,0,0,0" Click="OnReload" />
+                    <Button Content="Open log file" Classes="ghost" Margin="6,0,0,0" Click="OnOpenLog" />
+                    <Button Content="Exit PlugLauncher" Classes="ghost" Margin="24,0,0,0" Click="OnExitApp" />
                 </StackPanel>
 
                 <!-- Updates -->
-                <Border Grid.Row="2" Background="#FF232323" CornerRadius="8" Padding="12,9" Margin="0,0,0,10">
+                <Border Grid.Row="2" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="12,9" Margin="0,0,0,10">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock x:Name="VersionText"
                                    Foreground="{StaticResource TextBrush}"
@@ -80,39 +57,31 @@
                                    FontSize="12.5" />
                         <Button x:Name="UpdateDownloadButton"
                                 Content="Open download page"
-                                Style="{StaticResource GhostButton}"
+                                Classes="ghost"
                                 Margin="12,0,0,0"
-                                Visibility="Collapsed"
+                                IsVisible="False"
                                 Click="OnOpenUpdatePage" />
                         <Button x:Name="UpdateCheckButton"
                                 Content="Check now"
-                                Style="{StaticResource GhostButton}"
+                                Classes="ghost"
                                 Margin="12,0,0,0"
                                 Click="OnCheckForUpdates" />
                         <CheckBox x:Name="AutoUpdateBox"
                                   Content="Check automatically"
-                                  Foreground="{StaticResource TextBrush}"
                                   VerticalAlignment="Center"
-                                  FontSize="13"
                                   Margin="18,0,0,0"
-                                  Checked="OnAutoUpdateToggled"
-                                  Unchecked="OnAutoUpdateToggled" />
+                                  IsCheckedChanged="OnAutoUpdateToggled" />
                     </StackPanel>
                 </Border>
 
                 <!-- Plugin list -->
-                <Border Grid.Row="3" Background="#FF232323" CornerRadius="8" Padding="4">
+                <Border Grid.Row="3" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="4">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="PluginsList">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Padding="14,11" Margin="4" CornerRadius="6" Background="#FF2A2A2A">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
+                                    <Border Padding="14,11" Margin="4" CornerRadius="6" Background="{StaticResource CardBrush}">
+                                        <Grid ColumnDefinitions="*,Auto,Auto">
 
                                             <StackPanel Grid.Column="0">
                                                 <StackPanel Orientation="Horizontal">
@@ -138,23 +107,20 @@
                                                            FontSize="11.5"
                                                            Margin="0,4,0,0"
                                                            TextWrapping="Wrap"
-                                                           Visibility="{Binding ErrorVisibility}" />
+                                                           IsVisible="{Binding HasError}" />
                                             </StackPanel>
 
                                             <CheckBox Grid.Column="1"
                                                       Content="Enabled"
-                                                      Foreground="{StaticResource TextBrush}"
                                                       VerticalAlignment="Center"
                                                       Margin="12,0"
                                                       IsChecked="{Binding IsEnabled, Mode=TwoWay}"
                                                       Tag="{Binding Id}"
-                                                      Checked="OnPluginToggled"
-                                                      Unchecked="OnPluginToggled" />
+                                                      IsCheckedChanged="OnPluginToggled" />
 
                                             <Button Grid.Column="2"
                                                     Content="Remove"
-                                                    Style="{StaticResource GhostButton}"
-                                                    Foreground="{StaticResource DangerBrush}"
+                                                    Classes="ghost danger"
                                                     VerticalAlignment="Center"
                                                     Tag="{Binding Id}"
                                                     Click="OnUninstall" />
@@ -176,27 +142,16 @@
 
         <!-- ================= Store ================= -->
         <TabItem Header="Store">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+            <Grid RowDefinitions="Auto,*,Auto">
 
                 <!-- Search -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
                     <TextBox x:Name="StoreSearchBox"
+                             Classes="field"
                              Width="280"
-                             Background="#FF2A2A2A"
-                             Foreground="{StaticResource TextBrush}"
-                             CaretBrush="{StaticResource TextBrush}"
-                             BorderBrush="{StaticResource SeparatorBrush}"
-                             BorderThickness="1"
-                             Padding="8,6"
-                             FontSize="13"
                              KeyDown="OnStoreSearchKeyDown" />
-                    <Button Content="Search" Style="{StaticResource GhostButton}" Margin="6,0,0,0" Click="OnStoreSearch" />
-                    <Button Content="Refresh" Style="{StaticResource GhostButton}" Margin="6,0,0,0" Click="OnStoreRefresh" />
+                    <Button Content="Search" Classes="ghost" Margin="6,0,0,0" Click="OnStoreSearch" />
+                    <Button Content="Refresh" Classes="ghost" Margin="6,0,0,0" Click="OnStoreRefresh" />
                     <TextBlock x:Name="StoreStatus"
                                Foreground="{StaticResource SubtleTextBrush}"
                                VerticalAlignment="Center"
@@ -205,18 +160,13 @@
                 </StackPanel>
 
                 <!-- Package list -->
-                <Border Grid.Row="1" Background="#FF232323" CornerRadius="8" Padding="4">
+                <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="4">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="StoreList">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Padding="14,11" Margin="4" CornerRadius="6" Background="#FF2A2A2A">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
+                                    <Border Padding="14,11" Margin="4" CornerRadius="6" Background="{StaticResource CardBrush}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
 
                                             <Image Grid.Column="0"
                                                    Source="{Binding Icon}"
@@ -224,7 +174,7 @@
                                                    Margin="0,0,12,0"
                                                    VerticalAlignment="Top"
                                                    Stretch="Uniform"
-                                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                                                   RenderOptions.BitmapInterpolationMode="HighQuality" />
 
                                             <StackPanel Grid.Column="1">
                                                 <StackPanel Orientation="Horizontal">
@@ -244,12 +194,13 @@
                                                 <TextBlock Text="{Binding MetaText}"
                                                            Foreground="{StaticResource HintTextBrush}"
                                                            FontSize="11"
-                                                           Margin="0,4,0,0" />
+                                                           Margin="0,4,0,0"
+                                                           TextWrapping="Wrap" />
                                             </StackPanel>
 
                                             <Button Grid.Column="2"
                                                     Content="{Binding ActionText}"
-                                                    Style="{StaticResource GhostButton}"
+                                                    Classes="ghost"
                                                     VerticalAlignment="Center"
                                                     MinWidth="90"
                                                     IsEnabled="{Binding CanInstall}"
