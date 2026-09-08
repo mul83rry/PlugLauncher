@@ -116,7 +116,9 @@ nothing for macOS to ask about. Option counts as Alt and Command as Win, so a ho
 Windows keeps working from the same `settings.json`.
 
 `programs` is bundled but declares `windows` only, so on a Mac it loads as unsupported and shows
-orange in the list. That is the intended outcome, not a failure.
+orange in the list. That is the intended outcome, not a failure: a Mac has no Start menu and no
+`.lnk` files, so the plugin would have found nothing and said nothing about why. Its counterpart
+is **Applications**, one click away in the store — same idea, reading `/Applications` instead.
 
 Linux builds and runs but has no hotkey yet, so there is no way to open the window.
 
@@ -184,6 +186,7 @@ The rest live in the store tab in settings, one click each:
 | `kb` | Keyboard Layout | Text typed on the wrong layout — `kb sghl` gives `سلام`, using the layouts you actually have installed |
 | `du` | Disk Usage | What is taking the space — drives, then folders, then kinds of file, each with a bar. Needs 1.5.0 or later |
 | `curl` | Curl | Sends a request from a curl command line and shows the answer field by field, with the ones you have sent kept as a list. Needs 1.5.0 or later |
+| *(none)* | Applications | Everything in `/Applications`, opened on Enter. macOS only — what Programs does on Windows. Needs 1.5.0 or later |
 
 The store is a static index published at
 [mul83rry.github.io/PlugLauncher](https://mul83rry.github.io/PlugLauncher/) — no server, no

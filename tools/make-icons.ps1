@@ -83,6 +83,13 @@ for ($i = 0; $i -lt $tiles.Count; $i++) {
     Fill $c.Graphics $color (New-RoundedPath $tiles[$i][0] $tiles[$i][1] 40 40 9)
 }
 Save-Canvas $c 'plugins/programs/assets/icon.png'
+
+# ===== applications: two app tiles, the one behind dimmed — on a Mac an app is one rounded square =====
+$c = New-Canvas
+Fill $c.Graphics $dim (New-RoundedPath 46 20 62 62 16)
+Fill $c.Graphics $teal (New-RoundedPath 20 46 62 62 16)
+Save-Canvas $c 'plugins/applications/assets/icon.png'
+
 # ===== ssh hosts: a terminal window with the prompt punched back out of it =====
 $c = New-Canvas
 Fill $c.Graphics $teal (New-RoundedPath 14 28 100 72 12)

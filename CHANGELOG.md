@@ -3,6 +3,25 @@
 The release workflow reads the section matching the tag out of this file and uses it as the
 release notes, so every version needs a `## <version>` heading here before it can be tagged.
 
+## Unreleased
+
+**New plugin: Applications** (no keyword, from the store — macOS only)
+
+`programs` reads the Start menu, which a Mac does not have, so there it loaded as unsupported and
+would have found nothing anyway. **Applications** is the other half. It walks `/Applications`,
+`/System/Applications` and `~/Applications`, stops at the first `.app` on each branch so the
+helper bundles buried inside `Safari.app` stay out of the list, reaches into Utilities and the
+folders vendors make for themselves, and opens what you pick with `open`. Like `programs` it has
+no keyword, so it answers whatever you type.
+
+They stayed two plugins instead of one with a platform switch inside. Nothing but the scoring is
+shared between reading `.lnk` shortcuts and reading `.app` bundles, so a single file would only
+have been longer.
+
+Each row shows the plugin's own icon rather than the application's. A Mac keeps an app icon as an
+`.icns` inside the bundle and the launcher has no decoder for that format, so asking per row
+would have failed on every row.
+
 ## 1.5.0 — 2026-09-08
 
 **One interface for Windows, macOS and Linux**

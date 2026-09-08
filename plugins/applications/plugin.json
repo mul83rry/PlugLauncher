@@ -1,0 +1,14 @@
+{
+  "id": "com.pluglauncher.applications",
+  "name": "Applications",
+  "description": "Search the applications installed on your Mac and open one",
+  "version": "1.0.0",
+  "author": "PlugLauncher",
+  "entry": "main.csx",
+  "keywords": [],
+  "icon": "assets/icon.png",
+  "platforms": [
+    "macos"
+  ],
+  "minCore": "1.5.0"
+}
