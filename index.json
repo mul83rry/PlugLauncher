@@ -1,8 +1,8 @@
 {
-    "generatedAt":  "2026-09-07T17:20:50Z",
-    "total":  8,
+    "generatedAt":  "2026-09-08T07:01:59Z",
+    "total":  9,
     "page":  1,
-    "pageSize":  8,
+    "pageSize":  9,
     "items":  [
                   {
                       "id":  "com.pluglauncher.calculator",
@@ -35,6 +35,22 @@
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.dev-toolbox/1.0.0/com.pluglauncher.dev-toolbox-1.0.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.dev-toolbox/1.0.0/icon.png"
+                  },
+                  {
+                      "id":  "com.pluglauncher.disk-usage",
+                      "name":  "Disk Usage",
+                      "description":  "What is taking the space — drives, then folders, then file types, each a bar",
+                      "version":  "1.0.0",
+                      "author":  "PlugLauncher",
+                      "keywords":  [
+                                       "du"
+                                   ],
+                      "size":  7876,
+                      "sha256":  "6f0c6ec0d26cfc6d6ab58409c4fb16f79913c00d28ea962125c5a3191250ff08",
+                      "publishedAt":  "2026-09-08T07:01:58Z",
+                      "downloads":  0,
+                      "downloadUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/com.pluglauncher.disk-usage-1.0.0.plz",
+                      "iconUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/icon.png"
                   },
                   {
                       "id":  "com.pluglauncher.keyboard-layout",
