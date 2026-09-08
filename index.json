@@ -1,5 +1,5 @@
 {
-    "generatedAt":  "2026-09-08T07:47:45Z",
+    "generatedAt":  "2026-09-08T08:02:12Z",
     "total":  9,
     "page":  1,
     "pageSize":  9,
@@ -24,17 +24,17 @@
                       "id":  "com.pluglauncher.dev-toolbox",
                       "name":  "Dev Toolbox",
                       "description":  "uuid, base64, url, hash, epoch, json, jwt — type dev and pick one",
-                      "version":  "1.0.0",
+                      "version":  "1.1.0",
                       "author":  "PlugLauncher",
                       "keywords":  [
                                        "dev"
                                    ],
-                      "size":  7640,
-                      "sha256":  "571ec9bc69d1b265c2391398040f3569ce2ac49d587c614b4491eaa3b0e49b82",
-                      "publishedAt":  "2026-09-07T10:34:23Z",
+                      "size":  8340,
+                      "sha256":  "52d28b1b6aa1de0adc755cb86e126a43e81673d00e83e8e5038470beaaf529fd",
+                      "publishedAt":  "2026-09-08T08:02:12Z",
                       "downloads":  0,
-                      "downloadUrl":  "packages/com.pluglauncher.dev-toolbox/1.0.0/com.pluglauncher.dev-toolbox-1.0.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.dev-toolbox/1.0.0/icon.png"
+                      "downloadUrl":  "packages/com.pluglauncher.dev-toolbox/1.1.0/com.pluglauncher.dev-toolbox-1.1.0.plz",
+                      "iconUrl":  "packages/com.pluglauncher.dev-toolbox/1.1.0/icon.png"
                   },
                   {
                       "id":  "com.pluglauncher.disk-usage",
