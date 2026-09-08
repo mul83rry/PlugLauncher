@@ -10,8 +10,11 @@
   ],
   "icon": "assets/icon.png",
   "platforms": [
-    "windows"
+    "windows",
+    "macos",
+    "linux"
   ],
+  "minCore": "1.5.0",
   "usage": [
     {
       "example": "st raft",

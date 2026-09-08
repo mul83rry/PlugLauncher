@@ -1,5 +1,8 @@
 // Sample plugin: finds installed Steam games and launches them on Enter.
 // Keyword: st   (for example: "st raft")
+//
+// Steam keeps its library in the same shape everywhere — libraryfolders.vdf and one
+// appmanifest per game — so only finding the Steam folder itself differs by system.
 
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
@@ -18,6 +21,38 @@ List<Game>? cache = null;
 // ---------- locate the Steam install ----------
 string? FindSteamPath()
 {
+    if (OperatingSystem.IsWindows())
+    {
+        var fromRegistry = FindSteamInRegistry();
+        if (fromRegistry is not null) return fromRegistry;
+    }
+
+    var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+    string[] candidates = OperatingSystem.IsMacOS()
+        ? [Path.Combine(home, "Library", "Application Support", "Steam")]
+        : OperatingSystem.IsLinux()
+            ? [
+                Path.Combine(home, ".steam", "steam"),
+                Path.Combine(home, ".local", "share", "Steam"),
+                // the flatpak build keeps its own home
+                Path.Combine(home, ".var", "app", "com.valvesoftware.Steam", ".local", "share", "Steam")
+              ]
+            : [
+                // the registry is gone or empty; these are where the installer puts it
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Steam")
+              ];
+
+    return candidates.FirstOrDefault(Directory.Exists);
+}
+
+// Guarded by the caller: the registry types exist everywhere, but answering is a Windows-only
+// trick and everywhere else they throw.
+string? FindSteamInRegistry()
+{
+    if (!OperatingSystem.IsWindows()) return null;
+
     foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
     {
         using var hkcu = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, view);
@@ -42,6 +77,7 @@ IEnumerable<string> LibraryFolders(string steamPath)
 
     foreach (Match match in Regex.Matches(File.ReadAllText(vdf), "\"path\"\\s+\"([^\"]+)\""))
     {
+        // the file escapes its backslashes, which only Windows paths have
         var path = match.Groups[1].Value.Replace(@"\\", @"\");
         if (Directory.Exists(path)) yield return path;
     }
@@ -131,9 +167,6 @@ return Plugin.Create(query =>
             Subtitle = x.game.InstallDir,
             IconPath = x.game.Icon,
             Score = x.score,
-            Action = () => Process.Start(new ProcessStartInfo($"steam://rungameid/{x.game.AppId}")
-            {
-                UseShellExecute = true
-            })
+            Action = () => Shell.Open($"steam://rungameid/{x.game.AppId}")
         });
 });

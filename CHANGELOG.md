@@ -37,6 +37,28 @@ to change to stop being Windows-only:
 macOS and Linux are not finished: the global hotkey is still only implemented on Windows, and
 without it the launcher has no way to open. Everything else in the shell is in place.
 
+**Three more plugins work on all three systems**
+
+`disk-usage`, `ssh-hosts` and `steam-games` used to be marked Windows-only. Their logic never
+was: a folder scan, an `~/.ssh/config` parser and Steam's own library files read the same
+everywhere. What tied each of them down was one line about how the system does something.
+
+- **`Shell.Open` and `Shell.Reveal` in the plugin contract**, the third pair after `Clipboard`
+  and `Ask`. Plugins were calling `explorer.exe /select,` to show a file. Opening a folder is
+  not a Windows idea, but `explorer.exe` is — so the launcher does it now and the plugin just
+  asks.
+- **Disk Usage** no longer assumes a backslash or a drive letter, and skips the pseudo-drives
+  that Linux presents as filesystems — `/proc`, `/sys` and a pile of tmpfs mounts. A drive with
+  no label is listed by its kind rather than dropped.
+- **SSH Hosts** opens Windows Terminal or PowerShell on Windows, Terminal.app on macOS, and
+  tries the usual terminals in turn on Linux.
+- **Steam Games** finds the Steam folder in the registry on Windows, under
+  `~/Library/Application Support` on macOS, and in the three usual places on Linux, flatpak
+  included.
+
+`programs` and `system` stay Windows-only. The store already says so, next to a disabled Install
+button, rather than hiding them.
+
 **A result row can carry a bar**
 
 `PluginResult` has a new `Fraction` (0 to 1). The launcher draws it as a faint bar behind the

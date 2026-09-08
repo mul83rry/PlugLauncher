@@ -10,33 +10,35 @@
   ],
   "icon": "assets/icon.png",
   "platforms": [
-    "windows"
+    "windows",
+    "macos",
+    "linux"
   ],
   "minCore": "1.5.0",
   "usage": [
     {
-      "example": "du C:\\",
-      "description": "the folders inside, biggest first"
+      "example": "du",
+      "description": "every drive, and how full it is"
     },
     {
-      "example": "du C:\\ types",
+      "example": "du ~",
+      "description": "the folders inside your home folder, biggest first"
+    },
+    {
+      "example": "du ~ types",
       "description": "the same bytes grouped by kind of file"
     },
     {
-      "example": "du C:\\ types Archives",
+      "example": "du ~ types Archives",
       "description": "the extensions inside one kind"
     },
     {
-      "example": "du C:\\ ext",
+      "example": "du ~ ext",
       "description": "every extension in there, biggest first"
     },
     {
-      "example": "du C:\\ ext .zip",
+      "example": "du ~ ext .zip",
       "description": "the biggest files with one extension"
-    },
-    {
-      "example": "du ~\\Downloads",
-      "description": "any folder, and ~ means your profile"
     }
   ]
 }

@@ -83,6 +83,18 @@ public partial class App : Application
 
         Contracts.Ask.Use(Dialog.Confirm);
 
+        // شکستش بی‌صدا نیست ولی جلوی پلاگین را هم نمی‌گیرد: پلاگین درخواست می‌دهد،
+        // تصمیم با سیستم است
+        Contracts.Shell.Use(
+            target =>
+            {
+                if (!Os.Opener.Open(target, out var problem)) log.Warn($"could not open \"{target}\": {problem}");
+            },
+            path =>
+            {
+                if (!Os.Opener.Reveal(path, out var problem)) log.Warn($"could not show \"{path}\": {problem}");
+            });
+
         CreateTrayIcon(desktop, log);
 
         await _engine.LoadAllAsync();

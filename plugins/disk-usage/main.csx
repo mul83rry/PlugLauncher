@@ -1,12 +1,13 @@
 // What is taking the space. Keyword: du
 //
 //   du                       -> every drive, used share as a bar
-//   du C:\                   -> the folders inside, biggest first          (Enter goes in)
-//   du C:\ types             -> the same bytes grouped by kind of file      (Enter opens a kind)
-//   du C:\ types Archives    -> the extensions inside that kind             (Enter opens one)
-//   du C:\ ext               -> every extension in there, biggest first
-//   du C:\ ext .zip          -> the biggest files with that extension       (Enter shows it in Explorer)
-//   du ~                     -> your profile folder
+//   du ~                     -> the folders inside your home folder         (Enter goes in)
+//   du ~ types               -> the same bytes grouped by kind of file      (Enter opens a kind)
+//   du ~ types Archives      -> the extensions inside that kind             (Enter opens one)
+//   du ~ ext                 -> every extension in there, biggest first
+//   du ~ ext .zip            -> the biggest files with that extension       (Enter shows the file)
+//
+// Any folder works in place of ~ — "du C:\" on Windows, "du /var" on macOS and Linux.
 //
 // The scan is one pass over the folder that keeps only sums: bytes per top-level child, per
 // extension, and the eight biggest files of each extension. Nothing else is remembered, so a
@@ -193,15 +194,11 @@ string Count(long n, string noun) => $"{n:N0} {noun}{(n == 1 ? "" : "s")}";
 
 // ===== actions =====
 
-void OpenFolder(string path)
-{
-    try { Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }); } catch { }
-}
+// The host opens things, not this script. "explorer.exe /select," was the one line in here
+// that only meant anything on Windows.
+void OpenFolder(string path) => Shell.Open(path);
 
-void RevealFile(string path)
-{
-    try { Process.Start("explorer.exe", $"/select,\"{path}\""); } catch { }
-}
+void RevealFile(string path) => Shell.Reveal(path);
 
 // ===== query parsing =====
 
@@ -254,7 +251,7 @@ Request Parse(string search)
     else if (text.StartsWith("~\\") || text.StartsWith("~/")) text = Path.Combine(home, text[2..]);
 
     // "C:" alone means the current directory of that drive to Windows; the user means the root.
-    if (text.Length == 2 && text[1] == ':') text += "\\";
+    if (OperatingSystem.IsWindows() && text.Length == 2 && text[1] == ':') text += "\\";
 
     request.Path = text;
     return request;
@@ -289,15 +286,25 @@ List<PluginResult> Drives(string keyword, int scoreFrom = 200)
     foreach (var drive in DriveInfo.GetDrives())
     {
         long total, free;
-        string label;
         try
         {
             if (!drive.IsReady) continue;
+
+            // On Linux every pseudo-filesystem is a drive too — /proc, /sys and a dozen tmpfs
+            // mounts. None of them holds anything anybody is looking for.
+            if (drive.DriveType is DriveType.Ram or DriveType.Unknown or DriveType.NoRootDirectory) continue;
+
             total = drive.TotalSize;
             free = drive.TotalFreeSpace;
-            label = string.IsNullOrWhiteSpace(drive.VolumeLabel) ? drive.DriveType.ToString() : drive.VolumeLabel;
+            if (total <= 0) continue;
         }
         catch { continue; }
+
+        // A missing label is no reason to drop a drive, so it is asked for on its own: outside
+        // Windows this can simply refuse to answer.
+        string label;
+        try { label = drive.VolumeLabel; } catch { label = ""; }
+        if (string.IsNullOrWhiteSpace(label)) label = drive.DriveType.ToString();
 
         var used = total - free;
 
@@ -318,7 +325,7 @@ PluginResult Header(Scan scan, string title, string detail) => new()
 {
     Id = "header:" + scan.Root,
     Title = title,
-    Subtitle = $"{Human(scan.Bytes)}  ·  {Count(scan.Files, "file")}  ·  {detail}  ·  Enter opens in Explorer",
+    Subtitle = $"{Human(scan.Bytes)}  ·  {Count(scan.Files, "file")}  ·  {detail}  ·  Enter opens the folder",
     Score = 300,
     Action = () => OpenFolder(scan.Root)
 };
@@ -501,14 +508,14 @@ List<PluginResult> Extension(Scan scan, string keyword, string extension)
     {
         var folder = Path.GetDirectoryName(file.Path) ?? "";
         var inside = folder.StartsWith(scan.Root, StringComparison.OrdinalIgnoreCase) && folder.Length > scan.Root.Length
-            ? folder[scan.Root.Length..].TrimStart('\\') + "\\"
+            ? folder[scan.Root.Length..].TrimStart(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar
             : "here";
 
         rows.Add(new PluginResult
         {
             Id = "file:" + file.Path,
             Title = Path.GetFileName(file.Path),
-            Subtitle = $"{Human(file.Size)}  ·  {Percent(file.Size, scan.Bytes)}  ·  {inside}  ·  Enter shows it in Explorer",
+            Subtitle = $"{Human(file.Size)}  ·  {Percent(file.Size, scan.Bytes)}  ·  {inside}  ·  Enter shows the file",
             IconPath = file.Path,
             Fraction = Share(file.Size, scan.Bytes),
             Score = score--,
@@ -567,7 +574,9 @@ bool TrySplitVerb(string text, out string folder, out string partial)
     try { folder = Path.GetFullPath(rest); } catch { return false; }
     if (!Directory.Exists(folder)) return false;
 
-    folder = folder.Length > 3 ? folder.TrimEnd(Path.DirectorySeparatorChar) : folder;
+    // a root keeps its trailing separator ("C:\" and "/"); anything else loses it
+    var rootOfFolder = Path.GetPathRoot(folder) ?? "";
+    folder = folder.Length > rootOfFolder.Length ? folder.TrimEnd(Path.DirectorySeparatorChar) : folder;
     partial = word;
     return true;
 }

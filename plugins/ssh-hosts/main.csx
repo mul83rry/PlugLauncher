@@ -4,9 +4,9 @@
 //   ssh prod           filter by alias, hostname or user
 //   ssh root@10.0.0.5  connect to something that is not in the config at all
 //
-// Enter opens a terminal running "ssh <alias>". Windows Terminal is used when it is
-// installed, otherwise PowerShell. Wildcard blocks (Host *) are skipped: they are
-// defaults for other hosts, not something you can connect to.
+// Enter opens a terminal running "ssh <alias>" — Windows Terminal or PowerShell on Windows,
+// Terminal.app on macOS, and whichever terminal is installed on Linux. Wildcard blocks
+// (Host *) are skipped: they are defaults for other hosts, not something you can connect to.
 
 class SshHost
 {
@@ -153,10 +153,20 @@ bool IsSafeTarget(string target)
        && target.Length < 200
        && target.All(c => char.IsLetterOrDigit(c) || "._-@:%+/[]".Contains(c));
 
+// Every system has ssh; none of them agrees on how to open a window to run it in. The three
+// branches are the whole difference between the systems in this plugin.
 void Connect(string target)
 {
     if (!IsSafeTarget(target)) return;
 
+    if (OperatingSystem.IsWindows()) { ConnectOnWindows(target); return; }
+    if (OperatingSystem.IsMacOS()) { ConnectOnMac(target); return; }
+
+    ConnectOnLinux(target);
+}
+
+void ConnectOnWindows(string target)
+{
     var terminal = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "Microsoft", "WindowsApps", "wt.exe");
@@ -181,6 +191,55 @@ void Connect(string target)
     {
         UseShellExecute = true
     });
+}
+
+// "open -a Terminal" cannot be given a command to run, so Terminal is asked in its own
+// language. The target has already been through IsSafeTarget, so there is nothing in it that
+// AppleScript could read as a second statement.
+void ConnectOnMac(string target)
+{
+    var start = new ProcessStartInfo("osascript");
+    start.ArgumentList.Add("-e");
+    start.ArgumentList.Add($"tell application \"Terminal\" to do script \"ssh {target}\"");
+    start.ArgumentList.Add("-e");
+    start.ArgumentList.Add("tell application \"Terminal\" to activate");
+
+    try { Process.Start(start); } catch { }
+}
+
+// There is no such thing as "the terminal" on Linux. x-terminal-emulator is the one name a
+// distribution is supposed to provide; the rest are what people actually have installed.
+void ConnectOnLinux(string target)
+{
+    string[][] candidates =
+    [
+        ["x-terminal-emulator", "-e"],
+        ["gnome-terminal", "--"],
+        ["konsole", "-e"],
+        ["xfce4-terminal", "-e"],
+        ["alacritty", "-e"],
+        ["kitty"],
+        ["xterm", "-e"]
+    ];
+
+    foreach (var candidate in candidates)
+    {
+        var start = new ProcessStartInfo(candidate[0]);
+        foreach (var argument in candidate.Skip(1)) start.ArgumentList.Add(argument);
+        start.ArgumentList.Add("ssh");
+        start.ArgumentList.Add(target);
+
+        // the name is looked up on PATH, so "not installed" arrives here as an exception
+        try
+        {
+            Process.Start(start);
+            return;
+        }
+        catch
+        {
+            // not installed — try the next one
+        }
+    }
 }
 
 // ---------- scoring ----------
@@ -267,7 +326,7 @@ return Plugin.Create(query =>
             Title = "Open ~/.ssh/config",
             Subtitle = $"{ConfigPath()}  ·  {hosts.Count} host(s)",
             Score = 5,
-            Action = () => Process.Start(new ProcessStartInfo(ConfigPath()) { UseShellExecute = true })
+            Action = () => Shell.Open(ConfigPath())
         });
 
         results.Add(new PluginResult
