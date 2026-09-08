@@ -125,9 +125,9 @@
                       "keywords":  [
                                        "ssh"
                                    ],
-                      "size":  5674,
-                      "sha256":  "aa10ba057bc0b7a8a175fa765f870254bef2a9cc75c299ad4e22c47bc93bf425",
-                      "publishedAt":  "2026-09-08T07:33:17Z",
+                      "size":  5550,
+                      "sha256":  "e49a8de9a8fb013a9fa130abeafab04cc3872fad8f42f55c5a16711c5681dc56",
+                      "publishedAt":  "2026-09-08T09:15:17Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.ssh-hosts/1.1.0/com.pluglauncher.ssh-hosts-1.1.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.ssh-hosts/1.1.0/icon.png"
