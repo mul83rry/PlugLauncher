@@ -1,5 +1,5 @@
 {
-    "generatedAt":  "2026-09-08T09:15:18Z",
+    "generatedAt":  "2026-09-08T09:25:20Z",
     "total":  10,
     "page":  1,
     "pageSize":  10,
@@ -13,12 +13,18 @@
                       "keywords":  [
 
                                    ],
-                      "size":  2902,
-                      "sha256":  "657190f6bb64f5e4cc41b14b75ebd91b4687bcb7a47c1d8e1a94893cd6eda5eb",
-                      "publishedAt":  "2026-09-08T09:15:15Z",
+                      "size":  2945,
+                      "sha256":  "c02b8d5abf0959bbd41d937d05679dbc390e0775dc802ad814a8e9c541989a34",
+                      "publishedAt":  "2026-09-08T09:25:20Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.calculator/1.2.1/com.pluglauncher.calculator-1.2.1.plz",
-                      "iconUrl":  "packages/com.pluglauncher.calculator/1.2.1/icon.png"
+                      "iconUrl":  "packages/com.pluglauncher.calculator/1.2.1/icon.png",
+                      "platforms":  [
+                                        "windows",
+                                        "macos",
+                                        "linux"
+                                    ],
+                      "minCore":  "1.5.0"
                   },
                   {
                       "id":  "com.pluglauncher.curl",
@@ -34,7 +40,11 @@
                       "publishedAt":  "2026-09-08T09:15:16Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.curl/1.0.0/com.pluglauncher.curl-1.0.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.curl/1.0.0/icon.png"
+                      "iconUrl":  "packages/com.pluglauncher.curl/1.0.0/icon.png",
+                      "platforms":  [
+
+                                    ],
+                      "minCore":  ""
                   },
                   {
                       "id":  "com.pluglauncher.dev-toolbox",
@@ -50,7 +60,11 @@
                       "publishedAt":  "2026-09-08T09:15:16Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.dev-toolbox/1.1.0/com.pluglauncher.dev-toolbox-1.1.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.dev-toolbox/1.1.0/icon.png"
+                      "iconUrl":  "packages/com.pluglauncher.dev-toolbox/1.1.0/icon.png",
+                      "platforms":  [
+
+                                    ],
+                      "minCore":  ""
                   },
                   {
                       "id":  "com.pluglauncher.disk-usage",
@@ -66,7 +80,11 @@
                       "publishedAt":  "2026-09-08T07:47:45Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/com.pluglauncher.disk-usage-1.0.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/icon.png"
+                      "iconUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/icon.png",
+                      "platforms":  [
+
+                                    ],
+                      "minCore":  ""
                   },
                   {
                       "id":  "com.pluglauncher.keyboard-layout",
@@ -82,7 +100,11 @@
                       "publishedAt":  "2026-09-08T09:15:16Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.keyboard-layout/1.1.0/com.pluglauncher.keyboard-layout-1.1.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.keyboard-layout/1.1.0/icon.png"
+                      "iconUrl":  "packages/com.pluglauncher.keyboard-layout/1.1.0/icon.png",
+                      "platforms":  [
+
+                                    ],
+                      "minCore":  ""
                   },
                   {
                       "id":  "com.pluglauncher.password",
@@ -98,7 +120,11 @@
                       "publishedAt":  "2026-09-08T09:15:17Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.password/1.1.1/com.pluglauncher.password-1.1.1.plz",
-                      "iconUrl":  "packages/com.pluglauncher.password/1.1.1/icon.png"
+                      "iconUrl":  "packages/com.pluglauncher.password/1.1.1/icon.png",
+                      "platforms":  [
+
+                                    ],
+                      "minCore":  ""
                   },
                   {
                       "id":  "com.pluglauncher.programs",
@@ -114,7 +140,11 @@
                       "publishedAt":  "2026-09-06T11:40:03Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.programs/1.2.0/com.pluglauncher.programs-1.2.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.programs/1.2.0/icon.png"
+                      "iconUrl":  "packages/com.pluglauncher.programs/1.2.0/icon.png",
+                      "platforms":  [
+
+                                    ],
+                      "minCore":  ""
                   },
                   {
                       "id":  "com.pluglauncher.ssh-hosts",
@@ -130,7 +160,11 @@
                       "publishedAt":  "2026-09-08T09:15:17Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.ssh-hosts/1.1.0/com.pluglauncher.ssh-hosts-1.1.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.ssh-hosts/1.1.0/icon.png"
+                      "iconUrl":  "packages/com.pluglauncher.ssh-hosts/1.1.0/icon.png",
+                      "platforms":  [
+
+                                    ],
+                      "minCore":  ""
                   },
                   {
                       "id":  "com.pluglauncher.steam-games",
@@ -146,7 +180,11 @@
                       "publishedAt":  "2026-09-08T07:33:18Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.steam-games/1.2.0/com.pluglauncher.steam-games-1.2.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.steam-games/1.2.0/icon.png"
+                      "iconUrl":  "packages/com.pluglauncher.steam-games/1.2.0/icon.png",
+                      "platforms":  [
+
+                                    ],
+                      "minCore":  ""
                   },
                   {
                       "id":  "com.pluglauncher.system",
@@ -162,7 +200,11 @@
                       "publishedAt":  "2026-09-08T09:15:18Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.system/1.1.0/com.pluglauncher.system-1.1.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.system/1.1.0/icon.png"
+                      "iconUrl":  "packages/com.pluglauncher.system/1.1.0/icon.png",
+                      "platforms":  [
+
+                                    ],
+                      "minCore":  ""
                   }
               ]
 }
