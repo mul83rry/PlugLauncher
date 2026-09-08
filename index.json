@@ -1,9 +1,29 @@
 {
-    "generatedAt":  "2026-09-08T11:03:11Z",
-    "total":  10,
+    "generatedAt":  "2026-09-08T12:23:33Z",
+    "total":  11,
     "page":  1,
-    "pageSize":  10,
+    "pageSize":  11,
     "items":  [
+                  {
+                      "id":  "com.pluglauncher.applications",
+                      "name":  "Applications",
+                      "description":  "Search the applications installed on your Mac and open one",
+                      "version":  "1.0.0",
+                      "author":  "PlugLauncher",
+                      "keywords":  [
+
+                                   ],
+                      "size":  3973,
+                      "sha256":  "9f8dab62b256680878cb88306e57e513b540e59ae296ef7e52f92d1831fecf48",
+                      "publishedAt":  "2026-09-08T12:23:28Z",
+                      "downloads":  0,
+                      "downloadUrl":  "packages/com.pluglauncher.applications/1.0.0/com.pluglauncher.applications-1.0.0.plz",
+                      "iconUrl":  "packages/com.pluglauncher.applications/1.0.0/icon.png",
+                      "platforms":  [
+                                        "macos"
+                                    ],
+                      "minCore":  "1.5.0"
+                  },
                   {
                       "id":  "com.pluglauncher.calculator",
                       "name":  "Calculator",
