@@ -1,5 +1,5 @@
 {
-    "generatedAt":  "2026-09-08T07:33:25Z",
+    "generatedAt":  "2026-09-08T07:47:45Z",
     "total":  9,
     "page":  1,
     "pageSize":  9,
@@ -45,9 +45,9 @@
                       "keywords":  [
                                        "du"
                                    ],
-                      "size":  8150,
-                      "sha256":  "203d86c67d36d9d04b85292eb1d0ad3ce86f5ed10262b6f6abf09ee80ebbbe24",
-                      "publishedAt":  "2026-09-08T07:33:16Z",
+                      "size":  9470,
+                      "sha256":  "7f3f4140e71ba865f7683ff3c4a44a4805b8ef43faa26857b1f27295a741ccb4",
+                      "publishedAt":  "2026-09-08T07:47:45Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/com.pluglauncher.disk-usage-1.0.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/icon.png"
