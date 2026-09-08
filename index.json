@@ -1,5 +1,5 @@
 {
-    "generatedAt":  "2026-09-08T08:44:39Z",
+    "generatedAt":  "2026-09-08T08:55:44Z",
     "total":  10,
     "page":  1,
     "pageSize":  10,
@@ -29,9 +29,9 @@
                       "keywords":  [
                                        "curl"
                                    ],
-                      "size":  11912,
-                      "sha256":  "5ab829f77084d492e7ba060aa64b41cbf7c0ff3f1a3cebb122c2956af4baf390",
-                      "publishedAt":  "2026-09-08T08:44:36Z",
+                      "size":  12014,
+                      "sha256":  "bfce55765aed67ee5a082491a351f1c261dbc9e7edb514fbe11d651d264dde15",
+                      "publishedAt":  "2026-09-08T08:55:39Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.curl/1.0.0/com.pluglauncher.curl-1.0.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.curl/1.0.0/icon.png"
