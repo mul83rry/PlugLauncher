@@ -11,7 +11,7 @@ public partial class SettingsWindow : Window
 {
     private readonly PluginEngine _engine;
 
-    /// <summary>موقع پر کردن اولیه‌ی کنترل‌ها، هندلرها نباید چیزی بنویسند.</summary>
+    /// <summary>موقع پر کردن کنترل‌ها از روی وضعیت فعلی، هندلرها نباید چیزی بنویسند.</summary>
     private bool _loading;
 
     /// <summary>به‌روزرسانی‌ای که الان نشان داده می‌شود، برای دکمه‌ی دانلود.</summary>
@@ -129,14 +129,36 @@ public partial class SettingsWindow : Window
         _engine.SaveSettings();
     }
 
+    /// <summary>
+    /// فهرست از نو ساخته می‌شود، پس ردیف‌های قبلی دور انداخته می‌شوند و بایندینگِ چک‌باکسِ هرکدام
+    /// باز می‌شود — که خودش <see cref="OnPluginToggled"/> را صدا می‌زند. تا وقتی کار این‌جا تمام
+    /// نشده، آن هندلر باید ساکت بماند.
+    /// </summary>
     private void Refresh()
     {
-        PluginsList.ItemsSource = _engine.Plugins.Select(p => new PluginRow(p, _engine.Settings.IsEnabled(p.Id))).ToList();
-        FooterText.Text = $"Plugins folder: {PluginPaths.UserPlugins}";
+        _loading = true;
+        try
+        {
+            PluginsList.ItemsSource = _engine.Plugins.Select(p => new PluginRow(p, _engine.Settings.IsEnabled(p.Id))).ToList();
+            FooterText.Text = $"Plugins folder: {PluginPaths.UserPlugins}";
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
+    /// <summary>
+    /// نگهبانِ <c>_loading</c> اینجا از نگهبانِ بقیه‌ی چک‌باکس‌ها جدی‌تر است. رویداد
+    /// <c>IsCheckedChanged</c> است، پس با تغییرِ برنامه‌ای هم می‌آید: وقتی <see cref="Refresh"/>
+    /// فهرست را عوض می‌کند، Avalonia ردیف‌های قدیمی را پاک می‌کند، هر چک‌باکسِ بی‌بایندینگ به حالت
+    /// اولیه برمی‌گردد و همین هندلر برای تک‌تکشان می‌افتد. بدون نگهبان، جوابِ هرکدام یک Refresh
+    /// دیگر است وسط همان بازسازی — هم همه‌ی پلاگین‌ها خاموش می‌شوند، هم Avalonia کانتینری را
+    /// می‌خواهد که دیگر نیست و ArgumentOutOfRange می‌دهد.
+    /// </summary>
     private async void OnPluginToggled(object? sender, RoutedEventArgs e)
     {
+        if (_loading) return;
         if (sender is not CheckBox { Tag: string pluginId } box) return;
 
         await _engine.SetEnabledAsync(pluginId, box.IsChecked == true);

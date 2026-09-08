@@ -22,6 +22,19 @@ Each row shows the plugin's own icon rather than the application's. A Mac keeps 
 `.icns` inside the bundle and the launcher has no decoder for that format, so asking per row
 would have failed on every row.
 
+**Fixed: turning one plugin off in settings could turn all of them off**
+
+The Enabled checkbox is wired to `IsCheckedChanged`, which also fires when the value is changed in
+code — and refreshing the list replaces it whole. So Avalonia threw the old rows away, each
+checkbox lost its binding and fell back to unchecked, and every one of those raised the handler
+again: which switched that plugin off and asked for another refresh, from inside the refresh that
+was still running. The loud half was a run of `ArgumentOutOfRangeException` in the log as the
+container list went out of sync with the panel. The quiet half was plugins switching themselves
+off. The handler now stands down while the list is being rebuilt.
+
+This was not a macOS bug — the same trace is in the Windows log. It only needed someone to open
+the settings window and use the toggle.
+
 ## 1.5.0 — 2026-09-08
 
 **One interface for Windows, macOS and Linux**
