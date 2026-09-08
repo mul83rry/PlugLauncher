@@ -1,5 +1,5 @@
 {
-    "generatedAt":  "2026-09-08T09:15:16Z",
+    "generatedAt":  "2026-09-08T09:15:17Z",
     "total":  10,
     "page":  1,
     "pageSize":  10,
@@ -77,9 +77,9 @@
                       "keywords":  [
                                        "kb"
                                    ],
-                      "size":  5918,
-                      "sha256":  "a0e5f8956b63bd722afec7315c94ed50ca65a5a9081863e974850435d4e6044a",
-                      "publishedAt":  "2026-09-08T07:33:16Z",
+                      "size":  5800,
+                      "sha256":  "bf6f317f25f93bbb9957d0d26c6960a06f140166a3bf06e8427ae1845937862c",
+                      "publishedAt":  "2026-09-08T09:15:16Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.keyboard-layout/1.1.0/com.pluglauncher.keyboard-layout-1.1.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.keyboard-layout/1.1.0/icon.png"
