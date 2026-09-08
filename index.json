@@ -45,9 +45,9 @@
                       "keywords":  [
                                        "dev"
                                    ],
-                      "size":  8340,
-                      "sha256":  "52d28b1b6aa1de0adc755cb86e126a43e81673d00e83e8e5038470beaaf529fd",
-                      "publishedAt":  "2026-09-08T08:02:12Z",
+                      "size":  8231,
+                      "sha256":  "a03d41b7bd7c660ac81bf9c42025912676f1b260a184fc383337fdbff94ffb24",
+                      "publishedAt":  "2026-09-08T09:15:16Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.dev-toolbox/1.1.0/com.pluglauncher.dev-toolbox-1.1.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.dev-toolbox/1.1.0/icon.png"
