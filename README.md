@@ -149,6 +149,7 @@ The rest live in the store tab in settings, one click each:
 | `sys` | System | Lock, restart, the msc/cpl consoles, and memory/disk/IP read-outs |
 | `kb` | Keyboard Layout | Text typed on the wrong layout — `kb sghl` gives `سلام`, using the layouts you actually have installed |
 | `du` | Disk Usage | What is taking the space — drives, then folders, then kinds of file, each with a bar. Needs 1.5.0 or later |
+| `curl` | Curl | Sends a request from a curl command line and shows the answer field by field, with the ones you have sent kept as a list. Needs 1.5.0 or later |
 
 The store is a static index published at
 [mul83rry.github.io/PlugLauncher](https://mul83rry.github.io/PlugLauncher/) — no server, no

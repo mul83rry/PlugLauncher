@@ -1,0 +1,26 @@
+{
+  "id": "com.pluglauncher.curl",
+  "name": "Curl",
+  "description": "send a request from a curl command line and read the answer field by field",
+  "version": "1.0.0",
+  "author": "PlugLauncher",
+  "entry": "main.csx",
+  "keywords": [
+    "curl"
+  ],
+  "icon": "assets/icon.png",
+  "usage": [
+    {
+      "example": "curl https://api.github.com/users/torvalds",
+      "description": "what would be sent — Enter sends it"
+    },
+    {
+      "example": "curl -X POST https://httpbin.org/post -d name=ada",
+      "description": "a body makes it a POST"
+    },
+    {
+      "example": "curl clear",
+      "description": "forget every cached request"
+    }
+  ]
+}

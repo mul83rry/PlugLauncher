@@ -26,6 +26,26 @@ What is taking the space, without leaving the launcher:
 - Numbers are kept for five minutes. After that the old ones are still shown, marked as old,
   while a fresh scan runs.
 
+**New plugin: Curl** (`curl`, from the store — needs this version)
+
+Send a request without leaving the launcher, and read the answer instead of squinting at it.
+
+- `curl https://api.github.com/users/torvalds` shows what would be sent — method, URL, headers,
+  body — and Enter sends it. Nothing goes out while you type.
+- The answer comes back as rows: the status, then every field of the JSON, flattened, so
+  `nested.deep` and `tags[0]` are each a row you can copy with Enter.
+- `curl #a3f login` keeps only the fields that match, `curl #a3f headers` lists the response
+  headers, `curl #a3f body` gives the body as it came, and `curl #a3f again` sends it once more.
+  The short id is a hash of the command, so the same command always has the same one.
+- `curl` on its own is everything you have sent, newest first, with how each one went.
+  `curl clear` forgets all of it.
+- The command line is parsed here rather than handed to curl.exe: `-X -H -d --data --json -u -A
+  -b -e -L -I -G --url` and the noise flags that get copied along. Anything else is reported
+  rather than silently dropped. A redirect is shown as a redirect unless you passed `-L`.
+- On disk: the command lines and how each last went. Not the response bodies — a body is usually
+  where the secrets are, and it lives in memory only until the launcher closes. A token you put
+  in a command line is part of that command line.
+
 **Slow results arrive by themselves**
 
 A plugin can put `RefreshAfterMs` on a result to say its work is still going. The launcher runs
