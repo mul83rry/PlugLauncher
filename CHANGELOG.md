@@ -34,7 +34,8 @@ to change to stop being Windows-only:
 - Settings is no longer a modal dialog, and the launcher steps out of the way when it opens —
   the launcher is always on top, so staying would mean sitting on top of the settings.
 
-macOS and Linux are not finished, and neither has ever been run on a real machine of its own.
+macOS works. Linux builds and runs but still has no global hotkey, so there is no way to open the
+window there yet.
 
 **macOS can open the window**
 
@@ -55,9 +56,12 @@ from a terminal is not one — so `dotnet run` can produce a launcher that never
 that has nothing to do with the hotkey. The bundle is unsigned, which is fine on the machine that
 built it and refused by Gatekeeper anywhere else.
 
-None of this has been run on a Mac. It compiles, and the whole registration path is wrapped so
-that a wrong guess arrives as a sentence in a dialog rather than a crash. Linux still has no
-hotkey.
+This was tested on a Mac and the launcher opens and runs there. There is no macOS download in
+this release: the bundle would have to be signed and notarised before Gatekeeper would let
+anyone start a copy they did not build themselves, and that needs an Apple developer account.
+Until then, build it yourself with `./tools/build-mac.sh` — see the README.
+
+Linux still has no hotkey.
 
 **Three more plugins work on all three systems**
 

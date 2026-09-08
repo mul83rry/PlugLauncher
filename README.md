@@ -1,7 +1,11 @@
 # PlugLauncher
 
-A small Windows launcher where every feature comes from a **plugin**. Plugins are `.csx`
-scripts: no build step, no DLLs, just a folder dropped into `plugins/`.
+A small launcher where every feature comes from a **plugin**. Plugins are `.csx` scripts: no
+build step, no DLLs, just a folder dropped into `plugins/`.
+
+Windows and macOS. Only Windows has a download — on a Mac you
+[build it yourself](#running-on-macos), because an unsigned bundle is refused by Gatekeeper
+anywhere but the machine that built it.
 
 ```
 Alt+Space   →  the window opens
@@ -88,8 +92,9 @@ only, which `-SkipInstaller` also does deliberately.
 
 ### Running on macOS
 
-The port is complete enough to try but has never been run on a real Mac. Build it there with
-the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0):
+macOS works, but there is no download for it: an unsigned bundle is refused by Gatekeeper on any
+machine that did not build it, and signing needs an Apple developer account. So build it there
+yourself with the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0):
 
 ```bash
 ./tools/build-mac.sh
@@ -105,17 +110,14 @@ The bundle is self-contained (~120 MB) and unsigned, which is fine on the machin
 macOS does not quarantine what was built locally. Copy the `.app` to a second Mac and Gatekeeper
 will refuse to start it.
 
-What to look at first, in order — each one only makes sense if the one above it worked:
+The hotkey asks for **no Accessibility permission** — that one belongs to `CGEventTap`, which
+sees every key on the system. Carbon is only handed the combination it registered, so there is
+nothing for macOS to ask about. Option counts as Alt and Command as Win, so a hotkey saved on
+Windows keeps working from the same `settings.json`.
 
-| | |
-|---|---|
-| The window opens on `Alt+Space` | Option counts as Alt and Command as Win, so a hotkey saved on Windows keeps working. If it fails, the app says why in a dialog instead of staying silent. |
-| You can type in it straight away | The window appearing is not the same as the keyboard arriving; on macOS the *application* has to be activated, not the window. |
-| `calculator` and `password` answer | Proves `.csx` plugins compile — the whole plugin engine in one keystroke. |
-| `programs` is orange | It declares `windows` only, so it should load as unsupported rather than fail. Orange is the pass here. |
-| Settings → the store lists plugins | Everything above is local; this is the first thing that leaves the machine. |
+`programs` is bundled but declares `windows` only, so on a Mac it loads as unsupported and shows
+orange in the list. That is the intended outcome, not a failure.
 
-`AutoStart` writes a LaunchAgent plist and `Open`/`Reveal` shell out to `open`, both untested.
 Linux builds and runs but has no hotkey yet, so there is no way to open the window.
 
 ## Releasing
