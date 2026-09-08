@@ -86,6 +86,38 @@ only, which `-SkipInstaller` also does deliberately.
 > `TRUSTED_PLATFORM_ASSEMBLIES` and `Assembly.Location`, both of which come back empty there
 > (the compiler warns with `IL3000`). The result is that no `.csx` plugin compiles at all.
 
+### Running on macOS
+
+The port is complete enough to try but has never been run on a real Mac. Build it there with
+the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0):
+
+```bash
+./tools/build-mac.sh
+open publish/PlugLauncher.app
+```
+
+**Build the bundle; do not `dotnet run`.** `RegisterEventHotKey` only answers a process the
+window server considers an application, and a bare binary started from a terminal is not one —
+so `dotnet run` can leave you looking at a launcher that never opens, for a reason that has
+nothing to do with the hotkey code.
+
+The bundle is self-contained (~120 MB) and unsigned, which is fine on the machine that built it:
+macOS does not quarantine what was built locally. Copy the `.app` to a second Mac and Gatekeeper
+will refuse to start it.
+
+What to look at first, in order — each one only makes sense if the one above it worked:
+
+| | |
+|---|---|
+| The window opens on `Alt+Space` | Option counts as Alt and Command as Win, so a hotkey saved on Windows keeps working. If it fails, the app says why in a dialog instead of staying silent. |
+| You can type in it straight away | The window appearing is not the same as the keyboard arriving; on macOS the *application* has to be activated, not the window. |
+| `calculator` and `password` answer | Proves `.csx` plugins compile — the whole plugin engine in one keystroke. |
+| `programs` is orange | It declares `windows` only, so it should load as unsupported rather than fail. Orange is the pass here. |
+| Settings → the store lists plugins | Everything above is local; this is the first thing that leaves the machine. |
+
+`AutoStart` writes a LaunchAgent plist and `Open`/`Reveal` shell out to `open`, both untested.
+Linux builds and runs but has no hotkey yet, so there is no way to open the window.
+
 ## Releasing
 
 1. Bump `<Version>` in `Directory.Build.props`.

@@ -97,14 +97,18 @@ public static class Os
         : new NoOpener();
 
     public static IWindowing Windowing { get; } =
-        OperatingSystem.IsWindows() ? new WindowsWindowing() : new NoWindowing();
+        OperatingSystem.IsWindows() ? new WindowsWindowing()
+        : OperatingSystem.IsMacOS() ? new MacWindowing()
+        : new NoWindowing();
 
     public static IIcons Icons { get; } =
         OperatingSystem.IsWindows() ? new WindowsIcons() : new NoIcons();
 
     /// <summary>هربار یک نمونه‌ی تازه: ثبت هات‌کی منابع سیستمی می‌گیرد و باید Dispose شود.</summary>
     public static IHotkeys CreateHotkeys()
-        => OperatingSystem.IsWindows() ? new WindowsHotkeys() : new NoHotkeys();
+        => OperatingSystem.IsWindows() ? new WindowsHotkeys()
+        : OperatingSystem.IsMacOS() ? new MacHotkeys()
+        : new NoHotkeys();
 }
 
 /// <summary>وقتی سیستم‌عامل شناخته نیست یا هنوز پیاده‌سازی ندارد. بی‌صدا شکست نمی‌خورد.</summary>

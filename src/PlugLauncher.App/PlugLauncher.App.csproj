@@ -17,7 +17,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>PlugLauncher</AssemblyName>
     <RootNamespace>PlugLauncher.App</RootNamespace>
-    <ApplicationIcon>assets\pluglauncher.ico</ApplicationIcon>
+    <!--
+      اسلش رو به جلو، نه رو به عقب: این مسیر همان‌طور که هست به کامپایلر داده می‌شود و مکِ
+      بیلد‌کننده بک‌اسلش را جزئی از نامِ فایل می‌داند، نه جداکننده‌ی پوشه.
+    -->
+    <ApplicationIcon>assets/pluglauncher.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <!--
@@ -35,8 +39,8 @@
 
   <!-- آیکن کنار exe هم لازم است: سینی و پنجره‌ی تنظیمات از فایل می‌خوانند -->
   <ItemGroup>
-    <Content Include="assets\pluglauncher.ico" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="assets\pluglauncher.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="assets/pluglauncher.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="assets/pluglauncher.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- پلاگین‌های همراه برنامه کنار فایل اجرایی کپی می‌شوند -->
@@ -44,9 +48,9 @@
     <!-- Only these three ship with the app. Everything else in plugins/ goes to the store
          instead, so a fresh install starts with three and the user adds what they want.
          A folder listed here is installed for everyone, whether they asked for it or not. -->
-    <None Include="..\..\plugins\calculator\**\*" LinkBase="plugins\calculator" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\..\plugins\password\**\*" LinkBase="plugins\password" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\..\plugins\programs\**\*" LinkBase="plugins\programs" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../plugins/calculator/**/*" LinkBase="plugins/calculator" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../plugins/password/**/*" LinkBase="plugins/password" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../plugins/programs/**/*" LinkBase="plugins/programs" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

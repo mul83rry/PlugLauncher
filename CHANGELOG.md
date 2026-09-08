@@ -34,8 +34,30 @@ to change to stop being Windows-only:
 - Settings is no longer a modal dialog, and the launcher steps out of the way when it opens —
   the launcher is always on top, so staying would mean sitting on top of the settings.
 
-macOS and Linux are not finished: the global hotkey is still only implemented on Windows, and
-without it the launcher has no way to open. Everything else in the shell is in place.
+macOS and Linux are not finished, and neither has ever been run on a real machine of its own.
+
+**macOS can open the window**
+
+The global hotkey is registered through Carbon's `RegisterEventHotKey`. That API needs **no
+Accessibility permission** — the permission everyone associates with macOS hotkeys belongs to
+`CGEventTap`, which sees every key on the system; this one is only handed the combination it
+asked for. Option is read as Alt and Command as Win, so a hotkey saved on Windows keeps working
+on the same `settings.json`.
+
+Two smaller pieces came with it. On macOS a window does not come forward, the *application*
+does, so showing the launcher now activates the app — without that the window appears but the
+keyboard stays with whatever you were using, which is no launcher at all. And the pointer's
+position is read from Core Graphics, so the window opens on the display you are looking at.
+
+`tools/build-mac.sh` builds `PlugLauncher.app`. The bundle is not packaging polish: Carbon only
+gives the hotkey to a process the window server counts as an application, and a binary started
+from a terminal is not one — so `dotnet run` can produce a launcher that never opens for a reason
+that has nothing to do with the hotkey. The bundle is unsigned, which is fine on the machine that
+built it and refused by Gatekeeper anywhere else.
+
+None of this has been run on a Mac. It compiles, and the whole registration path is wrapped so
+that a wrong guess arrives as a sentence in a dialog rather than a crash. Linux still has no
+hotkey.
 
 **Three more plugins work on all three systems**
 
