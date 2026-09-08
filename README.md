@@ -181,7 +181,9 @@ my-plugin/
   "usage": [
     { "example": "mp something", "description": "what that does" }
   ],
-  "icon": "assets/icon.png"
+  "icon": "assets/icon.png",
+  "platforms": [ "windows", "macos", "linux" ],
+  "minCore": "1.5.0"
 }
 ```
 
@@ -192,6 +194,15 @@ my-plugin/
   else, those lines appear under the results; Enter on one puts the example in the search box
   instead of running it. Six is the most that show. Nobody has to remember your syntax, and you
   write no code for it.
+- `platforms` says where the plugin works: `windows`, `macos`, `linux`. Leave it out and it is
+  assumed to run everywhere, which is right for a plugin that only shuffles text around. Name
+  them when the plugin really is tied to one — the registry, the Start menu, a particular exe.
+- `minCore` is the oldest launcher the plugin works on. A plugin is compiled when it loads, so
+  using something a older core does not have is a compile error rather than a missing feature;
+  this says so in advance.
+- Either one that does not fit is caught before compiling: the launcher shows the plugin as **Not
+  for this system** with the reason, and the store greys out Install instead of handing you a
+  plugin that breaks on arrival.
 - A keyword has one owner. If two plugins claim the same one, the older install keeps it and the
   newer plugin is not loaded at all — settings shows it as **Keyword taken** with the name of the
   plugin holding it, and a tray notification says so at startup. Change `keywords` and hit

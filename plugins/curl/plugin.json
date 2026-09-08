@@ -9,6 +9,12 @@
     "curl"
   ],
   "icon": "assets/icon.png",
+  "platforms": [
+    "windows",
+    "macos",
+    "linux"
+  ],
+  "minCore": "1.5.0",
   "usage": [
     {
       "example": "curl https://api.github.com/users/torvalds",

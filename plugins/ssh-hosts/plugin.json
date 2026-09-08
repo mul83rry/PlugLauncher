@@ -8,6 +8,11 @@
   "keywords": [
     "ssh"
   ],
+  "icon": "assets/icon.png",
+  "platforms": [
+    "windows"
+  ],
+  "minCore": "1.5.0",
   "usage": [
     {
       "example": "ssh prod",
@@ -17,6 +22,5 @@
       "example": "ssh root@10.0.0.5",
       "description": "connect to a host that is not in the config"
     }
-  ],
-  "icon": "assets/icon.png"
+  ]
 }

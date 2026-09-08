@@ -125,11 +125,19 @@ public partial class SettingsWindow
             ? $"v{Plugin.Version}"
             : $"v{Plugin.Version}  ·  installed v{installedVersion}";
 
+        /// <summary>دلیلِ اینکه این بسته اینجا کار نمی‌کند، یا null. جلوی نصبش را می‌گیرد.</summary>
+        private string? Rejected { get; } = PluginSupport.Reject(plugin.Platforms, plugin.MinCore);
+
         public string MetaText
         {
             get
             {
-                var parts = new List<string> { $"{Plugin.Size / 1024.0:0.#} KB", $"{Plugin.Downloads} downloads" };
+                // دلیلِ نصب نشدن اول می‌آید: بقیه‌ی خط وقتی به درد می‌خورد که بشود نصبش کرد
+                var parts = new List<string>();
+                if (Rejected is not null) parts.Add(Rejected);
+
+                parts.Add($"{Plugin.Size / 1024.0:0.#} KB");
+                parts.Add($"{Plugin.Downloads} downloads");
                 if (!string.IsNullOrWhiteSpace(Plugin.Author)) parts.Add(Plugin.Author);
                 if (Plugin.Keywords.Count > 0) parts.Add("keywords: " + string.Join(", ", Plugin.Keywords));
                 return string.Join("  ·  ", parts);
@@ -137,15 +145,18 @@ public partial class SettingsWindow
         }
 
         /// <summary>نصب / به‌روزرسانی / نصب‌شده — بر اساس مقایسه‌ی نسخه‌ی نصب‌شده با فروشگاه.</summary>
-        public string ActionText => installedVersion switch
-        {
-            null => "Install",
-            _ when !installedVersion.Equals(Plugin.Version, StringComparison.OrdinalIgnoreCase) => "Update",
-            _ => "Installed"
-        };
+        public string ActionText => Rejected is not null
+            ? "Unavailable"
+            : installedVersion switch
+            {
+                null => "Install",
+                _ when !installedVersion.Equals(Plugin.Version, StringComparison.OrdinalIgnoreCase) => "Update",
+                _ => "Installed"
+            };
 
-        public bool CanInstall => installedVersion is null ||
-                                  !installedVersion.Equals(Plugin.Version, StringComparison.OrdinalIgnoreCase);
+        public bool CanInstall => Rejected is null &&
+                                  (installedVersion is null ||
+                                   !installedVersion.Equals(Plugin.Version, StringComparison.OrdinalIgnoreCase));
 
         public ImageSource? Icon { get; private set; }
 

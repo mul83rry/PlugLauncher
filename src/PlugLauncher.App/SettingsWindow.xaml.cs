@@ -245,6 +245,7 @@ public partial class SettingsWindow : Window
             PluginState.Disabled => "Disabled",
             PluginState.Failed => "Failed",
             PluginState.Conflicted => "Keyword taken",
+            PluginState.Unsupported => "Not for this system",
             _ => "Not loaded"
         };
 
@@ -252,8 +253,9 @@ public partial class SettingsWindow : Window
         {
             PluginState.Loaded => new SolidColorBrush(Color.FromRgb(0x6D, 0xC7, 0x7A)),
             PluginState.Failed => new SolidColorBrush(Color.FromRgb(0xE0, 0x5B, 0x5B)),
-            // نارنجی نه قرمز: پلاگین خراب نیست، فقط کلیدواژه‌اش گرفته شده
+            // نارنجی نه قرمز: پلاگین خراب نیست، فقط کلیدواژه‌اش گرفته شده — یا اصلاً مال اینجا نیست
             PluginState.Conflicted => new SolidColorBrush(Color.FromRgb(0xE0, 0x9B, 0x3D)),
+            PluginState.Unsupported => new SolidColorBrush(Color.FromRgb(0xE0, 0x9B, 0x3D)),
             _ => new SolidColorBrush(Color.FromRgb(0x9A, 0x9A, 0x9A))
         };
     }

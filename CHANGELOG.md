@@ -54,6 +54,14 @@ be pressed twice to see a long job finish. Three limits keep a faulty plugin fro
 faster than 250 ms, two minutes of it per typed query, and everything stops when the window
 closes.
 
+**A plugin says which systems and which launcher it needs**
+
+Two optional fields in `plugin.json`: `platforms` (`windows`, `macos`, `linux` — empty means
+everywhere) and `minCore` (the oldest launcher it works on, like `1.5.0`). A plugin that does not
+fit is not compiled at all; settings shows it as **Not for this system** with the reason, and the
+store greys out Install rather than handing over a plugin that breaks the moment it lands. Older
+launchers ignore both fields, the way they already ignore `usage`.
+
 **A plugin gets the clipboard from the launcher**
 
 `Clipboard.Copy(text)` and `Clipboard.Text()` in `PlugLauncher.Contracts`. Plugins used to call

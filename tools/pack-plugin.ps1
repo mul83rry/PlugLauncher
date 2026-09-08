@@ -23,6 +23,20 @@ $manifest = Get-Content $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 if (-not $manifest.id) { throw "plugin.json فیلد id ندارد." }
 if (-not $manifest.version) { throw "plugin.json فیلد version ندارد." }
 
+# یک اسم غلط در platforms یعنی پلاگین روی هیچ سیستمی لود نمی‌شود، و هیچ‌جا هم نمی‌گوید چرا.
+# اینجا گرفتنش ارزان است؛ بعد از انتشار، گران.
+$known = @("windows", "macos", "linux")
+foreach ($platform in @($manifest.platforms)) {
+    if ($platform -and ($known -notcontains $platform)) {
+        throw "platforms مقدار ناشناخته دارد: «$platform». فقط $($known -join '، ') قابل قبول است."
+    }
+}
+
+if ($manifest.minCore) {
+    try { [version]($manifest.minCore -split '-')[0] | Out-Null }
+    catch { throw "minCore یک شماره‌ی نسخه نیست: «$($manifest.minCore)»." }
+}
+
 $entry = if ($manifest.entry) { $manifest.entry } else { "main.csx" }
 if (-not (Test-Path (Join-Path $pluginDir $entry))) { throw "فایل ورودی «$entry» در پوشه‌ی پلاگین نیست." }
 

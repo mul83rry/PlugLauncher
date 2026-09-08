@@ -44,6 +44,25 @@ public sealed class PluginManifest
     [JsonPropertyName("usage")]
     public List<PluginUsage> Usage { get; set; } = [];
 
+    /// <summary>
+    /// سیستم‌عامل‌هایی که این پلاگین روی آن‌ها کار می‌کند: <c>windows</c>، <c>macos</c>، <c>linux</c>.
+    ///
+    /// خالی یعنی همه‌جا، و این پیش‌فرضِ درستی است: پلاگینی که فقط متن را زیر و رو می‌کند هرجا کار
+    /// می‌کند. این فیلد برای پلاگینی است که واقعاً به یک سیستم گره خورده — رجیستری، منوی استارت،
+    /// یک exe مشخص — تا روی سیستم دیگر به‌جای شکستنِ بی‌توضیح، اصلاً پیشنهاد نشود.
+    /// </summary>
+    [JsonPropertyName("platforms")]
+    public List<string> Platforms { get; set; } = [];
+
+    /// <summary>
+    /// قدیمی‌ترین نسخه‌ی لانچری که این پلاگین روی آن کار می‌کند، مثل <c>1.5.0</c>. خالی یعنی هر نسخه‌ای.
+    ///
+    /// اسکریپت پلاگین موقع لود کامپایل می‌شود، پس استفاده از چیزی که در هسته‌ی قدیمی‌تر وجود ندارد
+    /// خطای کامپایل می‌دهد نه یک قابلیتِ غایب. این فیلد همان را از قبل می‌گوید.
+    /// </summary>
+    [JsonPropertyName("minCore")]
+    public string MinCore { get; set; } = string.Empty;
+
     /// <summary>ارجاعات NuGet یا اسمبلی که اسکریپت لازم دارد (فاز بعد).</summary>
     [JsonPropertyName("references")]
     public List<string> References { get; set; } = [];

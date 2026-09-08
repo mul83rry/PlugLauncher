@@ -117,6 +117,17 @@ public sealed class PluginEngine
         // قبل از هر چیز: یک پلاگین متعارض حتی کامپایل هم نمی‌شود
         if (descriptor.State == PluginState.Conflicted) return;
 
+        // همین‌طور پلاگینی که برای این سیستم یا این نسخه نیست. کامپایلش یا خطای نامفهوم می‌دهد
+        // یا بدتر: کامپایل می‌شود و موقع اجرا می‌شکند.
+        var rejected = PluginSupport.Reject(descriptor.Manifest.Platforms, descriptor.Manifest.MinCore);
+        if (rejected is not null)
+        {
+            descriptor.State = PluginState.Unsupported;
+            descriptor.Error = rejected;
+            _log.Warn($"\"{descriptor.Id}\" not loaded: {rejected}");
+            return;
+        }
+
         if (!Settings.IsEnabled(descriptor.Id))
         {
             descriptor.State = PluginState.Disabled;
@@ -367,6 +378,11 @@ public sealed class PluginEngine
     /// <summary>نصب یا به‌روزرسانی یک بسته از فروشگاه و لود دوباره‌ی پلاگین‌ها.</summary>
     public async Task InstallFromStoreAsync(StorePlugin plugin, CancellationToken cancellationToken = default)
     {
+        // فروشگاه دکمه را خاموش می‌کند، ولی دانلود کردن چیزی که همان لحظه لود نمی‌شود آن‌قدر
+        // بی‌معنی است که ارزش دارد اینجا هم بایستد.
+        var rejected = PluginSupport.Reject(plugin.Platforms, plugin.MinCore);
+        if (rejected is not null) throw new InvalidOperationException($"\"{plugin.Name}\" {rejected}.");
+
         await Store.InstallAsync(plugin, cancellationToken).ConfigureAwait(false);
 
         // پلاگین قبلی ممکن است غیرفعال شده باشد؛ نصب از فروشگاه یعنی کاربر آن را می‌خواهد

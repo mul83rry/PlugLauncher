@@ -8,6 +8,11 @@
   "keywords": [
     "du"
   ],
+  "icon": "assets/icon.png",
+  "platforms": [
+    "windows"
+  ],
+  "minCore": "1.5.0",
   "usage": [
     {
       "example": "du C:\\",
@@ -33,6 +38,5 @@
       "example": "du ~\\Downloads",
       "description": "any folder, and ~ means your profile"
     }
-  ],
-  "icon": "assets/icon.png"
+  ]
 }

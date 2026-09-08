@@ -8,11 +8,14 @@
   "keywords": [
     "st"
   ],
+  "icon": "assets/icon.png",
+  "platforms": [
+    "windows"
+  ],
   "usage": [
     {
       "example": "st raft",
       "description": "filter installed games by name"
     }
-  ],
-  "icon": "assets/icon.png"
+  ]
 }

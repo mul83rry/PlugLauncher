@@ -2,9 +2,12 @@
   "id": "com.pluglauncher.programs",
   "name": "Programs",
   "description": "Search applications installed in the Start menu",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "PlugLauncher",
   "entry": "main.csx",
   "keywords": [],
-  "icon": "assets/icon.png"
+  "icon": "assets/icon.png",
+  "platforms": [
+    "windows"
+  ]
 }

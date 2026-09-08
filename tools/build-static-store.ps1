@@ -81,6 +81,10 @@ foreach ($file in Get-ChildItem -Path $Packages -Filter *.plz -File) {
         if ($manifest.author) { $author = $manifest.author }
         $keywords = @()
         if ($manifest.keywords) { $keywords = @($manifest.keywords) }
+        $platforms = @()
+        if ($manifest.platforms) { $platforms = @($manifest.platforms) }
+        $minCore = ""
+        if ($manifest.minCore) { $minCore = $manifest.minCore }
 
         $entries += [pscustomobject]@{
             id          = $id
@@ -95,6 +99,8 @@ foreach ($file in Get-ChildItem -Path $Packages -Filter *.plz -File) {
             downloads   = 0
             downloadUrl = "packages/$id/$version/$($file.Name)"
             iconUrl     = $iconUrl
+            platforms   = $platforms
+            minCore     = $minCore
             versionKey  = Get-VersionKey $version
         }
     }
@@ -106,7 +112,7 @@ $latest = $entries |
     Group-Object id |
     ForEach-Object { $_.Group | Sort-Object versionKey -Descending | Select-Object -First 1 } |
     Sort-Object name |
-    Select-Object id, name, description, version, author, keywords, size, sha256, publishedAt, downloads, downloadUrl, iconUrl
+    Select-Object id, name, description, version, author, keywords, size, sha256, publishedAt, downloads, downloadUrl, iconUrl, platforms, minCore
 
 $index = [ordered]@{
     generatedAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")

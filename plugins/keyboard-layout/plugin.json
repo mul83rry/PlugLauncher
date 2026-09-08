@@ -8,6 +8,11 @@
   "keywords": [
     "kb"
   ],
+  "icon": "assets/icon.png",
+  "platforms": [
+    "windows"
+  ],
+  "minCore": "1.5.0",
   "usage": [
     {
       "example": "kb sghl",
@@ -17,6 +22,5 @@
       "example": "kb",
       "description": "convert whatever is on the clipboard"
     }
-  ],
-  "icon": "assets/icon.png"
+  ]
 }

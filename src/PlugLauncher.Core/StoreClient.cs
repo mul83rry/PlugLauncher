@@ -20,6 +20,12 @@ public sealed class StorePlugin
     [JsonPropertyName("downloads")] public int Downloads { get; set; }
     [JsonPropertyName("downloadUrl")] public string DownloadUrl { get; set; } = string.Empty;
     [JsonPropertyName("iconUrl")] public string? IconUrl { get; set; }
+
+    /// <summary>سیستم‌عامل‌هایی که بسته روی آن‌ها کار می‌کند؛ خالی یعنی همه‌جا.</summary>
+    [JsonPropertyName("platforms")] public List<string> Platforms { get; set; } = [];
+
+    /// <summary>قدیمی‌ترین نسخه‌ی لانچری که بسته روی آن کار می‌کند؛ خالی یعنی هر نسخه‌ای.</summary>
+    [JsonPropertyName("minCore")] public string MinCore { get; set; } = string.Empty;
 }
 
 /// <summary>ساختار <c>index.json</c>: تعداد کل + فهرست بسته‌ها.</summary>
