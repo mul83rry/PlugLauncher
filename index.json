@@ -1,8 +1,8 @@
 {
-    "generatedAt":  "2026-09-08T08:02:12Z",
-    "total":  9,
+    "generatedAt":  "2026-09-08T08:26:52Z",
+    "total":  10,
     "page":  1,
-    "pageSize":  9,
+    "pageSize":  10,
     "items":  [
                   {
                       "id":  "com.pluglauncher.calculator",
@@ -19,6 +19,22 @@
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.calculator/1.2.0/com.pluglauncher.calculator-1.2.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.calculator/1.2.0/icon.png"
+                  },
+                  {
+                      "id":  "com.pluglauncher.curl",
+                      "name":  "Curl",
+                      "description":  "send a request from a curl command line and read the answer field by field",
+                      "version":  "1.0.0",
+                      "author":  "PlugLauncher",
+                      "keywords":  [
+                                       "curl"
+                                   ],
+                      "size":  11764,
+                      "sha256":  "363b38b367c2b9d0ab18822c046da434da30909c249a6b9abd68476e01e280c7",
+                      "publishedAt":  "2026-09-08T08:26:51Z",
+                      "downloads":  0,
+                      "downloadUrl":  "packages/com.pluglauncher.curl/1.0.0/com.pluglauncher.curl-1.0.0.plz",
+                      "iconUrl":  "packages/com.pluglauncher.curl/1.0.0/icon.png"
                   },
                   {
                       "id":  "com.pluglauncher.dev-toolbox",
