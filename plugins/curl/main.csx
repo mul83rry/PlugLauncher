@@ -606,18 +606,21 @@ PluginResult Progress(Run run)
     {
         Id = "waiting:" + run.Id,
         Title = $"{run.Request.Method} {Cut(run.Request.Url, 70)} …",
-        Subtitle = $"waiting for an answer  ·  {(DateTime.UtcNow - run.Started).TotalSeconds:0.0}s",
+        Subtitle = $"waiting for an answer  ·  {Took((DateTime.UtcNow - run.Started).TotalMilliseconds)}",
         RefreshAfterMs = 300,
         Score = 500
     };
 
 PluginResult Status(Run run)
 {
-    var head = run.Error is not null ? "Could not send it" : $"{run.Status} {run.Reason}";
+    // How long it took goes in the title, next to the status. It is the thing you were waiting
+    // for, and a subtitle is trimmed from the right — where it used to sit, behind the URL.
+    var outcome = run.Error is not null ? "Could not send it" : $"{run.Status} {run.Reason}";
+    var head = $"{outcome}  ·  {Took(run.Ms)}";
 
     var detail = run.Error is not null
         ? run.Error
-        : $"{Human(run.Bytes)}  ·  {Took(run.Ms)}  ·  {(run.ContentType.Length == 0 ? "no content type" : run.ContentType.Split(';')[0])}";
+        : $"{Human(run.Bytes)}  ·  {(run.ContentType.Length == 0 ? "no content type" : run.ContentType.Split(';')[0])}";
 
     return new PluginResult
     {

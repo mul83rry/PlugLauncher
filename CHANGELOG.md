@@ -32,8 +32,8 @@ Send a request without leaving the launcher, and read the answer instead of squi
 
 - `curl https://api.github.com/users/torvalds` shows what would be sent — method, URL, headers,
   body — and Enter sends it. Nothing goes out while you type.
-- The answer comes back as rows: the status, then every field of the JSON, flattened, so
-  `nested.deep` and `tags[0]` are each a row you can copy with Enter.
+- The answer comes back as rows: the status and how long it took, then every field of the JSON,
+  flattened, so `nested.deep` and `tags[0]` are each a row you can copy with Enter.
 - `curl #a3f login` keeps only the fields that match, `curl #a3f headers` lists the response
   headers, `curl #a3f body` gives the body as it came, and `curl #a3f again` sends it once more.
   The short id is a hash of the command, so the same command always has the same one.
