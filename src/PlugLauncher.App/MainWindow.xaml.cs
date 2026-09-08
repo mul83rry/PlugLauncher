@@ -52,6 +52,31 @@ public partial class MainWindow : Window
         {
             if (!_suppressHideOnDeactivate) HideLauncher();
         };
+
+        DataObject.AddPastingHandler(SearchBox, OnSearchPaste);
+    }
+
+    /// <summary>
+    /// یک جعبه‌ی تک‌خطی از چند خطِ پیست‌شده فقط خط اول را نگه می‌دارد و بقیه را بی‌صدا دور می‌ریزد.
+    /// دستور curlِ چندخطی، مسیرِ کپی‌شده از یک لاگ، کوئریِ SQL: چیزی که آدم پیست می‌کند اغلب
+    /// بیش از یک خط است، پس خطوط را به هم می‌چسبانیم تا هیچ‌چیز گم نشود.
+    /// </summary>
+    private void OnSearchPaste(object sender, DataObjectPastingEventArgs e)
+    {
+        var format = e.SourceDataObject.GetDataPresent(DataFormats.UnicodeText, true) ? DataFormats.UnicodeText
+                   : e.SourceDataObject.GetDataPresent(DataFormats.Text, true) ? DataFormats.Text
+                   : null;
+        if (format is null) return;
+
+        if (e.SourceDataObject.GetData(format, true) is not string text) return;
+        if (!text.Contains('\n') && !text.Contains('\r')) return;
+
+        var flat = text.Replace('\r', '\n').Replace('\n', ' ').Trim();
+        while (flat.Contains("  ")) flat = flat.Replace("  ", " ");
+
+        var single = new DataObject();
+        single.SetData(DataFormats.UnicodeText, flat);
+        e.DataObject = single;
     }
 
     protected override void OnSourceInitialized(EventArgs e)

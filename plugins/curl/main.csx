@@ -181,9 +181,9 @@ PluginResult Go(string id, string title, string subtitle, string command, int sc
 // ===== reading a curl command line =====
 
 /// <summary>
-/// Splits on spaces the way a shell would, so a quoted header stays one token. A trailing
-/// backslash is what is left of the line continuations in a copied multi-line command, and it
-/// is dropped rather than becoming part of a value.
+/// Splits on spaces the way a shell would, so a quoted header stays one token. A backslash at
+/// the end of a line is what is left of the line continuations in a copied multi-line command,
+/// and it is dropped rather than becoming part of a value.
 /// </summary>
 List<string> Tokenize(string text)
 {
@@ -215,13 +215,16 @@ List<string> Tokenize(string text)
             quote = c;
             quoted = true;
         }
-        else if (c == ' ' || c == '\t')
+        else if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
         {
             Flush();
         }
-        else if (c == '\\' && (i == text.Length - 1 || text[i + 1] == ' '))
+        else if (c == '\\' && (i == text.Length - 1 || text[i + 1] is ' ' or '\t' or '\r' or '\n' or '-'))
         {
-            // a line continuation that survived being pasted into one line
+            // The end of a line in a copied multi-line command. Pasting one into a single-line
+            // box can drop the newline and leave the backslash against the next flag, so
+            // "\--header" is the same thing and has to end the token too.
+            Flush();
         }
         else
         {
@@ -233,10 +236,14 @@ List<string> Tokenize(string text)
     return tokens;
 }
 
-/// <summary>The command as it is stored and hashed: no leading "curl", no double spaces.</summary>
+/// <summary>
+/// The command as it is stored and hashed: one line, no leading "curl", no double spaces. A
+/// pasted multi-line command has to come down to one line here, or the same command would hash
+/// to a different id depending on how it arrived, and a history row would not fit on one line.
+/// </summary>
 string Normalize(string command)
 {
-    var text = command.Trim();
+    var text = command.Replace('\r', ' ').Replace('\n', ' ').Replace('\t', ' ').Trim();
     while (text.Contains("  ")) text = text.Replace("  ", " ");
     if (text.StartsWith("curl ", StringComparison.OrdinalIgnoreCase)) text = text[5..].Trim();
 

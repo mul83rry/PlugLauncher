@@ -54,6 +54,12 @@ be pressed twice to see a long job finish. Three limits keep a faulty plugin fro
 faster than 250 ms, two minutes of it per typed query, and everything stops when the window
 closes.
 
+**Pasting something that is more than one line keeps all of it**
+
+The search box is a single line, and a single-line box on Windows keeps the first line of a paste
+and throws the rest away without saying so. A curl command copied out of Postman lost every
+header. The lines are now joined into one instead, so what you pasted is what is in the box.
+
 **Suggestions that follow what you are typing**
 
 A row that offers a next step now says the whole command, and Tab takes it. Where it continues
