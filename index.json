@@ -79,16 +79,16 @@
                       "keywords":  [
                                        "du"
                                    ],
-                      "size":  9470,
-                      "sha256":  "7f3f4140e71ba865f7683ff3c4a44a4805b8ef43faa26857b1f27295a741ccb4",
-                      "publishedAt":  "2026-09-08T07:47:45Z",
+                      "size":  9498,
+                      "sha256":  "4237575182a810703add56741b6da66db6ad2d236d81270406ccea9bfe4a029a",
+                      "publishedAt":  "2026-09-08T09:25:21Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/com.pluglauncher.disk-usage-1.0.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/icon.png",
                       "platforms":  [
-
+                                        "windows"
                                     ],
-                      "minCore":  ""
+                      "minCore":  "1.5.0"
                   },
                   {
                       "id":  "com.pluglauncher.keyboard-layout",
