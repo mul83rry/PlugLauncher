@@ -1,5 +1,5 @@
 {
-    "generatedAt":  "2026-09-08T09:25:25Z",
+    "generatedAt":  "2026-09-08T10:19:51Z",
     "total":  10,
     "page":  1,
     "pageSize":  10,
@@ -201,9 +201,9 @@
                       "keywords":  [
                                        "sys"
                                    ],
-                      "size":  7168,
-                      "sha256":  "bb1ed40f9145a29d09ef8cee1e998818c3989f8275db006644eecaaa39c47de4",
-                      "publishedAt":  "2026-09-08T09:25:24Z",
+                      "size":  7192,
+                      "sha256":  "ef271cb5ae29b76acafb6dceab267ec237cca58dd10d19e64d41bcc1968e0655",
+                      "publishedAt":  "2026-09-08T10:19:46Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.system/1.1.0/com.pluglauncher.system-1.1.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.system/1.1.0/icon.png",
