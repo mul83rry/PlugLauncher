@@ -1,19 +1,50 @@
 # PlugLauncher
 
-A small launcher where every feature comes from a **plugin**. Plugins are `.csx` scripts: no
-build step, no DLLs, just a folder dropped into `plugins/`.
+<p align="center">
+  <img src="docs/screenshots/main.jpg" alt="The PlugLauncher window: a search box and the list of plugins, most recently used first" width="640">
+</p>
 
-Windows and macOS. Only Windows has a download — on a Mac you
-[build it yourself](#running-on-macos), because an unsigned bundle is refused by Gatekeeper
-anywhere but the machine that built it.
+A fast, quiet launcher for your keyboard. Press **Alt+Space**, type a few letters, press
+**Enter** — that's the whole idea. It sits in the tray and stays out of your way until you call
+it.
+
+Everything it can do comes from **plugins**. Three ship with it so it is useful the moment you
+install it, and a built-in store adds more with one click each.
 
 ```
-Alt+Space   →  the window opens
-(empty)     →  your plugins, most recently used first, plus the settings button
-type        →  results from every plugin that matches
-Enter       →  run  |  Tab: complete  |  ↑↓: select  |  Esc: close
-wrong layout →  «زاقخپث» is searched as «chrome»; Tab rewrites the box
+Alt+Space    →  the window opens
+(empty)      →  your plugins, most recently used first
+type         →  results from every plugin that matches
+Enter        →  run   |   Tab: complete   |   ↑↓: select   |   Esc: close
 ```
+
+It also speaks your keyboard: type on the wrong layout and it searches what you *meant* —
+«زاقخپث» is found as `chrome`, and `sghl` offered back as `سلام`. Tab fixes the box in place.
+
+## What it looks like
+
+**A curl command, answered in place** — paste a request, press Enter twice, and the JSON comes
+back pretty-printed and colored like an editor, with a copy button in the corner. Fields you
+look for often can be picked one by one, and everything you sent stays in a list.
+
+<p align="center">
+  <img src="docs/screenshots/json.jpg" alt="A JSON answer shown pretty-printed and syntax-colored inside the launcher" width="640">
+</p>
+
+**A terminal that remembers** — `term` runs commands in one shell that stays alive, so `cd`,
+variables and everything else a shell keeps survive from one command to the next, however far
+apart you type them. The whole session reads like a small terminal.
+
+<p align="center">
+  <img src="docs/screenshots/terminal.jpg" alt="A terminal transcript inside the launcher showing a variable set in one command and read in the next" width="640">
+</p>
+
+**The wrong keyboard layout, fixed** — type `kb` and the text you typed on the wrong layout;
+mixed Persian and English in one line works too.
+
+<p align="center">
+  <img src="docs/screenshots/keyboard.jpg" alt="The query 'kb sghl چطوری' with the corrected 'سلام چطوری' as the first result" width="640">
+</p>
 
 ## Download
 
@@ -42,263 +73,102 @@ the app.
 > `SHA256SUMS.txt` attached to each release covers both downloads, so you can check what you
 > got against it.
 
-`Alt+Space` opens the window. To quit: the tray icon → **Exit**, or the **Exit PlugLauncher**
-button in settings. Closing the window only hides it — the app stays in the tray so the hotkey
-keeps working.
+## Everyday use
 
-On the first run it asks whether to start with Windows, and does not ask again either way. The
-**Start with Windows** checkbox in settings is where you change the answer; it writes to
-`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, so no administrator rights are needed and
-nothing is left behind for other users of the machine.
+- **Open it:** `Alt+Space`. **Close it:** `Esc`, or just click anywhere else. Closing the window
+  only hides it — the app stays in the tray so the hotkey keeps working.
+- **Quit for real:** the tray icon → **Exit**, or the **Exit PlugLauncher** button in settings.
+- On the first run it asks whether to start with Windows, and never asks again. The
+  **Start with Windows** checkbox in settings is where you change your answer.
+- The hotkey itself can be changed in settings.
 
 ### Updates
 
 Once a day PlugLauncher asks GitHub whether a newer release exists. If there is one, a tray
 notification names it and the **Settings** button keeps a dot until you restart. Nothing is
 downloaded or installed — the button opens the release page, and you upgrade the same way you
-installed: run the new `setup.exe`, or replace the folder you unzipped.
+installed. The check is one request to `api.github.com`, it carries nothing about you, and
+settings has a **Check now** button and a **Check automatically** checkbox to switch it off.
 
-It is one request to `api.github.com`, it carries nothing about you, and settings has both a
-**Check now** button and a **Check automatically** checkbox to switch it off. Turning it off is
-the same as `"checkForUpdates": false` in `settings.json`. A check that fails is not recorded, so
-being offline when you sign in does not use up the day's check.
+## What comes with it
 
-## Building from source
+Three plugins ship in the box, so a fresh install is useful immediately without being full of
+things you did not ask for:
 
-```bash
-dotnet build PlugLauncher.slnx
-dotnet run --project src/PlugLauncher.App
-```
+| Keyword | Plugin | What it does |
+|---|---|---|
+| *(none)* | Programs | Start menu shortcuts — type a name, Enter opens it |
+| *(none)* | Calculator | Type any math expression, Enter copies the result |
+| `pw` | Password Generator | Length, character sets, PIN and hex modes |
 
-To produce a release archive exactly the way CI does:
+The rest are in the **store** tab in settings, one click each — the store greys out anything
+your version of the launcher cannot run, so what it offers always works:
 
-```powershell
-./tools/build-release.ps1
-```
+| Keyword | Plugin | What it does |
+|---|---|---|
+| `term` | Terminal | One shell that stays alive between commands — `cd` sticks, variables stick, history sticks |
+| `curl` | Curl | Paste a curl command, get the answer in place: pretty JSON in editor colors, or field by field |
+| `kb` | Keyboard Layout | Text typed on the wrong layout — `kb sghl` gives `سلام`; mixed Persian/English works too |
+| `st` | Steam Games | Finds and launches installed games |
+| `ssh` | SSH Hosts | Hosts from `~/.ssh/config`, opens a terminal on the one you pick |
+| `dev` | Dev Toolbox | uuid, base64, url, hashes, epoch, JSON, JWT, random bytes, slugs |
+| `sys` | System | Lock, restart, Task Manager, Device Manager, and memory/disk/IP read-outs |
+| `du` | Disk Usage | What is taking the space — drives, then folders, then kinds of file, each with a bar |
+| *(none)* | Applications | Everything in `/Applications`, opened on Enter. macOS only |
 
-It publishes framework-dependent for `win-x64`, zips the output as
-`publish/PlugLauncher-<version>-win-x64.zip`, compiles `tools/PlugLauncher.iss` into
-`publish/PlugLauncher-<version>-setup.exe`, and writes one `SHA256SUMS.txt` covering both. The
-version comes from `Directory.Build.props`, which is the only place it is written down.
+## Where your data lives
 
-The installer step needs `ISCC.exe` from [Inno Setup](https://jrsoftware.org/isinfo.php). The
-GitHub windows runner has it pre-installed; a machine without it gets a warning and the archive
-only, which `-SkipInstaller` also does deliberately.
+Everything the app writes stays in one place, `%APPDATA%\PlugLauncher\`, and deleting that
+folder undoes all of it:
 
-> **Do not turn on `PublishSingleFile`.** In single file mode the assemblies live inside the
-> executable and have no path on disk. `CsxPluginLoader` builds its Roslyn references from
-> `TRUSTED_PLATFORM_ASSEMBLIES` and `Assembly.Location`, both of which come back empty there
-> (the compiler warns with `IL3000`). The result is that no `.csx` plugin compiles at all.
+| What | Where |
+|---|---|
+| Installed plugins | `%APPDATA%\PlugLauncher\plugins\` |
+| Settings | `%APPDATA%\PlugLauncher\settings.json` |
+| Plugins' own data (curl history, terminal history, …) | One folder per plugin under `%APPDATA%\PlugLauncher\data\` |
+| Log | `%APPDATA%\PlugLauncher\logs\plugLauncher.log` |
 
-### Running on macOS
+No account, no telemetry, no server of ours anywhere in it.
+
+## On a Mac
 
 macOS works, but there is no download for it: an unsigned bundle is refused by Gatekeeper on any
-machine that did not build it, and signing needs an Apple developer account. So build it there
-yourself with the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0):
+machine that did not build it. So build it there yourself with the
+[.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0):
 
 ```bash
 ./tools/build-mac.sh
 open publish/PlugLauncher.app
 ```
 
-**Build the bundle; do not `dotnet run`.** `RegisterEventHotKey` only answers a process the
-window server considers an application, and a bare binary started from a terminal is not one —
-so `dotnet run` can leave you looking at a launcher that never opens, for a reason that has
-nothing to do with the hotkey code.
+Build the bundle; do not `dotnet run` — a bare binary is not an application as far as the macOS
+window server is concerned, and the hotkey will never fire. The details, and the Linux note, are
+in [docs/DEVELOPING.md](docs/DEVELOPING.md).
 
-The bundle is self-contained (~120 MB) and unsigned, which is fine on the machine that built it:
-macOS does not quarantine what was built locally. Copy the `.app` to a second Mac and Gatekeeper
-will refuse to start it.
+## Come build a plugin
 
-The hotkey asks for **no Accessibility permission** — that one belongs to `CGEventTap`, which
-sees every key on the system. Carbon is only handed the combination it registered, so there is
-nothing for macOS to ask about. Option counts as Alt and Command as Win, so a hotkey saved on
-Windows keeps working from the same `settings.json`.
+The whole app is plugins, and a plugin is just a folder with a script in it — no build step, no
+DLLs, no SDK. If you can write a little C#, you can teach your launcher a new trick: a site you
+open ten times a day, a number you always look up, a sentence you always paste wrong. Drop the
+folder in `%APPDATA%\PlugLauncher\plugins\`, press **Reload** in settings, and it is live.
 
-`programs` is bundled but declares `windows` only, so on a Mac it loads as unsupported and shows
-orange in the list. That is the intended outcome, not a failure: a Mac has no Start menu and no
-`.lnk` files, so the plugin would have found nothing and said nothing about why. Its counterpart
-is **Applications**, one click away in the store — same idea, reading `/Applications` instead.
+[docs/DEVELOPING.md](docs/DEVELOPING.md) walks through it, manifest to finished plugin.
 
-Linux builds and runs but has no hotkey yet, so there is no way to open the window.
+## Contributing
 
-## Releasing
+We would love to have you. Bug reports, plugin ideas, translations of the README into your
+language, a plugin you wrote that others could use — all of it counts, and all of it is
+welcome:
 
-1. Bump `<Version>` in `Directory.Build.props`.
-2. Add a `## <version>` section to [CHANGELOG.md](CHANGELOG.md) — the workflow reads it and
-   fails if it is missing.
-3. Commit, then tag and push:
+- Something broke or behaves strangely? [Open an issue](https://github.com/mul83rry/PlugLauncher/issues) —
+  the log at `%APPDATA%\PlugLauncher\logs\` usually tells the story, and attaching it helps.
+- Want to change the app itself? [docs/DEVELOPING.md](docs/DEVELOPING.md) gets you building in
+  two commands. Pull requests are read quickly and merged happily.
+- Wrote a plugin? Put it in a repository of its own and tell us — the best ones graduate into
+  the store so everyone gets them with one click.
 
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
-
-The `Release` workflow builds on `windows-latest`, checks that the tag matches the version in
-`Directory.Build.props`, and creates the GitHub release with the installer, the zip and the
-checksum file attached. It fails if either artifact is missing rather than publishing half a
-release.
-
-Running the workflow by hand (**Actions → Release → Run workflow**) builds exactly the same
-thing and leaves it as an artifact without creating a release, which is the way to check a
-packaging change before committing to a tag.
-
-## Project layout
-
-| Project | Role |
-|---|---|
-| `src/PlugLauncher.Contracts` | The plugin contract (`IPlugin`, `PluginResult`, `PluginQuery`, `IPluginContext`) — all a plugin author ever sees |
-| `src/PlugLauncher.Core` | Plugin discovery, Roslyn compilation with an on-disk cache, query execution, usage stats, settings |
-| `src/PlugLauncher.Platform` | The parts that differ per operating system behind one door: global hotkey, start-at-login, opening files |
-| `src/PlugLauncher.App` | The interface, in Avalonia: the glass window, settings, the tray icon |
-
-## Paths
-
-| What | Where |
-|---|---|
-| Your plugins | `%APPDATA%\PlugLauncher\plugins\` |
-| Bundled plugins | `plugins\` next to the executable |
-| Settings | `%APPDATA%\PlugLauncher\settings.json` |
-| Usage stats | `%APPDATA%\PlugLauncher\usage.json` |
-| Script compile cache | `%APPDATA%\PlugLauncher\cache\scripts\` |
-| Log | `%APPDATA%\PlugLauncher\logs\plugLauncher.log` |
-| Optional user theme | `%APPDATA%\PlugLauncher\theme\theme.json` — a flat `{ "AccentBrush": "#FF4C8DFF" }`; the key names are the ones in `Theme.axaml` |
-
-## Plugins
-
-Three ship with the app, so a fresh install is useful immediately without being full of things
-you did not ask for:
-
-| Keyword | Plugin | What it does |
-|---|---|---|
-| *(none)* | Programs | Start menu shortcuts |
-| *(none)* | Calculator | Evaluates the query as an expression |
-| `pw` | Password Generator | Length, character sets, PIN and hex modes |
-
-The rest live in the store tab in settings, one click each:
-
-| Keyword | Plugin | What it does |
-|---|---|---|
-| `st` | Steam Games | Finds and launches installed games |
-| `ssh` | SSH Hosts | Hosts from `~/.ssh/config`, opens a terminal on the one you pick |
-| `dev` | Dev Toolbox | uuid, base64, url, hashes, epoch, JSON, JWT, random bytes, slugs |
-| `sys` | System | Lock, restart, the msc/cpl consoles, and memory/disk/IP read-outs |
-| `kb` | Keyboard Layout | Text typed on the wrong layout — `kb sghl` gives `سلام`, using the layouts you actually have installed |
-| `du` | Disk Usage | What is taking the space — drives, then folders, then kinds of file, each with a bar. Needs 1.5.0 or later |
-| `curl` | Curl | Sends a request from a curl command line and shows the answer field by field, with the ones you have sent kept as a list. Needs 1.5.0 or later |
-| *(none)* | Applications | Everything in `/Applications`, opened on Enter. macOS only — what Programs does on Windows. Needs 1.5.0 or later |
-
-The store is a static index published at
-[mul83rry.github.io/PlugLauncher](https://mul83rry.github.io/PlugLauncher/) — no server, no
-account. See [docs/STORE.md](docs/STORE.md) for how packages are built and published.
-
-The three bundled plugins are in the store as well. A plugin installed from the store lands in
-`%APPDATA%\PlugLauncher\plugins\` and takes precedence over the copy next to the executable, so
-installing one is how you update a bundled plugin without waiting for the next release.
-
-## Writing a plugin
-
-```
-my-plugin/
-  plugin.json     # manifest
-  main.csx        # code
-  assets/         # icons
-```
-
-**plugin.json**
-
-```json
-{
-  "id": "com.you.my-plugin",
-  "name": "My Plugin",
-  "description": "One line about it",
-  "version": "1.0.0",
-  "entry": "main.csx",
-  "keywords": [ "mp" ],
-  "usage": [
-    { "example": "mp something", "description": "what that does" }
-  ],
-  "icon": "assets/icon.png",
-  "platforms": [ "windows", "macos", "linux" ],
-  "minCore": "1.5.0"
-}
-```
-
-- With `keywords` set, the plugin only runs when the query starts with one of them (`mp something`).
-  The keyword has to be the whole first word: `mp` and `mp x` match, `mpx` does not.
-- With `keywords` empty the plugin is **global** and sees every query, the way `calculator` does.
-- `usage` is the plugin's own cheat sheet. The moment the user has typed the keyword and nothing
-  else, those lines appear under the results; Enter on one puts the example in the search box
-  instead of running it. Six is the most that show. Nobody has to remember your syntax, and you
-  write no code for it.
-- `platforms` says where the plugin works: `windows`, `macos`, `linux`. Leave it out and it is
-  assumed to run everywhere, which is right for a plugin that only shuffles text around. Name
-  them when the plugin really is tied to one — the registry, the Start menu, a particular exe.
-- `minCore` is the oldest launcher the plugin works on. A plugin is compiled when it loads, so
-  using something a older core does not have is a compile error rather than a missing feature;
-  this says so in advance.
-- Either one that does not fit is caught before compiling: the launcher shows the plugin as **Not
-  for this system** with the reason, and the store greys out Install instead of handing you a
-  plugin that breaks on arrival.
-- A keyword has one owner. If two plugins claim the same one, the older install keeps it and the
-  newer plugin is not loaded at all — settings shows it as **Keyword taken** with the name of the
-  plugin holding it, and a tray notification says so at startup. Change `keywords` and hit
-  **Reload** to bring it back.
-
-**main.csx** — the last line has to return an `IPlugin`:
-
-```csharp
-return Plugin.Create(query =>
-{
-    var term = query.Search.Trim();   // the text after the keyword
-
-    return new[]
-    {
-        new PluginResult
-        {
-            Id       = "unique-row-id",         // used for the usage stats
-            Title    = $"Hello {term}",
-            Subtitle = "the second line of the row",
-            IconPath = "assets/icon.png",       // relative to the plugin folder, or absolute
-            Score    = 100,                     // higher sorts nearer the top
-            Fraction = 0.38,                    // optional: a bar behind the row, 0 to 1
-            Action   = () => Process.Start(new ProcessStartInfo("https://example.com")
-                             { UseShellExecute = true })
-        }
-    };
-});
-```
-
-There is an async form with an initializer too:
-
-```csharp
-return Plugin.Create(
-    query: async (q, ct) => { /* ... */ },
-    initialize: async (ctx, ct) => { ctx.Log.Info(ctx.PluginDirectory); });
-```
-
-### Things worth knowing
-
-- **Compile cache**: each plugin's compiled output is kept in `cache\scripts`, keyed on a hash
-  of its `.csx` files and `plugin.json`. Edit the code and the hash changes, so it recompiles
-  by itself.
-- **Isolation**: a plugin that throws or runs long only removes itself from the results
-  (`queryTimeoutMs`, three seconds by default) and the reason goes to the log.
-- **References**: the whole framework and `PlugLauncher.Contracts` are available to the script.
-  Extra DLLs go in the manifest's `references` array.
-- **Compile errors** appear in settings, next to the plugin, with a line number.
-- **`Fraction`** on a result draws a faint bar behind the row. Use it for anything that is a
-  share of a whole; leave it `null` for everything else.
-- **`ReplaceQuery`** on a result makes Enter put that text in the search box instead of running
-  anything, which is how a plugin offers drill-down: the Disk Usage plugin is nothing but this.
-  Tab accepts the selected one too, and when it continues what is already typed the rest of it
-  shows as a ghost in the box. Make it the whole command, not a fragment — the row is then both
-  the answer and a lesson in the syntax.
-- **`RefreshAfterMs`** on a result asks the launcher to run the same query again after that many
-  milliseconds. Return a progress row with it while the real work runs in the background, and
-  drop it once the answer is ready — the list fills in by itself. The launcher will not go faster
-  than 250 ms, gives up on any one query after two minutes, and stops the moment the window
-  closes, so a plugin that always asks for a refresh cannot spin in the background.
+And if PlugLauncher saves you a few seconds every day, a ★ on the repository is the cheapest
+way to say so — it helps other people find it.
 
 ## License
 
@@ -306,4 +176,6 @@ return Plugin.Create(
 
 ---
 
-Development notes and the task log live in [TASKS.md](TASKS.md) (Persian).
+Building from source, the release process, and the plugin API live in
+[docs/DEVELOPING.md](docs/DEVELOPING.md). Development notes and the task log are in
+[TASKS.md](TASKS.md) (Persian).
