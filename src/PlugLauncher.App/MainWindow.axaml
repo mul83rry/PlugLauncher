@@ -111,6 +111,52 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
+
+            <!--
+                نمای متن بلند: تکست‌باکس فقط‌خواندنی با دکمه‌ی کپی در گوشه‌ی راست. جایی از لیست
+                گرفته می‌شود و Esc آن را پس می‌دهد. فوکوس عمداً در باکس جستجو می‌ماند تا بستن نما و
+                تایپِ ادامه‌ی همان کوئری بی‌درنگ ممکن باشد.
+            -->
+            <Border x:Name="DetailPanel"
+                    Grid.Row="2"
+                    IsVisible="False"
+                    Margin="14,8,14,10"
+                    Padding="10"
+                    CornerRadius="8"
+                    Background="{StaticResource CardBrush}"
+                    BorderBrush="{StaticResource SeparatorBrush}"
+                    BorderThickness="1">
+
+                <Grid RowDefinitions="Auto,*" MinHeight="120" MaxHeight="430">
+
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="2,0,2,6">
+                        <TextBlock x:Name="DetailCaption"
+                                   Grid.Column="0"
+                                   VerticalAlignment="Center"
+                                   FontSize="12.5"
+                                   Foreground="{StaticResource SubtleTextBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+
+                        <Button x:Name="DetailCopyButton"
+                                Grid.Column="1"
+                                Classes="ghost"
+                                Content="Copy"
+                                Click="OnDetailCopyClick" />
+                    </Grid>
+
+                    <TextBox x:Name="DetailTextBox"
+                             Grid.Row="1"
+                             Classes="field"
+                             IsReadOnly="True"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             FontFamily="Consolas, Menlo, monospace"
+                             FontSize="12.5"
+                             VerticalAlignment="Top"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                </Grid>
+            </Border>
         </Grid>
     </Border>
 </Window>

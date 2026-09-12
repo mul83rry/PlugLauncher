@@ -5,6 +5,24 @@ release notes, so every version needs a `## <version>` heading here before it ca
 
 ## Unreleased
 
+**Results can open a text view**
+
+A plugin row could be one line tall and that was all a plugin could show: the body of an HTTP
+answer arrived as a line clipped to 140 characters with the rest behind an Enter that copied it to
+the clipboard. `PluginResult` now carries `DetailText`, and a row that sets it opens a view on
+Enter instead of running — a read-only, wrapping, monospace text box with a **Copy** button in its
+top-right corner. Esc closes the view back to the list, typing continues to filter, and focus never
+leaves the search box so the keyboard keeps working the moment the view is closed.
+
+**Curl reads its answers in that view** (1.1.0)
+
+`#id body` opens the whole body in the view instead of one long row; `#id headers` gains an
+**All N headers** row above the singles that opens them as one list; a non-JSON body gets a
+**Show the whole body** row next to the first lines; and a JSON answer gets **The whole answer**
+right under the status row — the body pretty-printed, so a response that arrived as one long line
+reads as the tree it is. Rows keep their copy `Action`, so a host without the view still copies
+like before — which is also why `minCore` did not move.
+
 **Keyboard Layout converts mixed text**
 
 `kb` used to reject a query outright the moment one character could not have come from the source

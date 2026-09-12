@@ -61,6 +61,17 @@ public sealed class PluginResult
     /// </summary>
     public string? ReplaceQuery { get; init; }
 
+    /// <summary>
+    /// متن بلندی که به‌جای اجرای <see cref="Action"/> در یک نما نمایش داده می‌شود: یک تکست‌باکس
+    /// فقط‌خواندنی با دکمه‌ی کپی در گوشه‌ی راستش. برای جواب‌هایی است که در یک خط جا نمی‌شوند —
+    /// بدنه‌ی یک پاسخ HTTP، خروجی یک دستور، متن یک فایل. <c>null</c> یعنی ردیف نما ندارد و همان
+    /// رفتار همیشگی را دارد. نما با Esc بسته می‌شود و به لیست برمی‌گردد.
+    /// </summary>
+    public string? DetailText { get; init; }
+
+    /// <summary>عنوان نما؛ اگر خالی باشد عنوان خود ردیف استفاده می‌شود.</summary>
+    public string? DetailTitle { get; init; }
+
     /// <summary>داده‌ی دلخواه پلاگین که همراه ردیف حمل می‌شود.</summary>
     public object? Data { get; init; }
 

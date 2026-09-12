@@ -622,6 +622,25 @@ PluginResult Status(Run run)
     };
 }
 
+/// <summary>The body re-indented, so a JSON answer that arrived as one long line reads as the
+/// tree it is. Anything that does not parse comes back exactly as it was.</summary>
+string Pretty(string body)
+{
+    try
+    {
+        using var document = JsonDocument.Parse(body, new JsonDocumentOptions { AllowTrailingCommas = true });
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
+            document.WriteTo(writer);
+
+        return Encoding.UTF8.GetString(stream.ToArray());
+    }
+    catch (JsonException)
+    {
+        return body;
+    }
+}
+
 string VerbHelp(string verb, Run run) => verb switch
 {
     "headers" => $"the {run.Headers.Count} response headers",
@@ -653,12 +672,37 @@ List<PluginResult> Result(Run run, string keyword, string filter)
 
         rows.Add(Note("The body is not JSON", $"{Human(run.Bytes)}  ·  \"{keyword} {run.Id} body\" shows it as it came", 300));
 
+        rows.Add(new PluginResult
+        {
+            Id = "raw:" + run.Id,
+            Title = "Show the whole body",
+            Subtitle = $"{Human(run.Bytes)}  ·  Enter opens it",
+            Score = 295,
+            DetailTitle = $"{run.Request.Method} {run.Request.Url}",
+            DetailText = run.Body,
+            Action = () => Clipboard.Copy(run.Body)
+        });
+
         var line = 290;
         foreach (var text in run.Body.Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0).Take(5))
             rows.Add(Copyable($"line:{run.Id}:{line}", Cut(text, 110), "a line of the body  ·  Enter to copy", line--));
 
         return rows;
     }
+
+    // Reading field by field is for finding one value; this row is for reading the answer whole,
+    // the way the view shows it -- pretty-printed, with copy in its corner.
+    if (fields is not null)
+        rows.Add(new PluginResult
+        {
+            Id = "whole:" + run.Id,
+            Title = "The whole answer",
+            Subtitle = $"pretty-printed  ·  {Human(run.Bytes)}  ·  Enter opens it",
+            Score = 485,
+            DetailTitle = $"{run.Request.Method} {run.Request.Url}",
+            DetailText = Pretty(run.Body),
+            Action = () => Clipboard.Copy(run.Body)
+        });
 
     var matching = filter.Length == 0
         ? fields
@@ -687,6 +731,20 @@ List<PluginResult> Headers(Run run, string filter)
 {
     var rows = new List<PluginResult> { Status(run) };
 
+    // The whole answer in one scrollable view, with copy in its corner. The filter below is for
+    // finding one header; this is for reading them.
+    if (filter.Length == 0)
+        rows.Add(new PluginResult
+        {
+            Id = "allheaders:" + run.Id,
+            Title = $"All {run.Headers.Count} headers",
+            Subtitle = "Enter opens them in one view",
+            Score = 350,
+            DetailTitle = $"headers  ·  {run.Request.Method} {run.Request.Url}",
+            DetailText = string.Join("\n", run.Headers.Select(h => $"{h.Key}: {h.Value}")),
+            Action = () => Clipboard.Copy(string.Join("\n", run.Headers.Select(h => $"{h.Key}: {h.Value}")))
+        });
+
     var matching = run.Headers
         .Where(h => filter.Length == 0 || h.Key.Contains(filter, StringComparison.OrdinalIgnoreCase))
         .ToList();
@@ -714,11 +772,14 @@ List<PluginResult> Body(Run run)
     rows.Add(new PluginResult
     {
         Id = "body:" + run.Id,
-        Title = Cut(run.Body, 140),
+        Title = "The body, as it came",
         Subtitle = run.Truncated
-            ? $"the first {Human(BodyLimit)} of {Human(run.Bytes)}  ·  Enter copies that much"
-            : $"{Human(run.Bytes)}  ·  Enter copies the whole body",
+            ? $"the first {Human(BodyLimit)} of {Human(run.Bytes)}  ·  Enter opens it"
+            : $"{Human(run.Bytes)}  ·  Enter opens it",
         Score = 300,
+        DetailTitle = $"{run.Request.Method} {run.Request.Url}",
+        DetailText = run.Body,
+        // A host that has no viewer yet falls back to the copy the body always was
         Action = () => Clipboard.Copy(run.Body)
     });
 

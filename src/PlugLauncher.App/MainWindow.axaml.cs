@@ -64,6 +64,7 @@ public partial class MainWindow : Window
 
         Deactivated += (_, _) => HideLauncher();
 
+
         SearchBox.AddHandler(TextBox.PastingFromClipboardEvent, OnSearchPaste, RoutingStrategies.Bubble);
 
         // Tunnel، وگرنه Tab را سیستمِ جابه‌جایی فوکوس قبل از ما برمی‌دارد
@@ -182,6 +183,7 @@ public partial class MainWindow : Window
 
     public void HideLauncher()
     {
+        CloseDetail();
         _debounce.Stop();
         _refresh.Stop();
         _refreshUntil = DateTime.MinValue;
@@ -267,6 +269,8 @@ public partial class MainWindow : Window
 
     private void SetRows(IReadOnlyList<LauncherRow> rows)
     {
+        // کوئری جدید یعنی ردیف‌های جدید؛ نمای ردیف قبلی دیگر به چیزی اشاره نمی‌کند
+        CloseDetail();
         ResultsList.ItemsSource = rows;
         ResultsList.SelectedIndex = rows.Count > 0 ? 0 : -1;
         ResultsList.IsVisible = rows.Count > 0;
@@ -386,7 +390,8 @@ public partial class MainWindow : Window
         switch (e.Key)
         {
             case Key.Escape:
-                HideLauncher();
+                if (DetailPanel.IsVisible) CloseDetail();
+                else HideLauncher();
                 e.Handled = true;
                 break;
 
@@ -446,8 +451,64 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (row.HasDetail)
+        {
+            ShowDetail(row);
+            return;
+        }
+
         var shouldHide = await _engine.ExecuteAsync(row.Item);
         if (shouldHide) HideLauncher();
+    }
+
+    // ===== نمای متن بلند =====
+
+    /// <summary>
+    /// متنِ یک ردیف را در تکست‌باکس فقط‌خواندنی نشان می‌دهد، با کپی در گوشه‌ی راست. فوکوس در باکس
+    /// جستجو می‌ماند: Esc نما را می‌بندد و پنجره باز می‌ماند، و تایپِ بیشتر همان کوئری را ادامه
+    /// می‌دهد و نما را خودکار می‌بندد.
+    /// </summary>
+    private void ShowDetail(LauncherRow row)
+    {
+        DetailCaption.Text = string.IsNullOrWhiteSpace(row.DetailTitle) ? row.Title : row.DetailTitle!;
+        DetailTextBox.Text = row.DetailText;
+
+        ResultsList.IsVisible = false;
+        DetailPanel.IsVisible = true;
+
+        // اسکرول از بالا؛ رندرِ قبلی ممکن است تهِ متن بلند مانده باشد
+        DetailTextBox.CaretIndex = 0;
+        DetailTextBox.SelectionStart = DetailTextBox.SelectionEnd = 0;
+    }
+
+    private void CloseDetail()
+    {
+        if (!DetailPanel.IsVisible) return;
+
+        DetailPanel.IsVisible = false;
+        DetailTextBox.Clear();
+        ResultsList.IsVisible = ResultsList.ItemCount > 0;
+    }
+
+    private async void OnDetailCopyClick(object? sender, RoutedEventArgs e)
+    {
+        var text = DetailTextBox.Text ?? string.Empty;
+        if (text.Length == 0) return;
+
+        // مستقیم از کلیپ‌بوردِ همین پنجره، نه پلِ پلاگین‌ها — اینجا خودِ میزبان در حال کپی است
+        try
+        {
+            if (Clipboard is not null) await Clipboard.SetTextAsync(text);
+
+            var old = DetailCopyButton.Content;
+            DetailCopyButton.Content = "Copied";
+            await Task.Delay(900);
+            DetailCopyButton.Content = old;
+        }
+        catch (Exception ex)
+        {
+            _log.Warn($"could not copy the detail text: {ex.Message}");
+        }
     }
 
     // ===== تنظیمات =====

@@ -18,6 +18,14 @@ public sealed class LauncherRow
 
     public bool HasSubtitle => !string.IsNullOrWhiteSpace(Subtitle);
 
+    /// <summary>متن نمای بلند ردیف؛ null یعنی ردیف نما ندارد.</summary>
+    public string? DetailText { get; init; }
+
+    /// <summary>عنوان نما؛ اگر خالی باشد عنوان خود ردیف.</summary>
+    public string? DetailTitle { get; init; }
+
+    public bool HasDetail => !string.IsNullOrEmpty(DetailText);
+
     /// <summary>سهم ردیف از یک کل (۰ تا ۱)، یا null وقتی نواری نباید کشیده شود.</summary>
     public double? Fraction { get; init; }
 
@@ -32,6 +40,8 @@ public sealed class LauncherRow
         Subtitle = item.Subtitle,
         Icon = IconLoader.Load(item.IconPath, item.Title),
         Fraction = item.Result.Fraction,
+        DetailText = item.Result.DetailText,
+        DetailTitle = item.Result.DetailTitle,
         Item = item
     };
 
