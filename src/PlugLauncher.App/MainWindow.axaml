@@ -155,6 +155,22 @@
                              VerticalAlignment="Top"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              ScrollViewer.VerticalScrollBarVisibility="Auto" />
+
+                    <!--
+                        همان نما، وقتی متن زبان شناخته‌شده‌ای دارد: به‌جای تکست‌باکس، متنِ
+                        رنگ‌آمیزی‌شده. TextBox متنی‌تر از یک رنگ دارد؛ Runها ندارند. انتخاب با موس
+                        هنوز کار می‌کند و کپی همان دکمه‌ی گوشه است، چون فوکوس عمداً در باکس جستجو
+                        می‌ماند و Ctrl+C آنجا مالِ متنِ جستجوست.
+                    -->
+                    <ScrollViewer x:Name="DetailScroll"
+                                  Grid.Row="1"
+                                  IsVisible="False"
+                                  VerticalAlignment="Top">
+                        <SelectableTextBlock x:Name="DetailRich"
+                                             TextWrapping="NoWrap"
+                                             FontFamily="Consolas, Menlo, monospace"
+                                             FontSize="12.5" />
+                    </ScrollViewer>
                 </Grid>
             </Border>
         </Grid>

@@ -6,7 +6,7 @@
     release is built — so a tag can never ship a differently numbered exe.
   -->
   <PropertyGroup>
-    <Version>1.5.0</Version>
+    <Version>1.6.0</Version>
     <Product>PlugLauncher</Product>
     <Company>PlugLauncher</Company>
     <Authors>Hosein Asadi</Authors>

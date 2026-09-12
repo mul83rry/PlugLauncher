@@ -696,6 +696,7 @@ List<PluginResult> Result(Run run, string keyword, string filter)
         rows.Add(new PluginResult
         {
             Id = "whole:" + run.Id,
+            DetailSyntax = "json",
             Title = "The whole answer",
             Subtitle = $"pretty-printed  ·  {Human(run.Bytes)}  ·  Enter opens it",
             Score = 485,
@@ -772,6 +773,8 @@ List<PluginResult> Body(Run run)
     rows.Add(new PluginResult
     {
         Id = "body:" + run.Id,
+        // Colored only when the answer really is JSON; anything else reads fine as plain text
+        DetailSyntax = run.ContentType.Contains("json", StringComparison.OrdinalIgnoreCase) ? "json" : null,
         Title = "The body, as it came",
         Subtitle = run.Truncated
             ? $"the first {Human(BodyLimit)} of {Human(run.Bytes)}  ·  Enter opens it"

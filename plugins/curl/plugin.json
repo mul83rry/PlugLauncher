@@ -14,7 +14,7 @@
     "macos",
     "linux"
   ],
-  "minCore": "1.5.0",
+  "minCore": "1.6.0",
   "usage": [
     {
       "example": "curl https://api.github.com/users/torvalds",

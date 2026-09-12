@@ -72,6 +72,13 @@ public sealed class PluginResult
     /// <summary>عنوان نما؛ اگر خالی باشد عنوان خود ردیف استفاده می‌شود.</summary>
     public string? DetailTitle { get; init; }
 
+    /// <summary>
+    /// زبانِ متن نما برای رنگ‌آمیزی؛ فعلاً فقط <c>"json"</c> شناخته می‌شود و هر چیز دیگری (و
+    /// <c>null</c>) یعنی متن ساده. مقدار ناشناخته در نسخه‌های بعدی می‌تواند زبان دیگری شود، پس
+    /// پلاگین نباید به «ناشناخته یعنی json» تکیه کند.
+    /// </summary>
+    public string? DetailSyntax { get; init; }
+
     /// <summary>داده‌ی دلخواه پلاگین که همراه ردیف حمل می‌شود.</summary>
     public object? Data { get; init; }
 

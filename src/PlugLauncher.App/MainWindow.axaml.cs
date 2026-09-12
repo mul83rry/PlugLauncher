@@ -1,3 +1,4 @@
+using System.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -461,17 +462,28 @@ public partial class MainWindow : Window
         if (shouldHide) HideLauncher();
     }
 
-    // ===== نمای متن بلند =====
+    /// <summary>متن نمای فعلی، قبل از رنگ‌آمیزی — دکمه‌ی کپی این را می‌دهد بیرون، هر نمای که باز است.</summary>
+    private string _detailText = string.Empty;
 
     /// <summary>
-    /// متنِ یک ردیف را در تکست‌باکس فقط‌خواندنی نشان می‌دهد، با کپی در گوشه‌ی راست. فوکوس در باکس
+    /// متنِ یک ردیف را در نما نشان می‌دهد، با کپی در گوشه‌ی راست. متنِ بدون زبان در تکست‌باکس
+    /// می‌نشیند؛ متنِ json به Runهای رنگی می‌شکند تا مثل ادیتور خوانده شود. فوکوس در باکس
     /// جستجو می‌ماند: Esc نما را می‌بندد و پنجره باز می‌ماند، و تایپِ بیشتر همان کوئری را ادامه
     /// می‌دهد و نما را خودکار می‌بندد.
     /// </summary>
     private void ShowDetail(LauncherRow row)
     {
         DetailCaption.Text = string.IsNullOrWhiteSpace(row.DetailTitle) ? row.Title : row.DetailTitle!;
-        DetailTextBox.Text = row.DetailText;
+        _detailText = row.DetailText!;
+
+        var colored = string.Equals(row.DetailSyntax, "json", StringComparison.OrdinalIgnoreCase)
+                      && row.DetailText!.Length <= ColoredDetailLimit;
+
+        if (colored) FillColoredDetail(row.DetailText!);
+        else DetailTextBox.Text = row.DetailText;
+
+        DetailScroll.IsVisible = colored;
+        DetailTextBox.IsVisible = !colored;
 
         ResultsList.IsVisible = false;
         DetailPanel.IsVisible = true;
@@ -479,6 +491,7 @@ public partial class MainWindow : Window
         // اسکرول از بالا؛ رندرِ قبلی ممکن است تهِ متن بلند مانده باشد
         DetailTextBox.CaretIndex = 0;
         DetailTextBox.SelectionStart = DetailTextBox.SelectionEnd = 0;
+        DetailScroll.Offset = Vector.Zero;
     }
 
     private void CloseDetail()
@@ -487,18 +500,20 @@ public partial class MainWindow : Window
 
         DetailPanel.IsVisible = false;
         DetailTextBox.Clear();
+        DetailRich.Inlines?.Clear();
+        _detailText = string.Empty;
         ResultsList.IsVisible = ResultsList.ItemCount > 0;
     }
 
     private async void OnDetailCopyClick(object? sender, RoutedEventArgs e)
     {
-        var text = DetailTextBox.Text ?? string.Empty;
-        if (text.Length == 0) return;
+        if (_detailText.Length == 0) return;
 
-        // مستقیم از کلیپ‌بوردِ همین پنجره، نه پلِ پلاگین‌ها — اینجا خودِ میزبان در حال کپی است
+        // مستقیم از کلیپ‌بوردِ همین پنجره، نه پلِ پلاگین‌ها — اینجا خودِ میزبان در حال کپی است.
+        // متنِ خام را می‌دهد بیرون نه رنگ‌ها را؛ رنگ مالِ خواندن است.
         try
         {
-            if (Clipboard is not null) await Clipboard.SetTextAsync(text);
+            if (Clipboard is not null) await Clipboard.SetTextAsync(_detailText);
 
             var old = DetailCopyButton.Content;
             DetailCopyButton.Content = "Copied";
@@ -509,8 +524,118 @@ public partial class MainWindow : Window
         {
             _log.Warn($"could not copy the detail text: {ex.Message}");
         }
+
+        // فوکوس همین‌جا به باکس برمی‌گردد. کلیک روی دکمه فوکوس را می‌گیرد و همه‌ی کلیدهای لانچر —
+        // Esc، تایپِ بیشتر، همه — به باکس گره خورده‌اند؛ روی دکمه هیچ‌کدام معنایی ندارد.
+        SearchBox.Focus();
     }
 
+    /// <summary>خروج از رشته قبل از نوشتنش همیشه یک علامت است، حتی وقتی ماندهٔ متن تمام شده باشد.</summary>
+    private const char Backslash = '\\';
+
+    // ===== رنگ‌آمیزی JSON =====
+
+    /// <summary>
+    /// بالای این طول، رنگ‌آمیزی خاموش می‌شود و متن در همان تکست‌باکس ساده می‌نشیند: هر تکه‌ی رنگ
+    /// یک Run است و بدنه‌ی بزرگ هزاران Run یعنی رندری که دیر می‌آید، برای چیزی که کاربر یک خطش
+    /// را می‌خواهد.
+    /// </summary>
+    private const int ColoredDetailLimit = 20_000;
+
+    /// <summary>رنگ‌ها همان پالت Dark+ ‌اند — چیزی که VS Code برای JSON می‌کشد.</summary>
+    private static readonly IReadOnlyDictionary<JsonTokenKind, IBrush> JsonBrushes =
+        new Dictionary<JsonTokenKind, IBrush>
+        {
+            [JsonTokenKind.Key] = new SolidColorBrush(Color.Parse("#9CDCFE")),
+            [JsonTokenKind.String] = new SolidColorBrush(Color.Parse("#CE9178")),
+            [JsonTokenKind.Number] = new SolidColorBrush(Color.Parse("#B5CEA8")),
+            [JsonTokenKind.Literal] = new SolidColorBrush(Color.Parse("#569CD6"))
+        };
+
+    private enum JsonTokenKind { Plain, Key, String, Number, Literal }
+
+    private void FillColoredDetail(string text)
+    {
+        DetailRich.Inlines!.Clear();
+
+        foreach (var (chunk, kind) in SplitJson(text))
+        {
+            var run = new Avalonia.Controls.Documents.Run(chunk);
+            if (JsonBrushes.TryGetValue(kind, out var brush)) run.Foreground = brush;
+            DetailRich.Inlines.Add(run);
+        }
+    }
+
+    /// <summary>
+    /// متن را به تکه‌های رنگ‌پذیر می‌شکند. چیزی که رنگ نمی‌گیرد (آکولاد، دونقطه، ویرگول، فاصله)
+    /// در تکه‌ی Plain می‌ماند و رنگ خودِ تم را می‌گیرد — در ادیتور هم علامت‌گذاری رنگ نیست، متنِ
+    /// معمولی است. کلید را از رشته‌ی مقدار، فقطِ یک نگاهِ به جلو جدا می‌کند: رشته‌ای که بعدش
+    /// دونقطه است کلید است.
+    /// </summary>
+    private static IEnumerable<(string Text, JsonTokenKind Kind)> SplitJson(string text)
+    {
+        var chunks = new List<(string, JsonTokenKind)>();
+        var plain = new StringBuilder();
+
+        void Flush()
+        {
+            if (plain.Length > 0)
+            {
+                chunks.Add((plain.ToString(), JsonTokenKind.Plain));
+                plain.Clear();
+            }
+        }
+
+        for (var i = 0; i < text.Length; i++)
+        {
+            var c = text[i];
+
+            if (c == '"')
+            {
+                var end = i + 1;
+                while (end < text.Length)
+                {
+                    if (text[end] == Backslash) { end += 2; continue; }
+                    if (text[end] == '"') { end++; break; }
+                    end++;
+                }
+
+                var after = end;
+                while (after < text.Length && char.IsWhiteSpace(text[after])) after++;
+
+                Flush();
+                chunks.Add((text[i..Math.Min(end, text.Length)],
+                            after < text.Length && text[after] == ':' ? JsonTokenKind.Key : JsonTokenKind.String));
+                i = Math.Min(end, text.Length) - 1;
+            }
+            else if (char.IsDigit(c) || (c == '-' && i + 1 < text.Length && char.IsDigit(text[i + 1])))
+            {
+                var end = i + 1;
+                while (end < text.Length && (char.IsDigit(text[end]) || "+-.eE".IndexOf(text[end]) >= 0)) end++;
+
+                Flush();
+                chunks.Add((text[i..end], JsonTokenKind.Number));
+                i = end - 1;
+            }
+            else if (char.IsLetter(c))
+            {
+                var end = i + 1;
+                while (end < text.Length && char.IsLetter(text[end])) end++;
+
+                var word = text[i..end];
+                Flush();
+                chunks.Add((word, word is "true" or "false" or "null" ? JsonTokenKind.Literal : JsonTokenKind.Plain));
+                i = end - 1;
+            }
+            else
+            {
+                plain.Append(c);
+            }
+        }
+
+        Flush();
+        return chunks;
+    }
     // ===== تنظیمات =====
 
     private void OnSettingsClick(object? sender, RoutedEventArgs e) => OpenSettings();

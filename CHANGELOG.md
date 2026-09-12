@@ -14,14 +14,23 @@ Enter instead of running — a read-only, wrapping, monospace text box with a **
 top-right corner. Esc closes the view back to the list, typing continues to filter, and focus never
 leaves the search box so the keyboard keeps working the moment the view is closed.
 
+**…and a JSON answer is colored in it**
+
+`DetailSyntax` says what language the text is, and `json` gets the view VS Code gives it: keys in
+light blue, strings in orange, numbers in pale green, `true`/`false`/`null` in blue — the Dark+
+palette. Selection with the mouse still works and the Copy button gives out the raw text; only the
+reading is colored. Past 20,000 characters the coloring gives up and the plain text box shows it,
+because every colored piece is a Run and a big body would render late.
+
 **Curl reads its answers in that view** (1.1.0)
 
 `#id body` opens the whole body in the view instead of one long row; `#id headers` gains an
 **All N headers** row above the singles that opens them as one list; a non-JSON body gets a
 **Show the whole body** row next to the first lines; and a JSON answer gets **The whole answer**
 right under the status row — the body pretty-printed, so a response that arrived as one long line
-reads as the tree it is. Rows keep their copy `Action`, so a host without the view still copies
-like before — which is also why `minCore` did not move.
+reads as the tree it is, and colored the moment it opens. The plugin now needs PlugLauncher 1.6.0
+(`minCore` moved): it writes `DetailText`/`DetailSyntax`, which an older host has never heard of
+and would refuse to compile the script for.
 
 **Keyboard Layout converts mixed text**
 
