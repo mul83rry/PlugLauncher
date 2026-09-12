@@ -71,6 +71,11 @@ public partial class MainWindow : Window
         // Tunnel، وگرنه Tab را سیستمِ جابه‌جایی فوکوس قبل از ما برمی‌دارد
         SearchBox.AddHandler(KeyDownEvent, OnSearchKeyDown, RoutingStrategies.Tunnel);
 
+        // یک کلیک داخل متنِ نما، فوکوس را از باکس جستجو می‌گیرد و بعدش Esc و تایپ به همان باکس
+        // نمی‌رسد. هر کلیدی که اینجا فرود بیاید، فوکوس را پس می‌گیرد؛ خود کلید خورده می‌شود ولی
+        // بعدی درست جایی می‌نشیند که کاربر انتظار دارد.
+        DetailPanel.AddHandler(KeyDownEvent, OnDetailKeyDown, RoutingStrategies.Tunnel);
+
         ResultsList.DoubleTapped += async (_, _) => await ActivateSelectedAsync();
     }
 
@@ -492,6 +497,16 @@ public partial class MainWindow : Window
         DetailTextBox.CaretIndex = 0;
         DetailTextBox.SelectionStart = DetailTextBox.SelectionEnd = 0;
         DetailScroll.Offset = Vector.Zero;
+    }
+
+    private void OnDetailKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (!DetailPanel.IsVisible) return;
+
+        e.Handled = true;
+        SearchBox.Focus();
+
+        if (e.Key == Key.Escape) CloseDetail();
     }
 
     private void CloseDetail()

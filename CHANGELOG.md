@@ -5,6 +5,23 @@ release notes, so every version needs a `## <version>` heading here before it ca
 
 ## Unreleased
 
+**New plugin: Terminal** (keyword `term`, from the store)
+
+One shell lives for as long as the launcher does. A command does not start a process — it is typed
+into the shell that is already there, so `cd`, environment variables and `conda activate` survive
+from one command to the next, even though each was typed in the launcher a minute apart. The
+answer opens in the text view as a running transcript — every command under its prompt, newest at
+the bottom — which is as close to a small terminal as a launcher row can get, with copy in the
+corner for the whole tape.
+
+`term dir` runs it (Enter steps to `#id`, Enter again sends), `term` shows the transcript plus
+every command run before — one Enter away from running again — and `term clear` forgets them all.
+A command that never finishes is cut off after twenty seconds: what came is shown, the note says
+so, and the next command restarts a clean shell rather than typing into one that is still busy.
+How a command knows it ended: a sentinel line is sent after each command that also carries the
+working directory back, so the session always knows where it is. On Windows the shell is
+PowerShell with UTF-8 output; on a Mac or Linux it is zsh or bash.
+
 **Results can open a text view**
 
 A plugin row could be one line tall and that was all a plugin could show: the body of an HTTP
@@ -12,7 +29,8 @@ answer arrived as a line clipped to 140 characters with the rest behind an Enter
 the clipboard. `PluginResult` now carries `DetailText`, and a row that sets it opens a view on
 Enter instead of running — a read-only, wrapping, monospace text box with a **Copy** button in its
 top-right corner. Esc closes the view back to the list, typing continues to filter, and focus never
-leaves the search box so the keyboard keeps working the moment the view is closed.
+leaves the search box so the keyboard keeps working the moment the view is closed — a click into
+the text or on the Copy button takes focus only until the next key, and Esc still closes.
 
 **…and a JSON answer is colored in it**
 

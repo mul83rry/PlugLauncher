@@ -1,0 +1,32 @@
+{
+  "id": "com.pluglauncher.terminal",
+  "name": "Terminal",
+  "description": "a shell that keeps running between commands — cd sticks, variables stick, history sticks",
+  "version": "1.0.0",
+  "author": "PlugLauncher",
+  "entry": "main.csx",
+  "keywords": [
+    "term"
+  ],
+  "icon": "assets/icon.png",
+  "platforms": [
+    "windows",
+    "macos",
+    "linux"
+  ],
+  "minCore": "1.6.0",
+  "usage": [
+    {
+      "example": "term dir",
+      "description": "run a command in the session — Enter twice"
+    },
+    {
+      "example": "term",
+      "description": "the session's transcript and the commands you ran before"
+    },
+    {
+      "example": "term clear",
+      "description": "forget every command and empty the transcript"
+    }
+  ]
+}
