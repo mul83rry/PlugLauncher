@@ -119,9 +119,15 @@ string? Reinterpret(string text, IntPtr from, IntPtr to)
 
         var retyped = Retype(c, from, to);
 
-        // A character this layout cannot produce at all means the user was not typing on it,
-        // so the whole candidate is wrong rather than partly right.
-        if (retyped is null) return null;
+        // A character this layout cannot produce is left alone rather than killing the whole
+        // candidate: mixed text ("sghl چطوری") gets its Latin half retyped and its Persian half
+        // kept. When nothing at all can be retyped, `changed` stays false and null comes back,
+        // so text this layout cannot explain is still rejected.
+        if (retyped is null)
+        {
+            builder.Append(c);
+            continue;
+        }
 
         if (retyped != c.ToString()) changed = true;
         builder.Append(retyped);

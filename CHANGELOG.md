@@ -5,6 +5,15 @@ release notes, so every version needs a `## <version>` heading here before it ca
 
 ## Unreleased
 
+**Keyboard Layout converts mixed text**
+
+`kb` used to reject a query outright the moment one character could not have come from the source
+layout, so text holding both scripts at once — `sghl چطوری` — produced no rows: the Persian half
+killed the conversion of the Latin half. Now a character the source layout cannot type is passed
+through unchanged instead of poisoning the whole candidate, and `kb sghl چطوری` gives
+`سلام چطوری`. A text the layout cannot explain at all is still rejected, because a conversion
+where nothing changed is not a conversion.
+
 **New plugin: Applications** (no keyword, from the store — macOS only)
 
 `programs` reads the Start menu, which a Mac does not have, so there it loaded as unsupported and
