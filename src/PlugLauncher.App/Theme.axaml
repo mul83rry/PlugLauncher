@@ -132,6 +132,39 @@
         <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
     </Style>
 
+    <!--
+        ===== دکمه‌ی رنگ‌دار (Install در فروشگاه و ...) =====
+        همان دکمه‌ی Get استور ویندوز ۱۱: قرصِ رنگ اکسنت، متن روشن، و در حالت غیرفعال خاکستریِ ساکت.
+    -->
+    <Style Selector="Button.pill">
+        <Setter Property="Foreground" Value="#FFF4F8FF" />
+        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="16,7" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="CornerRadius" Value="5" />
+    </Style>
+
+    <Style Selector="Button.pill /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="5" />
+    </Style>
+
+    <Style Selector="Button.pill:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#FF5E9BFF" />
+    </Style>
+
+    <Style Selector="Button.pill:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#FF3F7AE0" />
+    </Style>
+
+    <Style Selector="Button.pill:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#FF3A3A3A" />
+        <Setter Property="TextElement.Foreground" Value="{StaticResource HintTextBrush}" />
+    </Style>
+
     <!-- ===== ردیف نتیجه ===== -->
     <Style Selector="ListBox.results">
         <Setter Property="Background" Value="Transparent" />

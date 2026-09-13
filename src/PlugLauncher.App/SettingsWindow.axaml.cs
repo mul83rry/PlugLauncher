@@ -10,6 +10,7 @@ namespace PlugLauncher.App;
 public partial class SettingsWindow : Window
 {
     private readonly PluginEngine _engine;
+    private StoreWindow? _store;
 
     /// <summary>موقع پر کردن کنترل‌ها از روی وضعیت فعلی، هندلرها نباید چیزی بنویسند.</summary>
     private bool _loading;
@@ -180,6 +181,22 @@ public partial class SettingsWindow : Window
         {
             Dialog.Info("Error", $"Could not remove: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// پنجره‌ی فروشگاه. یک نمونه نگه داشته می‌شود تا دکمه دوباره همان پنجره‌ی باز را جلو بیاورد،
+    /// نه یک نسخه‌ی دیگر روی همان داده.
+    /// </summary>
+    private void OnOpenStore(object? sender, RoutedEventArgs e)
+    {
+        if (_store is null)
+        {
+            _store = new StoreWindow(_engine);
+            _store.Closed += (_, _) => _store = null;
+        }
+
+        _store.Show();
+        _store.Activate();
     }
 
     private void OnSaveHotkey(object? sender, RoutedEventArgs e)

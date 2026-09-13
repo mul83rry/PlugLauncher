@@ -21,12 +21,21 @@ public sealed class StorePlugin
     [JsonPropertyName("downloadUrl")] public string DownloadUrl { get; set; } = string.Empty;
     [JsonPropertyName("iconUrl")] public string? IconUrl { get; set; }
 
+    /// <summary>اسکرین‌شات‌های بسته، به‌ترتیبِ نام فایل؛ آدرس‌ها مثل بقیه نسبی‌اند.</summary>
+    [JsonPropertyName("screenshots")] public List<string> Screenshots { get; set; } = [];
+
     /// <summary>سیستم‌عامل‌هایی که بسته روی آن‌ها کار می‌کند؛ خالی یعنی همه‌جا.</summary>
     [JsonPropertyName("platforms")] public List<string> Platforms { get; set; } = [];
 
     /// <summary>قدیمی‌ترین نسخه‌ی لانچری که بسته روی آن کار می‌کند؛ خالی یعنی هر نسخه‌ای.</summary>
     [JsonPropertyName("minCore")] public string MinCore { get; set; } = string.Empty;
 }
+
+/// <summary>
+/// پیشرفت دانلود بسته. <see cref="TotalBytes"/> فقط وقتی مقدار دارد که سرور طول بدهد یا فهرست
+/// فروشگاه سایز را گفته باشد؛ null یعنی نوار پیشرفت نامعین.
+/// </summary>
+public readonly record struct DownloadProgress(long Received, long? TotalBytes);
 
 /// <summary>ساختار <c>index.json</c>: تعداد کل + فهرست بسته‌ها.</summary>
 public sealed class StorePage
@@ -121,17 +130,24 @@ public sealed class StoreClient(string baseUrl, FileLogger? logger = null) : IDi
            || plugin.Keywords.Any(k => k.Contains(needle, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>دانلود آیکن یک بسته در حافظه (برای نمایش در لیست فروشگاه).</summary>
-    public async Task<byte[]?> DownloadIconAsync(StorePlugin plugin, CancellationToken cancellationToken = default)
+    public Task<byte[]?> DownloadIconAsync(StorePlugin plugin, CancellationToken cancellationToken = default)
+        => DownloadImageAsync(plugin.IconUrl, cancellationToken);
+
+    /// <summary>
+    /// دانلود یک تصویر با آدرس نسبی (آیکن یا اسکرین‌شات) در حافظه. خطا نادیده گرفته می‌شود و
+    /// null برمی‌گردد — تصویر تزئینی است و نبودنش نباید جریان را بندازد.
+    /// </summary>
+    public async Task<byte[]?> DownloadImageAsync(string? relativeUrl, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(plugin.IconUrl)) return null;
+        if (string.IsNullOrWhiteSpace(relativeUrl)) return null;
 
         try
         {
-            return await _http.GetByteArrayAsync(plugin.IconUrl, cancellationToken).ConfigureAwait(false);
+            return await _http.GetByteArrayAsync(relativeUrl, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _log.Warn($"could not download icon for \"{plugin.Id}\": {ex.Message}");
+            _log.Warn($"could not download image \"{relativeUrl}\": {ex.Message}");
             return null;
         }
     }
@@ -139,8 +155,10 @@ public sealed class StoreClient(string baseUrl, FileLogger? logger = null) : IDi
     /// <summary>
     /// دانلود و نصب یک بسته. بسته اول در فایل موقت دانلود می‌شود، sha256 آن با مقدار اعلام‌شده‌ی
     /// فروشگاه مقایسه می‌شود و تنها در صورت تطابق در پوشه‌ی پلاگین کاربر باز می‌شود.
+    /// <paramref name="progress"/> پیشرفت بایت‌به‌بایتِ دانلود را گزارش می‌کند، نه نصب را.
     /// </summary>
-    public async Task<string> InstallAsync(StorePlugin plugin, CancellationToken cancellationToken = default)
+    public async Task<string> InstallAsync(StorePlugin plugin, CancellationToken cancellationToken = default,
+        IProgress<DownloadProgress>? progress = null)
     {
         if (string.IsNullOrWhiteSpace(plugin.Id)) throw new InvalidOperationException("The package id is empty.");
 
@@ -158,7 +176,19 @@ public sealed class StoreClient(string baseUrl, FileLogger? logger = null) : IDi
 
                 await using var source = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 await using var file = new FileStream(temp, FileMode.Create, FileAccess.Write, FileShare.None);
-                await source.CopyToAsync(file, cancellationToken).ConfigureAwait(false);
+
+                var total = response.Content.Headers.ContentLength;
+                if (total is null && plugin.Size > 0) total = plugin.Size;
+
+                var buffer = new byte[81920];
+                long received = 0;
+                int read;
+                while ((read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
+                {
+                    await file.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+                    received += read;
+                    progress?.Report(new DownloadProgress(received, total));
+                }
             }
 
             VerifyHash(temp, plugin);

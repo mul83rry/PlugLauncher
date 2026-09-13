@@ -113,6 +113,7 @@ my-plugin/
   plugin.json     # manifest
   main.csx        # code
   assets/         # icons
+  screenshots/    # optional — images shown on the store's detail page (flat, sorted by file name)
 ```
 
 **plugin.json**

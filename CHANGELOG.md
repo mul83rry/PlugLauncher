@@ -3,7 +3,28 @@
 The release workflow reads the section matching the tag out of this file and uses it as the
 release notes, so every version needs a `## <version>` heading here before it can be tagged.
 
-## Unreleased
+## 1.6.0 — 2026-09-13
+
+**The plugin store got a window of its own**
+
+The store moved out of the settings dialog into its own window, laid out like the Windows 11 store.
+A navigation rail on the left (Home, Browse, Library); on Home, a banner for the newest package and
+horizontally scrolling rows; in Browse, a grid of cards — icon, name, author, size and date — where
+the whole card opens the details and the button inside it installs. Every package has a detail page
+now: big icon, description, version, published date, size, platforms, the oldest launcher it runs
+on, and Install, Update or Remove within reach. Search is live (typing filters as you go, Enter is
+instant, Esc clears), installs run under a download progress bar instead of a text line, and Library
+shows everything installed on the device plus an *Updates available* section when the store has
+newer versions. The store itself did not change: same static `index.json`, same sha256 check before
+anything is written.
+
+**Plugins can carry screenshots**
+
+A `screenshots/` folder in a plugin package is now part of the deal — no manifest field, just
+convention: every flat image in it ships to the store and shows up on that package's detail page as
+a horizontally scrolling gallery, fetched lazily the first time the page is opened and cached after.
+The store builder extracts them from the `.plz` the same way it does the icon, and adds their URLs
+to `index.json`. Terminal, Curl and Keyboard Layout already carry one each, taken from real use.
 
 **New plugin: Terminal** (keyword `term`, from the store)
 

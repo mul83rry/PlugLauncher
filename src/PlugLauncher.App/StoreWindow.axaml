@@ -1,0 +1,510 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="PlugLauncher.App.StoreWindow"
+        Title="PlugLauncher Store"
+        Width="1000" Height="680"
+        MinWidth="840" MinHeight="540"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource WindowBrush}">
+
+    <Window.Resources>
+        <!-- آیکن‌ها؛ هندسه‌ی ۲۴×۲۴، مثل Material Icons -->
+        <StreamGeometry x:Key="IconHome">M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z</StreamGeometry>
+        <StreamGeometry x:Key="IconBrowse">M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z</StreamGeometry>
+        <StreamGeometry x:Key="IconLibrary">M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z</StreamGeometry>
+        <StreamGeometry x:Key="IconBack">M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z</StreamGeometry>
+        <StreamGeometry x:Key="IconRefresh">M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z</StreamGeometry>
+        <StreamGeometry x:Key="IconSearch">M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z</StreamGeometry>
+
+        <!-- کارت یک بسته؛ هم در گریدِ Browse هم ردیف‌های افقیِ Home. کل کارت به جزئیات
+             می‌رود؛ دکمه‌ی داخلش خودش کلیک را می‌خورد و نصب می‌کند. -->
+        <DataTemplate x:Key="StoreCard">
+            <Button Classes="card" Tag="{Binding Id}" Click="OnOpenDetail">
+                <StackPanel>
+                    <Image Source="{Binding Icon}"
+                           Width="46" Height="46"
+                           HorizontalAlignment="Left"
+                           Margin="0,0,0,10"
+                           Stretch="Uniform"
+                           RenderOptions.BitmapInterpolationMode="HighQuality" />
+                    <TextBlock Text="{Binding Name}"
+                               FontSize="14" FontWeight="Medium"
+                               Foreground="{StaticResource TextBrush}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding AuthorLine}"
+                               FontSize="11.5"
+                               Foreground="{StaticResource SubtleTextBrush}"
+                               TextTrimming="CharacterEllipsis"
+                               Margin="0,2,0,0" />
+                    <TextBlock Text="{Binding CardMeta}"
+                               FontSize="11"
+                               Foreground="{StaticResource HintTextBrush}"
+                               TextTrimming="CharacterEllipsis"
+                               Margin="0,2,0,0" />
+                    <Button Classes="pill"
+                            Content="{Binding ActionText}"
+                            IsEnabled="{Binding CanInstall}"
+                            Tag="{Binding Id}"
+                            Click="OnInstallClick"
+                            MinWidth="92"
+                            Margin="0,12,0,0"
+                            HorizontalAlignment="Left" />
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+
+        <!-- ردیف «به‌روزرسانی موجود است» در کتابخانه -->
+        <DataTemplate x:Key="UpdateRow">
+            <Button Classes="rowcard" Tag="{Binding Id}" Click="OnOpenDetail">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Image Grid.Column="0"
+                           Source="{Binding Icon}"
+                           Width="34" Height="34"
+                           Margin="0,0,12,0"
+                           Stretch="Uniform"
+                           RenderOptions.BitmapInterpolationMode="HighQuality" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Name}" FontSize="13.5" Foreground="{StaticResource TextBrush}" />
+                        <TextBlock Text="{Binding UpdateLine}" FontSize="11.5" Foreground="{StaticResource SubtleTextBrush}" Margin="0,2,0,0" />
+                    </StackPanel>
+                    <Button Grid.Column="2"
+                            Classes="pill"
+                            Content="{Binding ActionText}"
+                            IsEnabled="{Binding CanInstall}"
+                            Tag="{Binding Id}"
+                            Click="OnInstallClick"
+                            MinWidth="90"
+                            VerticalAlignment="Center" />
+                </Grid>
+            </Button>
+        </DataTemplate>
+
+        <!-- ردیف نصب‌شده در کتابخانه؛ آیکن دیسک ندارد، حرف اول نامش را نشان می‌دهد -->
+        <DataTemplate x:Key="InstalledRow">
+            <Border Classes="rowpanel">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Border Grid.Column="0" Width="34" Height="34" CornerRadius="7" Background="#FF343434" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding Initial}"
+                                   FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Name}" FontSize="13.5" Foreground="{StaticResource TextBrush}" />
+                        <TextBlock Text="{Binding VersionText}" FontSize="11.5" Foreground="{StaticResource SubtleTextBrush}" Margin="0,2,0,0" />
+                    </StackPanel>
+                    <Button Grid.Column="2"
+                            Classes="ghost danger"
+                            Content="Remove"
+                            Tag="{Binding Id}"
+                            Click="OnRemoveInstalled"
+                            VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <!-- استایل‌های مخصوص فروشگاه؛ دکمه‌ی pill در Theme است چون بیرون از این پنجره هم به کار می‌آید -->
+    <Window.Styles>
+        <Style Selector="Button.nav">
+            <Setter Property="Foreground" Value="{StaticResource SubtleTextBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+        </Style>
+
+        <Style Selector="Button.nav /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
+
+        <Style Selector="Button.nav:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+        </Style>
+
+        <Style Selector="Button.nav.active /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource ActiveTabBrush}" />
+        </Style>
+
+        <Style Selector="Button.nav.active">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style Selector="Button.card">
+            <Setter Property="Width" Value="206" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="Root" Background="{StaticResource CardBrush}" CornerRadius="9">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="Stretch"
+                                          Margin="14" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button.card:pointerover /template/ Border#Root">
+            <Setter Property="Background" Value="#FF323232" />
+        </Style>
+
+        <Style Selector="Button.card:pressed /template/ Border#Root">
+            <Setter Property="Background" Value="#FF3A3A3A" />
+        </Style>
+
+        <!-- ردیف تمام‌عرض کتابخانه و ردیف به‌روزرسانی‌ها -->
+        <Style Selector="Button.rowcard">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="Root" Background="{StaticResource CardBrush}" CornerRadius="9" Padding="14,10">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="Stretch" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button.rowcard:pointerover /template/ Border#Root">
+            <Setter Property="Background" Value="#FF323232" />
+        </Style>
+
+        <Style Selector="Border.rowpanel">
+            <Setter Property="Background" Value="{StaticResource CardBrush}" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <Style Selector="TextBlock.section">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        </Style>
+
+        <Style Selector="TextBlock.metalabel">
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Foreground" Value="{StaticResource SubtleTextBrush}" />
+            <Setter Property="Margin" Value="0,0,0,7" />
+        </Style>
+
+        <Style Selector="TextBlock.metavalue">
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="Margin" Value="0,0,0,7" />
+        </Style>
+    </Window.Styles>
+
+    <Grid ColumnDefinitions="190,*">
+
+        <!-- ================= ریل ناوبری ================= -->
+        <Border Grid.Column="0" Background="{StaticResource StripBrush}">
+            <DockPanel Margin="10,14,10,12">
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Store"
+                           FontSize="17" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextBrush}"
+                           Margin="10,0,0,16" />
+
+                <TextBlock DockPanel.Dock="Bottom"
+                           x:Name="RailFooter"
+                           Text="Everything here comes from the plugin store."
+                           FontSize="10.5"
+                           Foreground="{StaticResource HintTextBrush}"
+                           TextWrapping="Wrap"
+                           Margin="8,10,4,0" />
+
+                <StackPanel Spacing="2">
+                    <Button x:Name="NavHome" Classes="nav" Click="OnNavHome">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Path Data="{StaticResource IconHome}" Fill="{StaticResource SubtleTextBrush}" Width="17" Height="17" Stretch="Uniform" />
+                            <TextBlock Text="Home" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="NavBrowse" Classes="nav" Click="OnNavBrowse">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Path Data="{StaticResource IconBrowse}" Fill="{StaticResource SubtleTextBrush}" Width="17" Height="17" Stretch="Uniform" />
+                            <TextBlock Text="Browse" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="NavLibrary" Classes="nav" Click="OnNavLibrary">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Path Data="{StaticResource IconLibrary}" Fill="{StaticResource SubtleTextBrush}" Width="17" Height="17" Stretch="Uniform" />
+                            <TextBlock Text="Library" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ================= محتوا ================= -->
+        <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*,Auto" Margin="16,14,16,12">
+
+            <!-- هدر: Back (فقط در جزئیات) + جستجو + تازه‌سازی + وضعیت -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+                <Button x:Name="BackButton"
+                        Classes="ghost"
+                        MinWidth="34" Padding="6"
+                        IsVisible="False"
+                        Click="OnBack"
+                        ToolTip.Tip="Back">
+                    <Path Data="{StaticResource IconBack}" Fill="{StaticResource SubtleTextBrush}" Width="18" Height="18" Stretch="Uniform" />
+                </Button>
+                <TextBox x:Name="SearchBox"
+                         Classes="field"
+                         Watermark="Search plugins"
+                         MinWidth="320" Width="420"
+                         KeyDown="OnSearchKeyDown" />
+                <Button Classes="ghost" MinWidth="34" Padding="6" Click="OnRefresh" ToolTip.Tip="Refresh">
+                    <Path Data="{StaticResource IconRefresh}" Fill="{StaticResource SubtleTextBrush}" Width="18" Height="18" Stretch="Uniform" />
+                </Button>
+                <TextBlock x:Name="StatusText"
+                           Foreground="{StaticResource SubtleTextBrush}"
+                           VerticalAlignment="Center"
+                           FontSize="12"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+
+            <ProgressBar Grid.Row="1"
+                         x:Name="LoadingBar"
+                         Height="3" MinHeight="3"
+                         IsIndeterminate="True"
+                         IsVisible="False"
+                         Margin="0,0,0,8" />
+
+            <Panel Grid.Row="2">
+
+                <!-- ===== Home ===== -->
+                <ScrollViewer x:Name="HomeRoot">
+                    <StackPanel Margin="6,2" Spacing="20">
+                        <Border x:Name="HeroPanel" CornerRadius="12" Padding="30,26" ClipToBounds="True">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                    <GradientStop Color="#334C8DFF" Offset="0" />
+                                    <GradientStop Color="#154C8DFF" Offset="0.55" />
+                                    <GradientStop Color="#004C8DFF" Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid ColumnDefinitions="Auto,*">
+                                <Image x:Name="HeroIcon"
+                                       Grid.Column="0"
+                                       Width="76" Height="76"
+                                       Margin="0,0,26,0"
+                                       Stretch="Uniform"
+                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                <StackPanel Grid.Column="1" Spacing="7" VerticalAlignment="Center">
+                                    <TextBlock Text="New in the store"
+                                               FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{StaticResource AccentBrush}" />
+                                    <TextBlock x:Name="HeroName"
+                                               FontSize="23" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextBrush}" />
+                                    <TextBlock x:Name="HeroDesc"
+                                               FontSize="13"
+                                               Foreground="{StaticResource SubtleTextBrush}"
+                                               TextWrapping="Wrap" MaxLines="2" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                                        <Button x:Name="HeroPrimary" Classes="pill" MinWidth="108" Click="OnInstallClick" />
+                                        <Button x:Name="HeroDetails" Classes="ghost" Content="See details" Click="OnOpenHeroDetail" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <StackPanel x:Name="HomeRecentSection" Spacing="10">
+                            <TextBlock Classes="section" Text="Recently added" />
+                            <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
+                                <ItemsControl x:Name="HomeRecentList" ItemTemplate="{StaticResource StoreCard}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="10" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </StackPanel>
+
+                        <StackPanel x:Name="HomeInstalledSection" Spacing="10" IsVisible="False">
+                            <TextBlock Classes="section" Text="Installed here" />
+                            <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
+                                <ItemsControl x:Name="HomeInstalledList" ItemTemplate="{StaticResource StoreCard}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="10" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- ===== Browse ===== -->
+                <Grid x:Name="BrowseRoot" IsVisible="False">
+                    <ScrollViewer>
+                        <ItemsControl x:Name="BrowseList" ItemTemplate="{StaticResource StoreCard}" Margin="6,2,6,0">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <StackPanel x:Name="BrowseEmpty"
+                                IsVisible="False"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Spacing="12">
+                        <Path Data="{StaticResource IconSearch}"
+                              Fill="{StaticResource HintTextBrush}"
+                              Width="42" Height="42" Stretch="Uniform"
+                              HorizontalAlignment="Center" />
+                        <TextBlock x:Name="BrowseEmptyText"
+                                   Text="Nothing here yet"
+                                   FontSize="13"
+                                   Foreground="{StaticResource SubtleTextBrush}"
+                                   HorizontalAlignment="Center" />
+                        <Button x:Name="BrowseRetry"
+                                Classes="pill"
+                                Content="Try again"
+                                IsVisible="False"
+                                HorizontalAlignment="Center"
+                                Click="OnRefresh" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- ===== Library ===== -->
+                <ScrollViewer x:Name="LibraryRoot" IsVisible="False">
+                    <StackPanel Margin="6,2" Spacing="20">
+                        <StackPanel x:Name="LibUpdatesSection" Spacing="10" IsVisible="False">
+                            <TextBlock Classes="section" Text="Updates available" />
+                            <ItemsControl x:Name="LibUpdatesList" ItemTemplate="{StaticResource UpdateRow}" />
+                        </StackPanel>
+                        <StackPanel Spacing="10">
+                            <TextBlock Classes="section" Text="Installed on this device" />
+                            <ItemsControl x:Name="LibInstalledList" ItemTemplate="{StaticResource InstalledRow}" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- ===== جزئیات یک بسته ===== -->
+                <ScrollViewer x:Name="DetailRoot" IsVisible="False">
+                    <StackPanel Margin="6,4" Spacing="16" MaxWidth="720">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Image x:Name="DetailIcon"
+                                   Grid.Column="0"
+                                   Width="84" Height="84"
+                                   Margin="0,4,20,0"
+                                   VerticalAlignment="Top"
+                                   Stretch="Uniform"
+                                   RenderOptions.BitmapInterpolationMode="HighQuality" />
+                            <StackPanel Grid.Column="1" Spacing="7">
+                                <TextBlock x:Name="DetailName"
+                                           FontSize="21" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextBrush}"
+                                           TextWrapping="Wrap" />
+                                <TextBlock x:Name="DetailByline"
+                                           FontSize="12.5"
+                                           Foreground="{StaticResource SubtleTextBrush}" />
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,6,0,0">
+                                    <Button x:Name="DetailAction" Classes="pill" MinWidth="112" Click="OnInstallClick" />
+                                    <Button x:Name="DetailRemove"
+                                            Classes="ghost danger"
+                                            Content="Remove"
+                                            IsVisible="False"
+                                            Click="OnRemoveInstalled" />
+                                </StackPanel>
+                                <ProgressBar x:Name="DetailProgress"
+                                             Height="4" MinHeight="4"
+                                             Width="260"
+                                             HorizontalAlignment="Left"
+                                             Margin="0,8,0,0"
+                                             IsVisible="False" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- اسکرین‌شات‌های بسته؛ پلاگینی که عکس ندارد این بخش را کلاً نمی‌بیند -->
+                        <ScrollViewer x:Name="DetailShotsScroller"
+                                      IsVisible="False"
+                                      VerticalScrollBarVisibility="Disabled"
+                                      HorizontalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="DetailShots">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="10" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="8" ClipToBounds="True" Background="{StaticResource CardBrush}">
+                                            <Image Source="{Binding}"
+                                                   Height="210"
+                                                   Stretch="Uniform"
+                                                   RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <TextBlock x:Name="DetailRejected"
+                                   FontSize="12.5"
+                                   Foreground="{StaticResource DangerBrush}"
+                                   TextWrapping="Wrap"
+                                   IsVisible="False" />
+
+                        <TextBlock x:Name="DetailDescription"
+                                   FontSize="13"
+                                   Foreground="{StaticResource TextBrush}"
+                                   TextWrapping="Wrap" />
+
+                        <Border Background="{StaticResource PanelBrush}"
+                                CornerRadius="9"
+                                Padding="16,14"
+                                HorizontalAlignment="Left"
+                                MinWidth="380">
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="120,*">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Version" Classes="metalabel" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" x:Name="DetailVersion" Classes="metavalue" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Published" Classes="metalabel" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="DetailPublished" Classes="metavalue" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Size" Classes="metalabel" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" x:Name="DetailSize" Classes="metavalue" />
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Platforms" Classes="metalabel" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" x:Name="DetailPlatforms" Classes="metavalue" />
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Requires" Classes="metalabel" />
+                                <TextBlock Grid.Row="4" Grid.Column="1" x:Name="DetailRequires" Classes="metavalue" />
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Package id" Classes="metalabel" />
+                                <TextBlock Grid.Row="5" Grid.Column="1" x:Name="DetailId" Classes="metavalue" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Panel>
+
+            <TextBlock Grid.Row="3"
+                       Foreground="{StaticResource HintTextBrush}"
+                       FontSize="11"
+                       Margin="2,10,2,0"
+                       TextWrapping="Wrap"
+                       Text="Downloads are verified against the store's sha256 before anything is installed. The store address lives in settings.json." />
+        </Grid>
+    </Grid>
+</Window>

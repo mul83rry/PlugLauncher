@@ -376,14 +376,15 @@ public sealed class PluginEngine
         => _plugins.FirstOrDefault(p => p.Id.Equals(pluginId, StringComparison.OrdinalIgnoreCase))?.Manifest.Version;
 
     /// <summary>نصب یا به‌روزرسانی یک بسته از فروشگاه و لود دوباره‌ی پلاگین‌ها.</summary>
-    public async Task InstallFromStoreAsync(StorePlugin plugin, CancellationToken cancellationToken = default)
+    public async Task InstallFromStoreAsync(StorePlugin plugin, CancellationToken cancellationToken = default,
+        IProgress<DownloadProgress>? progress = null)
     {
         // فروشگاه دکمه را خاموش می‌کند، ولی دانلود کردن چیزی که همان لحظه لود نمی‌شود آن‌قدر
         // بی‌معنی است که ارزش دارد اینجا هم بایستد.
         var rejected = PluginSupport.Reject(plugin.Platforms, plugin.MinCore);
         if (rejected is not null) throw new InvalidOperationException($"\"{plugin.Name}\" {rejected}.");
 
-        await Store.InstallAsync(plugin, cancellationToken).ConfigureAwait(false);
+        await Store.InstallAsync(plugin, cancellationToken, progress).ConfigureAwait(false);
 
         // پلاگین قبلی ممکن است غیرفعال شده باشد؛ نصب از فروشگاه یعنی کاربر آن را می‌خواهد
         Settings.DisabledPlugins.RemoveAll(id => id.Equals(plugin.Id, StringComparison.OrdinalIgnoreCase));

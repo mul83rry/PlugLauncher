@@ -72,6 +72,24 @@ foreach ($file in Get-ChildItem -Path $Packages -Filter *.plz -File) {
             else { Write-Warning "آیکن اعلام‌شده در بسته نبود: $($file.Name)" }
         }
 
+        # اسکرین‌شات‌ها قراردادی‌اند، نه فیلد مانیفست: هر فایل تصویری داخل screenshots/ بسته،
+        # همان‌جا در خروجی می‌نشیند و آدرسش به فهرست می‌آید — مرتب بر اساس نام فایل.
+        $screenshotUrls = @()
+        $shotEntries = @($zip.Entries | Where-Object {
+                $n = $_.FullName.Replace([char]92, "/")
+                $n -like "screenshots/*" -and $n -notlike "screenshots/*/*" -and
+                (".png", ".jpg", ".jpeg") -contains [System.IO.Path]::GetExtension($n).ToLowerInvariant()
+            } | Sort-Object FullName)
+        if ($shotEntries.Count -gt 0) {
+            $shotsDir = Join-Path $folder "screenshots"
+            New-Item -ItemType Directory -Force -Path $shotsDir | Out-Null
+            foreach ($shot in $shotEntries) {
+                [System.IO.Compression.ZipFileExtensions]::ExtractToFile(
+                    $shot, (Join-Path $shotsDir $shot.Name), $true)
+                $screenshotUrls += "packages/$id/$version/screenshots/$($shot.Name)"
+            }
+        }
+
         # PowerShell 5.1 داخل هش‌تیبل if نمی‌پذیرد، پس مقادیر جدا حساب می‌شوند
         $name = $id
         if ($manifest.name) { $name = $manifest.name }
@@ -99,6 +117,7 @@ foreach ($file in Get-ChildItem -Path $Packages -Filter *.plz -File) {
             downloads   = 0
             downloadUrl = "packages/$id/$version/$($file.Name)"
             iconUrl     = $iconUrl
+            screenshots = @($screenshotUrls)
             platforms   = $platforms
             minCore     = $minCore
             versionKey  = Get-VersionKey $version
@@ -112,7 +131,7 @@ $latest = $entries |
     Group-Object id |
     ForEach-Object { $_.Group | Sort-Object versionKey -Descending | Select-Object -First 1 } |
     Sort-Object name |
-    Select-Object id, name, description, version, author, keywords, size, sha256, publishedAt, downloads, downloadUrl, iconUrl, platforms, minCore
+    Select-Object id, name, description, version, author, keywords, size, sha256, publishedAt, downloads, downloadUrl, iconUrl, screenshots, platforms, minCore
 
 $index = [ordered]@{
     generatedAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")

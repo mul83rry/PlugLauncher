@@ -6,222 +6,132 @@
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource WindowBrush}">
 
-    <TabControl Theme="{StaticResource SegmentedTabControl}"
-                Margin="18,16,18,14"
-                SelectionChanged="OnTabChanged">
+    <!-- فروشگاه پلاگین پنجره‌ی خودش را دارد؛ تنظیمات فقط دکمه‌ای برای باز کردنش. -->
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Margin="18,16,18,14">
 
-        <!-- ================= Installed plugins ================= -->
-        <TabItem Header="Installed">
-            <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+        <!-- Hotkey -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
+            <TextBlock Text="Hotkey"
+                       Foreground="{StaticResource SubtleTextBrush}"
+                       VerticalAlignment="Center"
+                       FontSize="13"
+                       Margin="0,0,10,0" />
+            <TextBox x:Name="HotkeyBox" Classes="field" Width="200" />
+            <Button Content="Save" Classes="ghost" Margin="8,0,0,0" Click="OnSaveHotkey" />
+            <TextBlock x:Name="HotkeyStatus"
+                       Foreground="{StaticResource SubtleTextBrush}"
+                       VerticalAlignment="Center"
+                       Margin="10,0,0,0"
+                       FontSize="12" />
 
-                <!-- Hotkey -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
-                    <TextBlock Text="Hotkey"
-                               Foreground="{StaticResource SubtleTextBrush}"
-                               VerticalAlignment="Center"
-                               FontSize="13"
-                               Margin="0,0,10,0" />
-                    <TextBox x:Name="HotkeyBox" Classes="field" Width="200" />
-                    <Button Content="Save" Classes="ghost" Margin="8,0,0,0" Click="OnSaveHotkey" />
-                    <TextBlock x:Name="HotkeyStatus"
-                               Foreground="{StaticResource SubtleTextBrush}"
-                               VerticalAlignment="Center"
-                               Margin="10,0,0,0"
-                               FontSize="12" />
+            <CheckBox x:Name="StartWithSystemBox"
+                      VerticalAlignment="Center"
+                      Margin="24,0,0,0"
+                      IsCheckedChanged="OnStartWithSystemToggled" />
+        </StackPanel>
 
-                    <CheckBox x:Name="StartWithSystemBox"
-                              VerticalAlignment="Center"
-                              Margin="24,0,0,0"
-                              IsCheckedChanged="OnStartWithSystemToggled" />
-                </StackPanel>
+        <!-- Tools -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="Plugin store" Classes="pill" Click="OnOpenStore" />
+            <Button Content="Open plugins folder" Classes="ghost" Margin="10,0,0,0" Click="OnOpenPluginsFolder" />
+            <Button Content="Reload" Classes="ghost" Margin="6,0,0,0" Click="OnReload" />
+            <Button Content="Open log file" Classes="ghost" Margin="6,0,0,0" Click="OnOpenLog" />
+            <Button Content="Exit PlugLauncher" Classes="ghost" Margin="24,0,0,0" Click="OnExitApp" />
+        </StackPanel>
 
-                <!-- Tools -->
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
-                    <Button Content="Open plugins folder" Classes="ghost" Click="OnOpenPluginsFolder" />
-                    <Button Content="Reload" Classes="ghost" Margin="6,0,0,0" Click="OnReload" />
-                    <Button Content="Open log file" Classes="ghost" Margin="6,0,0,0" Click="OnOpenLog" />
-                    <Button Content="Exit PlugLauncher" Classes="ghost" Margin="24,0,0,0" Click="OnExitApp" />
-                </StackPanel>
+        <!-- Updates -->
+        <Border Grid.Row="2" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="12,9" Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="VersionText"
+                           Foreground="{StaticResource TextBrush}"
+                           VerticalAlignment="Center"
+                           FontSize="13" />
+                <TextBlock x:Name="UpdateStatus"
+                           Foreground="{StaticResource SubtleTextBrush}"
+                           VerticalAlignment="Center"
+                           Margin="10,0,0,0"
+                           FontSize="12.5" />
+                <Button x:Name="UpdateDownloadButton"
+                        Content="Open download page"
+                        Classes="ghost"
+                        Margin="12,0,0,0"
+                        IsVisible="False"
+                        Click="OnOpenUpdatePage" />
+                <Button x:Name="UpdateCheckButton"
+                        Content="Check now"
+                        Classes="ghost"
+                        Margin="12,0,0,0"
+                        Click="OnCheckForUpdates" />
+                <CheckBox x:Name="AutoUpdateBox"
+                          Content="Check automatically"
+                          VerticalAlignment="Center"
+                          Margin="18,0,0,0"
+                          IsCheckedChanged="OnAutoUpdateToggled" />
+            </StackPanel>
+        </Border>
 
-                <!-- Updates -->
-                <Border Grid.Row="2" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="12,9" Margin="0,0,0,10">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock x:Name="VersionText"
-                                   Foreground="{StaticResource TextBrush}"
-                                   VerticalAlignment="Center"
-                                   FontSize="13" />
-                        <TextBlock x:Name="UpdateStatus"
-                                   Foreground="{StaticResource SubtleTextBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="10,0,0,0"
-                                   FontSize="12.5" />
-                        <Button x:Name="UpdateDownloadButton"
-                                Content="Open download page"
-                                Classes="ghost"
-                                Margin="12,0,0,0"
-                                IsVisible="False"
-                                Click="OnOpenUpdatePage" />
-                        <Button x:Name="UpdateCheckButton"
-                                Content="Check now"
-                                Classes="ghost"
-                                Margin="12,0,0,0"
-                                Click="OnCheckForUpdates" />
-                        <CheckBox x:Name="AutoUpdateBox"
-                                  Content="Check automatically"
-                                  VerticalAlignment="Center"
-                                  Margin="18,0,0,0"
-                                  IsCheckedChanged="OnAutoUpdateToggled" />
-                    </StackPanel>
-                </Border>
+        <!-- Plugin list -->
+        <Border Grid.Row="3" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="4">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl x:Name="PluginsList">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Padding="14,11" Margin="4" CornerRadius="6" Background="{StaticResource CardBrush}">
+                                <Grid ColumnDefinitions="*,Auto,Auto">
 
-                <!-- Plugin list -->
-                <Border Grid.Row="3" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="4">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="PluginsList">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Padding="14,11" Margin="4" CornerRadius="6" Background="{StaticResource CardBrush}">
-                                        <Grid ColumnDefinitions="*,Auto,Auto">
+                                    <StackPanel Grid.Column="0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}"
+                                                       Foreground="{StaticResource TextBrush}"
+                                                       FontSize="15" />
+                                            <TextBlock Text="{Binding Version}"
+                                                       Foreground="{StaticResource SubtleTextBrush}"
+                                                       FontSize="12"
+                                                       Margin="8,3,0,0" />
+                                            <TextBlock Text="{Binding StateText}"
+                                                       Foreground="{Binding StateBrush}"
+                                                       FontSize="12"
+                                                       Margin="8,3,0,0" />
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Description}"
+                                                   Foreground="{StaticResource SubtleTextBrush}"
+                                                   FontSize="12"
+                                                   Margin="0,4,0,0"
+                                                   TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Error}"
+                                                   Foreground="{StaticResource DangerBrush}"
+                                                   FontSize="11.5"
+                                                   Margin="0,4,0,0"
+                                                   TextWrapping="Wrap"
+                                                   IsVisible="{Binding HasError}" />
+                                    </StackPanel>
 
-                                            <StackPanel Grid.Column="0">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Name}"
-                                                               Foreground="{StaticResource TextBrush}"
-                                                               FontSize="15" />
-                                                    <TextBlock Text="{Binding Version}"
-                                                               Foreground="{StaticResource SubtleTextBrush}"
-                                                               FontSize="12"
-                                                               Margin="8,3,0,0" />
-                                                    <TextBlock Text="{Binding StateText}"
-                                                               Foreground="{Binding StateBrush}"
-                                                               FontSize="12"
-                                                               Margin="8,3,0,0" />
-                                                </StackPanel>
-                                                <TextBlock Text="{Binding Description}"
-                                                           Foreground="{StaticResource SubtleTextBrush}"
-                                                           FontSize="12"
-                                                           Margin="0,4,0,0"
-                                                           TextWrapping="Wrap" />
-                                                <TextBlock Text="{Binding Error}"
-                                                           Foreground="{StaticResource DangerBrush}"
-                                                           FontSize="11.5"
-                                                           Margin="0,4,0,0"
-                                                           TextWrapping="Wrap"
-                                                           IsVisible="{Binding HasError}" />
-                                            </StackPanel>
+                                    <CheckBox Grid.Column="1"
+                                              Content="Enabled"
+                                              VerticalAlignment="Center"
+                                              Margin="12,0"
+                                              IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+                                              Tag="{Binding Id}"
+                                              IsCheckedChanged="OnPluginToggled" />
 
-                                            <CheckBox Grid.Column="1"
-                                                      Content="Enabled"
-                                                      VerticalAlignment="Center"
-                                                      Margin="12,0"
-                                                      IsChecked="{Binding IsEnabled, Mode=TwoWay}"
-                                                      Tag="{Binding Id}"
-                                                      IsCheckedChanged="OnPluginToggled" />
+                                    <Button Grid.Column="2"
+                                            Content="Remove"
+                                            Classes="ghost danger"
+                                            VerticalAlignment="Center"
+                                            Tag="{Binding Id}"
+                                            Click="OnUninstall" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
 
-                                            <Button Grid.Column="2"
-                                                    Content="Remove"
-                                                    Classes="ghost danger"
-                                                    VerticalAlignment="Center"
-                                                    Tag="{Binding Id}"
-                                                    Click="OnUninstall" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Border>
-
-                <TextBlock Grid.Row="4"
-                           x:Name="FooterText"
-                           Foreground="{StaticResource HintTextBrush}"
-                           FontSize="11.5"
-                           Margin="4,10,4,0" />
-            </Grid>
-        </TabItem>
-
-        <!-- ================= Store ================= -->
-        <TabItem Header="Store">
-            <Grid RowDefinitions="Auto,*,Auto">
-
-                <!-- Search -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                    <TextBox x:Name="StoreSearchBox"
-                             Classes="field"
-                             Width="280"
-                             KeyDown="OnStoreSearchKeyDown" />
-                    <Button Content="Search" Classes="ghost" Margin="6,0,0,0" Click="OnStoreSearch" />
-                    <Button Content="Refresh" Classes="ghost" Margin="6,0,0,0" Click="OnStoreRefresh" />
-                    <TextBlock x:Name="StoreStatus"
-                               Foreground="{StaticResource SubtleTextBrush}"
-                               VerticalAlignment="Center"
-                               Margin="12,0,0,0"
-                               FontSize="12" />
-                </StackPanel>
-
-                <!-- Package list -->
-                <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="4">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="StoreList">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Padding="14,11" Margin="4" CornerRadius="6" Background="{StaticResource CardBrush}">
-                                        <Grid ColumnDefinitions="Auto,*,Auto">
-
-                                            <Image Grid.Column="0"
-                                                   Source="{Binding Icon}"
-                                                   Width="40" Height="40"
-                                                   Margin="0,0,12,0"
-                                                   VerticalAlignment="Top"
-                                                   Stretch="Uniform"
-                                                   RenderOptions.BitmapInterpolationMode="HighQuality" />
-
-                                            <StackPanel Grid.Column="1">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Name}"
-                                                               Foreground="{StaticResource TextBrush}"
-                                                               FontSize="15" />
-                                                    <TextBlock Text="{Binding VersionText}"
-                                                               Foreground="{StaticResource SubtleTextBrush}"
-                                                               FontSize="12"
-                                                               Margin="8,3,0,0" />
-                                                </StackPanel>
-                                                <TextBlock Text="{Binding Description}"
-                                                           Foreground="{StaticResource SubtleTextBrush}"
-                                                           FontSize="12"
-                                                           Margin="0,4,0,0"
-                                                           TextWrapping="Wrap" />
-                                                <TextBlock Text="{Binding MetaText}"
-                                                           Foreground="{StaticResource HintTextBrush}"
-                                                           FontSize="11"
-                                                           Margin="0,4,0,0"
-                                                           TextWrapping="Wrap" />
-                                            </StackPanel>
-
-                                            <Button Grid.Column="2"
-                                                    Content="{Binding ActionText}"
-                                                    Classes="ghost"
-                                                    VerticalAlignment="Center"
-                                                    MinWidth="90"
-                                                    IsEnabled="{Binding CanInstall}"
-                                                    Tag="{Binding Id}"
-                                                    Click="OnInstallFromStore" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Border>
-
-                <TextBlock Grid.Row="2"
-                           x:Name="StoreFooter"
-                           Foreground="{StaticResource HintTextBrush}"
-                           FontSize="11.5"
-                           Margin="4,10,4,0"
-                           TextWrapping="Wrap"
-                           Text="Downloads are verified against the store's sha256 before anything is installed. The store address lives in settings.json." />
-            </Grid>
-        </TabItem>
-    </TabControl>
+        <TextBlock Grid.Row="4"
+                   x:Name="FooterText"
+                   Foreground="{StaticResource HintTextBrush}"
+                   FontSize="11.5"
+                   Margin="4,10,4,0" />
+    </Grid>
 </Window>
