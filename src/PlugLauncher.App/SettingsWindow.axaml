@@ -74,7 +74,7 @@
                                        Margin="0,0,0,12" />
 
                             <Grid ColumnDefinitions="140,Auto,*"
-                                  RowDefinitions="Auto,Auto,Auto,Auto"
+                                  RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                                   ColumnSpacing="10"
                                   RowSpacing="12">
                                 <TextBlock Grid.Row="0" Grid.Column="0"
@@ -103,7 +103,7 @@
                                            FontSize="13" />
                                 <NumericUpDown x:Name="LauncherScaleBox"
                                                Grid.Row="1" Grid.Column="1"
-                                               Width="112"
+                                               Width="224"
                                                Minimum="50"
                                                Maximum="200"
                                                Increment="5"
@@ -132,44 +132,53 @@
                                     <ComboBoxItem Content="Bottom" />
                                     <ComboBoxItem Content="Custom" />
                                 </ComboBox>
-                                <StackPanel x:Name="CustomPositionFields"
-                                            Grid.Row="2" Grid.Column="2"
-                                            Orientation="Horizontal"
-                                            Spacing="7"
-                                            VerticalAlignment="Center">
-                                    <TextBlock Text="X" Foreground="{StaticResource SubtleTextBrush}" VerticalAlignment="Center" />
-                                    <NumericUpDown x:Name="CustomXBox"
-                                                   Width="105"
-                                                   Minimum="-100000"
-                                                   Maximum="100000"
-                                                   Increment="1"
-                                                   FormatString="0"
-                                                   ClipValueToMinMax="True"
-                                                   ValueChanged="OnCustomPositionChanged" />
-                                    <TextBlock Text="Y" Foreground="{StaticResource SubtleTextBrush}" VerticalAlignment="Center" />
-                                    <NumericUpDown x:Name="CustomYBox"
-                                                   Width="105"
-                                                   Minimum="-100000"
-                                                   Maximum="100000"
-                                                   Increment="1"
-                                                   FormatString="0"
-                                                   ClipValueToMinMax="True"
-                                                   ValueChanged="OnCustomPositionChanged" />
-                                </StackPanel>
+                                <Grid x:Name="CustomPositionFields"
+                                      Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3"
+                                      ColumnDefinitions="140,*"
+                                      ColumnSpacing="10">
+                                    <TextBlock Grid.Column="0"
+                                               Text="Custom coordinates"
+                                               Foreground="{StaticResource SubtleTextBrush}"
+                                               VerticalAlignment="Center"
+                                               FontSize="13" />
+                                    <StackPanel Grid.Column="1"
+                                                Orientation="Horizontal"
+                                                Spacing="7"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="X" Foreground="{StaticResource SubtleTextBrush}" VerticalAlignment="Center" />
+                                        <NumericUpDown x:Name="CustomXBox"
+                                                       Width="210"
+                                                       Minimum="-100000"
+                                                       Maximum="100000"
+                                                       Increment="1"
+                                                       FormatString="0"
+                                                       ClipValueToMinMax="True"
+                                                       ValueChanged="OnCustomPositionChanged" />
+                                        <TextBlock Text="Y" Foreground="{StaticResource SubtleTextBrush}" VerticalAlignment="Center" />
+                                        <NumericUpDown x:Name="CustomYBox"
+                                                       Width="210"
+                                                       Minimum="-100000"
+                                                       Maximum="100000"
+                                                       Increment="1"
+                                                       FormatString="0"
+                                                       ClipValueToMinMax="True"
+                                                       ValueChanged="OnCustomPositionChanged" />
+                                    </StackPanel>
+                                </Grid>
 
-                                <TextBlock Grid.Row="3" Grid.Column="0"
+                                <TextBlock Grid.Row="4" Grid.Column="0"
                                            Text="Show results"
                                            Foreground="{StaticResource SubtleTextBrush}"
                                            VerticalAlignment="Center"
                                            FontSize="13" />
                                 <ComboBox x:Name="ResultPlacementBox"
-                                          Grid.Row="3" Grid.Column="1"
+                                          Grid.Row="4" Grid.Column="1"
                                           Width="140"
                                           SelectionChanged="OnResultPlacementChanged">
                                     <ComboBoxItem Content="Below the bar" />
                                     <ComboBoxItem Content="Above the bar" />
                                 </ComboBox>
-                                <TextBlock Grid.Row="3" Grid.Column="2"
+                                <TextBlock Grid.Row="4" Grid.Column="2"
                                            Text="Display search results and detail views on this side."
                                            Foreground="{StaticResource HintTextBrush}"
                                            VerticalAlignment="Center"
