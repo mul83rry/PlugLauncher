@@ -24,6 +24,11 @@ public partial class MainWindow : Window
 
     private CancellationTokenSource? _queryCts;
     private bool _hotkeyTried;
+    private bool _positionAfterLayout;
+    private ResultListPlacement? _appliedResultListPlacement;
+    private PixelRect _placementArea;
+    private double _placementScale;
+    private bool _hasPlacementScreen;
 
     private ClipboardBridge? _clipboard;
     private SettingsWindow? _settings;
@@ -38,6 +43,9 @@ public partial class MainWindow : Window
     {
         _engine = engine;
         InitializeComponent();
+
+        ApplyResultListPlacement();
+        LauncherLayout.LayoutUpdated += (_, _) => PositionAfterLayout();
 
         // شیشه‌ای، و اگر سیستم بلد نبود شیشه‌ی مات‌تر، و اگر آن هم نه فقط شفاف. ترتیب مهم است:
         // اولین چیزی که سیستم بتواند برمی‌دارد.
@@ -168,9 +176,12 @@ public partial class MainWindow : Window
 
     public void ShowLauncher()
     {
+        ApplyResultListPlacement();
+        CapturePlacementScreen();
         SearchBox.Text = string.Empty;
         _clipboard?.Refresh();
         ShowDefaultRows();
+        // جای تقریبی از اندازه‌ی دفعه‌ی قبل، تا پنجره حتی پیش از layout تازه نزدیک مقصد باز شود.
         PositionOnActiveScreen();
 
         Show();
@@ -200,24 +211,123 @@ public partial class MainWindow : Window
         _layoutFix = null;
     }
 
-    /// <summary>وسط‌چین افقی روی همان نمایشگری که موس در آن است، کمی بالاتر از وسط عمودی.</summary>
-    private void PositionOnActiveScreen()
+    /// <summary>
+    /// ترتیب نوار و ناحیه‌ی جواب را بدون دو نسخه کردن XAML عوض می‌کند. DetailPanel هم دقیقاً
+    /// جای فهرست است، پس نمای بلند یا تصویری نیز در همان سمت انتخاب‌شده باز می‌شود.
+    /// </summary>
+    private void ApplyResultListPlacement()
     {
-        var screen = Os.Windowing.TryCursor(out var x, out var y)
-            ? Screens.ScreenFromPoint(new PixelPoint(x, y))
-            : null;
+        var placement = _engine.Settings.ResultListPlacement;
+        if (_appliedResultListPlacement == placement) return;
+
+        var above = placement == ResultListPlacement.Above;
+        Grid.SetRow(SearchBarHost, above ? 2 : 0);
+        Grid.SetRow(ResultsSeparator, 1);
+        Grid.SetRow(ResultsList, above ? 0 : 2);
+        Grid.SetRow(DetailPanel, above ? 0 : 2);
+
+        _appliedResultListPlacement = placement;
+        LauncherLayout.InvalidateMeasure();
+        RequestPositionAfterLayout();
+    }
+
+    /// <summary>نمایشگر مقصد را یک‌بار موقع باز شدن می‌گیرد؛ حرکت بعدی موس نباید پنجره‌ی باز را بپراند.</summary>
+    private void CapturePlacementScreen()
+    {
+        var settings = _engine.Settings;
+        var custom = settings.BarPosition == LauncherBarPosition.Custom;
+
+        var screen = custom
+            ? Screens.ScreenFromPoint(new PixelPoint(settings.CustomBarX, settings.CustomBarY))
+            : Os.Windowing.TryCursor(out var x, out var y)
+                ? Screens.ScreenFromPoint(new PixelPoint(x, y))
+                : null;
 
         screen ??= Screens.Primary ?? Screens.All.FirstOrDefault();
-        if (screen is null) return;
+        if (screen is null)
+        {
+            _hasPlacementScreen = false;
+            return;
+        }
 
-        // جای پنجره به پیکسل شمرده می‌شود ولی عرضش به واحد مستقل از تراکم صفحه، پس یکی از دو
-        // طرف باید تبدیل شود
-        var area = screen.WorkingArea;
-        var width = (int)(Width * screen.Scaling);
+        _placementArea = screen.WorkingArea;
+        _placementScale = screen.Scaling;
+        _hasPlacementScreen = true;
+    }
 
-        Position = new PixelPoint(
-            area.X + (area.Width - width) / 2,
-            area.Y + (int)(area.Height * 0.2));
+    /// <summary>
+    /// نوار را روی نمایشگرِ انتخاب‌شده می‌نشاند. حساب با پیکسل فیزیکی انجام می‌شود چون
+    /// Window.Position و WorkingArea هر دو پیکسلی‌اند.
+    /// </summary>
+    private void PositionOnActiveScreen()
+    {
+        if (!_hasPlacementScreen) CapturePlacementScreen();
+        if (!_hasPlacementScreen) return;
+
+        var settings = _engine.Settings;
+        var custom = settings.BarPosition == LauncherBarPosition.Custom;
+        var area = _placementArea;
+        var scale = _placementScale;
+
+        // اندازه‌های کنترل به DIP اند ولی جای پنجره و محدوده‌ی نمایشگر به پیکسل. Bounds نوار بعد
+        // از layout فاصله‌اش از بالای پنجره را هم دارد؛ در حالت Above همین فاصله قدِ جواب‌هاست.
+        var logicalWidth = ClientSize.Width > 0 ? ClientSize.Width : Width;
+        var logicalHeight = ClientSize.Height > 0 ? ClientSize.Height : SearchBarHost.Bounds.Height;
+        var windowWidth = Math.Max(1, (int)Math.Ceiling(logicalWidth * scale));
+        var windowHeight = Math.Max(1, (int)Math.Ceiling(logicalHeight * scale));
+        var barOffsetX = (int)Math.Round(SearchBarHost.Bounds.X * scale);
+        var barOffsetY = (int)Math.Round(SearchBarHost.Bounds.Y * scale);
+        var barHeight = Math.Max(1, (int)Math.Ceiling(SearchBarHost.Bounds.Height * scale));
+
+        int barX;
+        int barY;
+
+        if (custom)
+        {
+            barX = settings.CustomBarX;
+            barY = settings.CustomBarY;
+        }
+        else
+        {
+            barX = area.X + (area.Width - windowWidth) / 2;
+
+            // Top جای قدیمی برنامه را نگه می‌دارد. Bottom تصویر آینه‌ای آن است و Center خودِ
+            // نوار (نه کل پنجره‌ی متغیر) را وسط نمایشگر می‌گذارد.
+            var inset = (int)(area.Height * 0.2);
+            barY = settings.BarPosition switch
+            {
+                LauncherBarPosition.Center => area.Y + (area.Height - barHeight) / 2,
+                LauncherBarPosition.Bottom => area.Y + area.Height - inset - barHeight,
+                _ => area.Y + inset
+            };
+        }
+
+        var left = barX - barOffsetX;
+        var top = barY - barOffsetY;
+
+        // تنظیم دستیِ قدیمی یا تغییر چیدمان نمایشگر نباید لانچر را برای همیشه بیرون صفحه بگذارد.
+        // وقتی خود پنجره از نمایشگر بزرگ‌تر است، لبه‌ی بالا/چپ تنها جای قابل پیش‌بینی است.
+        left = ClampToWorkingArea(left, windowWidth, area.X, area.Width);
+        top = ClampToWorkingArea(top, windowHeight, area.Y, area.Height);
+
+        Position = new PixelPoint(left, top);
+    }
+
+    private static int ClampToWorkingArea(int position, int size, int start, int available)
+    {
+        if (size >= available) return start;
+        return Math.Clamp(position, start, start + available - size);
+    }
+
+    /// <summary>بعد از تغییر قد فهرست، پنجره جابه‌جا می‌شود تا خود نوار در مختصاتش ثابت بماند.</summary>
+    private void RequestPositionAfterLayout() => _positionAfterLayout = true;
+
+    private void PositionAfterLayout()
+    {
+        if (!_positionAfterLayout || !IsVisible) return;
+
+        _positionAfterLayout = false;
+        PositionOnActiveScreen();
     }
 
     // ===== جستجو =====
@@ -282,6 +392,7 @@ public partial class MainWindow : Window
         ResultsList.IsVisible = rows.Count > 0;
         UpdateHint();
         ScheduleRefresh(rows);
+        RequestPositionAfterLayout();
     }
 
     /// <summary>کف فاصله‌ی دو تازه‌سازی خودکار؛ پلاگین نمی‌تواند از این تندتر بخواهد.</summary>
@@ -527,6 +638,7 @@ public partial class MainWindow : Window
         DetailTextBox.CaretIndex = 0;
         DetailTextBox.SelectionStart = DetailTextBox.SelectionEnd = 0;
         DetailScroll.Offset = Vector.Zero;
+        RequestPositionAfterLayout();
     }
 
     private void OnDetailKeyDown(object? sender, KeyEventArgs e)
@@ -549,6 +661,7 @@ public partial class MainWindow : Window
         DetailRich.Inlines?.Clear();
         _detailText = string.Empty;
         ResultsList.IsVisible = ResultsList.ItemCount > 0;
+        RequestPositionAfterLayout();
     }
 
     private async void OnDetailCopyClick(object? sender, RoutedEventArgs e)

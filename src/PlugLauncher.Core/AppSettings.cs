@@ -3,12 +3,48 @@ using System.Text.Json.Serialization;
 
 namespace PlugLauncher.Core;
 
+/// <summary>جای عمودی نوار جستجو روی نمایشگر فعال، یا مختصات صریح کاربر.</summary>
+public enum LauncherBarPosition
+{
+    // مقدار صفر عمداً همان رفتار قدیمی است؛ فایل‌های تنظیمات قدیمی بدون مهاجرت همان‌جا می‌مانند.
+    Top,
+    Center,
+    Bottom,
+    Custom
+}
+
+/// <summary>سمتی از نوار جستجو که پاسخ‌ها در آن باز می‌شوند.</summary>
+public enum ResultListPlacement
+{
+    Below,
+    Above
+}
+
 /// <summary>تنظیمات کاربر؛ در <c>%APPDATA%\PlugLauncher\settings.json</c> ذخیره می‌شود.</summary>
 public sealed class AppSettings
 {
     /// <summary>هات‌کی سراسری نمایش پنجره، مثلاً <c>Alt+Space</c>.</summary>
     [JsonPropertyName("hotkey")]
     public string Hotkey { get; set; } = "Alt+Space";
+
+    /// <summary>
+    /// جای نوار جستجو. Top همان جای تاریخی برنامه است: تقریباً یک‌پنجم پایین‌تر از بالای
+    /// نمایشگر فعال؛ بنابراین افزودن این گزینه پنجره‌ی نصب‌های موجود را ناگهان جابه‌جا نمی‌کند.
+    /// </summary>
+    [JsonPropertyName("barPosition")]
+    public LauncherBarPosition BarPosition { get; set; } = LauncherBarPosition.Top;
+
+    /// <summary>مختصات پیکسلی لبه‌ی چپ نوار در حالت <see cref="LauncherBarPosition.Custom"/>.</summary>
+    [JsonPropertyName("customBarX")]
+    public int CustomBarX { get; set; }
+
+    /// <summary>مختصات پیکسلی لبه‌ی بالای نوار در حالت <see cref="LauncherBarPosition.Custom"/>.</summary>
+    [JsonPropertyName("customBarY")]
+    public int CustomBarY { get; set; }
+
+    /// <summary>فهرست پاسخ‌ها بالای نوار باز شود یا پایین آن.</summary>
+    [JsonPropertyName("resultListPlacement")]
+    public ResultListPlacement ResultListPlacement { get; set; } = ResultListPlacement.Below;
 
     /// <summary>شناسه‌ی پلاگین‌هایی که کاربر غیرفعال کرده است.</summary>
     [JsonPropertyName("disabledPlugins")]
@@ -70,7 +106,14 @@ public sealed class SettingsStore(FileLogger? logger = null)
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        Converters =
+        {
+            // اسم‌ها در فایل خواناتر از عددند. مبدلِ خودمان مقدار خراب یا متعلق به نسخه‌ای تازه‌تر
+            // را به پیش‌فرض enum برمی‌گرداند، به‌جای اینکه به‌خاطر یک گزینه همه‌ی تنظیمات کنار بروند.
+            new FallbackStringEnumConverter<LauncherBarPosition>(),
+            new FallbackStringEnumConverter<ResultListPlacement>()
+        }
     };
 
     private readonly FileLogger _log = logger ?? new FileLogger("settings");
@@ -123,6 +166,37 @@ public sealed class SettingsStore(FileLogger? logger = null)
         catch (Exception ex)
         {
             _log.Error("could not save settings.json", ex);
+        }
+    }
+
+    /// <summary>
+    /// نسخه‌ی مقاومِ JsonStringEnumConverter: مقدارهای شناخته‌شده را به camelCase می‌نویسد و
+    /// ورودی ناشناخته را به عضو صفر enum می‌فرستد. عضو صفرِ enumهای تنظیمات همیشه پیش‌فرض امن است.
+    /// </summary>
+    private sealed class FallbackStringEnumConverter<TEnum> : JsonConverter<TEnum>
+        where TEnum : struct, Enum
+    {
+        public override TEnum Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.String &&
+                Enum.TryParse<TEnum>(reader.GetString(), ignoreCase: true, out var parsed) &&
+                Enum.IsDefined(parsed))
+                return parsed;
+
+            // عددهای نسخه‌ی آزمایشی اولیه را هم می‌خوانیم، ولی عدد ناشناخته وارد برنامه نمی‌شود.
+            if (reader.TokenType == JsonTokenType.Number &&
+                reader.TryGetInt32(out var number) &&
+                Enum.IsDefined(typeof(TEnum), number))
+                return (TEnum)Enum.ToObject(typeof(TEnum), number);
+
+            if (reader.TokenType is JsonTokenType.StartArray or JsonTokenType.StartObject) reader.Skip();
+            return default;
+        }
+
+        public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)
+        {
+            if (!Enum.IsDefined(value)) value = default;
+            writer.WriteStringValue(JsonNamingPolicy.CamelCase.ConvertName(value.ToString()));
         }
     }
 }
