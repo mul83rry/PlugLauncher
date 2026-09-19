@@ -1,127 +1,137 @@
-# فروشگاه پلاگین PlugLauncher
+# The PlugLauncher plugin store
 
-فروشگاه یک **پوشه‌ی استاتیک** روی GitHub Pages است: یک `index.json` و کنارش فایل‌های بسته.
-نه سروری در کار است، نه دیتابیسی، نه کلید انتشاری. کلاینت فقط دو `GET` روی HTTPS می‌زند.
+The store is a **static folder** on GitHub Pages: one `index.json` and the package files next to
+it. No server, no database, no publishing key. The client makes exactly two HTTPS `GET`s.
 
-| مورد | مقدار |
+| What | Value |
 |---|---|
-| آدرس فروشگاه | `https://mul83rry.github.io/PlugLauncher/` |
-| فهرست | `https://mul83rry.github.io/PlugLauncher/index.json` |
-| منبع | برنچ `gh-pages` (ریشه) در همین مخزن |
-| worktree لوکال | `../PlugLauncher-pages` |
+| Store URL | `https://mul83rry.github.io/PlugLauncher/` |
+| Index | `https://mul83rry.github.io/PlugLauncher/index.json` |
+| Source | the `gh-pages` branch (root) of this repository |
+| Local worktree | `../PlugLauncher-pages` |
 
-**برای کاربر هیچ چیزی لازم نیست**: نه git، نه اکانت، نه توکن.
+**Nothing is required of the user**: no git, no account, no token.
 
-## فرمت بسته (`.plz`)
+## The package format (`.plz`)
 
-یک zip معمولی با این ساختار (پسوند فقط برای تشخیص است):
+An ordinary zip with this layout (the extension is only for recognition):
 
 ```
-plugin.json      # اجباری، در ریشه‌ی بسته
-main.csx         # فایل ورودی؛ نامش از فیلد entry مانیفست می‌آید
-assets/          # اختیاری — آیکن‌ها و فایل‌های استاتیک
-screenshots/     # اختیاری — عکس‌های صفحه‌ی جزئیات (png/jpg/jpeg، تخت، مرتب با نام فایل)
-theme/           # اختیاری — استایل مخصوص پلاگین
+plugin.json      # required, at the root of the package
+main.csx         # the entry file; its name comes from the manifest's entry field
+assets/          # optional — icons and static files
+screenshots/     # optional — detail-page screenshots (png/jpg/jpeg, flat, ordered by file name)
+theme/           # optional — styles specific to the plugin
 ```
 
-اسکرین‌شات‌ها قراردادی‌اند، نه فیلد مانیفست: هر فایل تصویری تختِ داخل `screenshots/` موقع ساخت
-استور بیرون کشیده می‌شود، زیر `packages/{id}/{version}/screenshots/` سرو می‌شود و آدرسش به‌ترتیبِ
-نام فایل در فیلد `screenshots` فهرست می‌آید. لانچر همان‌جا آن‌ها را در صفحه‌ی جزئیات بسته نشان
-می‌دهد؛ بسته‌ای که عکس ندارد آن بخش را کلاً نمی‌بیند.
+Screenshots are a convention, not a manifest field: every flat image file inside `screenshots/` is
+pulled out when the store is built, served under `packages/{id}/{version}/screenshots/`, and
+listed in the index's `screenshots` field ordered by file name. The launcher shows them on the
+package detail page; a package without any simply does not get that section.
 
-`plugin.json` باید این‌ها را داشته باشد: `id` (۳ تا ۱۰۰ کاراکتر، فقط حروف/عدد/نقطه/خط‌تیره)، `name`،
-`version` به شکل `1.0.0` یا `1.0.0-beta` و `entry` که فایلش واقعاً داخل بسته باشد. اگر `icon` مقدار داشته
-باشد، آن فایل هم باید در بسته موجود باشد.
+`plugin.json` must carry: `id` (3 to 100 characters, only letters/digits/dot/dash), `name`,
+`version` in the `1.0.0` or `1.0.0-beta` shape, and an `entry` whose file really is inside the
+package. If `icon` is set, that file must be in the package too.
 
-دو فیلد اختیاری هم هست که هم فروشگاه و هم لانچر به آن نگاه می‌کنند: `platforms` (`windows`، `macos`، `linux` — خالی یعنی همه‌جا) و `minCore` (قدیمی‌ترین نسخه‌ی لانچری که پلاگین روی آن کار می‌کند). بسته‌ای که به این سیستم یا این نسخه نمی‌خورد اصلاً نصب نمی‌شود و دلیلش در همان ردیف فروشگاه نوشته می‌شود.
+Two more optional fields are looked at by both the store and the launcher: `platforms`
+(`windows`, `macos`, `linux` — empty means everywhere) and `minCore` (the oldest launcher the
+plugin works on). A package that does not fit this system or this version is not installed at
+all, and the reason is written on the store row itself.
 
-## ساخت و انتشار یک بسته
+## Building and publishing a package
 
 ```powershell
-# ساخت فایل .plz از پوشه‌ی پلاگین
+# build a .plz file from a plugin folder
 ./tools/pack-plugin.ps1 -Path ./plugins/steam-games -Output ./dist
 
-# انتشار — یک دستور، بدون کلید و بدون سرور
+# publish — one command, no key and no server
 ./tools/publish-plugin.ps1 -File ./dist/com.pluglauncher.steam-games-1.0.0.plz
 ```
 
-`publish-plugin.ps1` این‌ها را پشت سر هم انجام می‌دهد: بسته را در `./dist` می‌گذارد،
-`build-static-store.ps1` را صدا می‌زند، خروجی را در worktree ی `../PlugLauncher-pages`
-(برنچ `gh-pages`) آینه می‌کند و `commit` + `push` می‌زند. اگر worktree نبود خودش می‌سازد.
-`-NoPush` کامیت می‌کند ولی پوش نمی‌کند، `-Message` پیام کامیت را عوض می‌کند.
+`publish-plugin.ps1` does these in a row: puts the package in `./dist`, calls
+`build-static-store.ps1`, mirrors the output into the `../PlugLauncher-pages` worktree (branch
+`gh-pages`) and commits + pushes. If the worktree is missing it creates it. `-NoPush` commits
+without pushing, `-Message` changes the commit message.
 
-چون کل پوشه‌ی `dist` هر بار از نو خوانده می‌شود، **حذف** یک بسته هم یعنی پاک کردن `.plz` آن از
-`dist` و اجرای دوباره‌ی همین اسکریپت.
+Because the whole `dist` folder is re-read every time, **deleting** a package is also just
+removing its `.plz` from `dist` and running the same script again.
 
-## ساخت خروجی استاتیک
+## Building the static output
 
 ```powershell
-# همه‌ی .plz های موجود را به یک فروشگاه استاتیک تبدیل می‌کند
-# (publish-plugin.ps1 خودش این را صدا می‌زند؛ این فرمان برای وقتی است که فقط بخواهی خروجی را ببینی)
+# turns every .plz present into one static store
+# (publish-plugin.ps1 calls this itself; this command is for when you only want to see the output)
 ./tools/build-static-store.ps1 -Packages ./dist -Output ./dist/store-static -Clean
 ```
 
-خروجی:
+Output:
 
 ```
-index.json                                   # فهرست، آخرین نسخه‌ی هر بسته
-packages/{id}/{version}/{id}-{version}.plz   # همه‌ی نسخه‌ها (لینک قدیمی‌ها نمی‌شکند)
-packages/{id}/{version}/icon.png             # آیکن، از داخل بسته بیرون کشیده شده
-packages/{id}/{version}/screenshots/*.jpg    # اسکرین‌شات‌ها، همان‌جا از داخل بسته
+index.json                                   # the list, latest version of each package
+packages/{id}/{version}/{id}-{version}.plz   # every version (old links keep working)
+packages/{id}/{version}/icon.png             # the icon, pulled out of the package
+packages/{id}/{version}/screenshots/*.jpg    # the screenshots, from inside the package too
 ```
 
-`index.json` شکل `{ total, items }` دارد و `downloadUrl`/`iconUrl` در آن **نسبی** هستند، پس زیر هر
-prefix ای کار می‌کند — از جمله مسیر زیرپوشه‌ای Pages. `sha256` و `size` از روی خود فایل حساب می‌شوند.
+`index.json` has the `{ total, items }` shape and its `downloadUrl`/`iconUrl` are **relative**, so
+it works under any prefix — including the Pages subfolder path. `sha256` and `size` are computed
+from the file itself.
 
-`.nojekyll` در ریشه‌ی `gh-pages` لازم است تا Pages پردازش Jekyll را رد کند؛ بدون آن هر فایل یا
-پوشه‌ای که با `_` شروع شود سرو نمی‌شود.
+`.nojekyll` at the root of `gh-pages` is required so Pages skips Jekyll processing; without it
+any file or folder starting with `_` is not served.
 
-### نکته‌ی Content-Type
+### The Content-Type note
 
-`StoreClient` عمداً از `GetFromJsonAsync` استفاده نمی‌کند: بدنه را رشته‌ای می‌خواند و خودش
-دیسریالایز می‌کند. دلیلش این است که هاست‌های استاتیک همیشه `application/json` نمی‌فرستند —
-`raw.githubusercontent.com` برای فایل JSON هم `text/plain` می‌دهد و آن متد پاسخ را رد می‌کند.
-با این تغییر، هر هاستی که فایل را برگرداند کار می‌کند. (خودِ GitHub Pages `application/json`
-می‌فرستد، ولی این فرض جایی سخت‌کد نشده است.)
+`StoreClient` deliberately does not use `GetFromJsonAsync`: it reads the body as a string and
+deserializes it itself. The reason is that static hosts do not always send `application/json` —
+`raw.githubusercontent.com` sends `text/plain` even for JSON files, and that method rejects the
+response. With this change, any host that returns the file works. (GitHub Pages itself sends
+`application/json`, but that assumption is not hardcoded anywhere.)
 
-## اعتبارسنجی بسته
+## Package validation
 
-چون سروری در کار نیست، دروازه‌ی اعتبارسنجی موقع **انتشار** فقط `pack-plugin.ps1` است: وجود
-`plugin.json`، داشتن `id` و `version`، وجود واقعی فایل `entry` در پوشه، و درست بودن مقادیر `platforms` و `minCore` — یک اسم غلط در `platforms` یعنی پلاگین روی هیچ سیستمی لود نمی‌شود و هیچ‌جا هم نمی‌گوید چرا. فایل‌های `bin`، `obj`،
-`.git` و `*.user` هم از بسته بیرون گذاشته می‌شوند.
+Because there is no server, the validation gate at **publish** time is only `pack-plugin.ps1`:
+the existence of `plugin.json`, the presence of `id` and `version`, the entry file really being
+in the folder, and sane `platforms` and `minCore` values — one wrong name in `platforms` means
+the plugin loads on no system at all and nothing anywhere says why. The `bin`, `obj`, `.git`
+and `*.user` files are also left out of the package.
 
-بررسی‌های سمت **کلاینت** دست‌نخورده‌اند و مهم‌ترها همان‌جا هستند:
+The **client**-side checks are untouched, and the important ones live there:
 
-- `sha256` فایل دانلودشده با مقدار اعلام‌شده در `index.json` مقایسه می‌شود؛ عدم تطابق یعنی نصب
-  متوقف و هیچ فایلی نوشته نمی‌شود.
-- باز کردن zip در برابر **zip slip** محافظت شده — هر ورودی باید داخل پوشه‌ی مقصد بماند.
-- نصب روی پوشه‌ی `.installing` انجام و در پایان جایگزین می‌شود، تا نصب نیمه‌کاره روی نسخه‌ی سالم
-  قبلی ننشیند. بسته‌ی بدون `plugin.json` رد می‌شود.
+- the downloaded file's `sha256` is compared with the value announced in `index.json`; a mismatch
+  stops the install and no file is written.
+- opening the zip is protected against **zip slip** — every entry must stay inside the target
+  folder.
+- installing happens into a `.installing` folder and is swapped in at the end, so a half-finished
+  install never lands on the previous good version. A package without `plugin.json` is rejected.
 
-## امنیت کلاینت
+## Client security
 
-آدرس فروشگاه در UI قابل ویرایش نیست: مقدار پیش‌فرض در `AppSettings.DefaultStoreUrl` هاردکد است و
-تغییرش فقط با ویرایش دستی `%APPDATA%\PlugLauncher\settings.json` ممکن است. وقتی کد بسته بدون
-sandbox اجرا می‌شود، عوض کردن منبع بسته‌ها نباید یک تکست‌باکس فاصله داشته باشد.
+The store URL is not editable in the UI: the default is hardcoded in `AppSettings.DefaultStoreUrl`
+and changing it takes a manual edit of `%APPDATA%\PlugLauncher\settings.json`. When package code
+runs without a sandbox, swapping the source of packages should not be one textbox away.
 
-نصب‌های قدیمی که آدرس فروشگاه قبلی را در `settings.json` ذخیره داشتند با یک ارتقای یک‌بارمصرف در
-`SettingsStore.Load` به آدرس Pages منتقل می‌شوند (فقط اگر مقدار **دقیقاً** برابر
-`AppSettings.LegacyStoreUrl` باشد؛ هر مقدار دیگری دست نمی‌خورد).
+Old installs that had the previous store URL saved in `settings.json` are moved to the Pages URL
+by a one-shot migration in `SettingsStore.Load` (only when the value is **exactly**
+`AppSettings.LegacyStoreUrl`; any other value is left alone).
 
-**نکته‌ی امنیتی باقی‌مانده**: کد پلاگین با دسترسی کامل کاربر اجرا می‌شود (بدون sandbox). `sha256` فقط
-تضمین می‌کند فایل همان چیزی است که فروشگاه دارد؛ تضمین نمی‌کند محتوایش بی‌خطر است. تا وقتی انتشار
-فقط از مخزن شماست این ریسک کنترل‌شده است.
+**The remaining security note**: plugin code runs with the user's full access (no sandbox).
+`sha256` only guarantees the file is what the store has; it does not guarantee its content is
+harmless. As long as publishing happens only from your repository, this risk is contained.
 
-## پنجره‌ی فروشگاه در کلاینت
+## The store window in the client
 
-فروشگاه سمت کلاینت یک پنجره‌ی مستقل (`StoreWindow`) است که از دکمه‌ی **Plugin store** در تنظیمات باز
-می‌شود — دیگر تبِ جدا ندارد. چیدمانش به سبک استور ویندوز ۱۱ است: ریل ناوبری چپ (Home / Browse /
-Library)، بنرِ تازه‌ترین بسته بر اساس `publishedAt`، ردیف‌های افقی، گرید کارت در Browse، صفحه‌ی جزئیات
-هر بسته و کتابخانه‌ی نصب‌شده‌ها با بخش به‌روزرسانی. جستجو زنده است و سمت کلاینت فیلتر می‌شود (فهرست
-کامل یک‌بار می‌آید)، و نصب با نوار پیشرفت دانلود همراه است — `StoreClient.InstallAsync` پارامتر
-`IProgress<DownloadProgress>` دارد و طول دانلود را از هدر پاسخ یا `size` فهرست می‌گیرد.
+The client-side store is its own window (`StoreWindow`), opened by the **Plugin store** button in
+settings — it is no longer a separate tab. The layout follows the Windows 11 store: a left
+navigation rail (Home / Browse / Library), a banner for the newest package by `publishedAt`,
+horizontal rows, a card grid in Browse, a detail page per package, and a library of installed
+ones with an updates section. Search is live and filtered client-side (the full index comes
+down once), and installing comes with a download progress bar — `StoreClient.InstallAsync` takes
+an `IProgress<DownloadProgress>` and gets the download length from the response header or the
+index's `size`.
 
-همه‌ی این‌ها با همان `index.json` فعلی کار می‌کنند؛ هیچ فیلد اجباری جدیدی اضافه نشده. فیلدهای اختیاری‌ای که
-UI از آن‌ها استفاده می‌کند: `publishedAt` (بنر و تاریخ)، `size` (پیشرفت دانلود)، `platforms`/`minCore`
-(دکمه‌ی Unavailable و دلیلش در صفحه‌ی جزئیات)، `iconUrl` و `screenshots` (آیکن کارت و گالری عکس‌های
-صفحه‌ی جزئیات — عکس‌ها بعد از باز شدن صفحه، یکی‌یکی و برای هر بسته فقط یک‌بار دانلود می‌شوند).
+All of this works with the current `index.json`; no new required fields were added. The optional
+fields the UI uses: `publishedAt` (banner and dates), `size` (download progress),
+`platforms`/`minCore` (the Unavailable button and its reason on the detail page), `iconUrl` and
+`screenshots` (the card icon and the detail page's gallery — images are downloaded after the
+page opens, one by one and only once per package).
