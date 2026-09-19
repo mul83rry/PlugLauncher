@@ -1,0 +1,32 @@
+{
+  "id": "com.pluglauncher.qr",
+  "name": "QR Code",
+  "description": "make a QR of any text — scannable off the screen — and read one back from a clipboard image",
+  "version": "1.0.0",
+  "author": "PlugLauncher",
+  "entry": "main.csx",
+  "keywords": [
+    "qr"
+  ],
+  "icon": "assets/icon.png",
+  "platforms": [
+    "windows",
+    "macos",
+    "linux"
+  ],
+  "minCore": "1.7.0",
+  "references": [
+    "libs/QRCoder.dll",
+    "libs/zxing.dll"
+  ],
+  "usage": [
+    {
+      "example": "qr https://example.com",
+      "description": "a QR of that text, scannable off the screen"
+    },
+    {
+      "example": "qr from clipboard",
+      "description": "an image on the clipboard: the QR in it, read back to text"
+    }
+  ]
+}

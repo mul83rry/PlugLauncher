@@ -107,6 +107,7 @@ your version of the launcher cannot run, so what it offers always works:
 | Keyword | Plugin | What it does |
 |---|---|---|
 | `term` | Terminal | One shell that stays alive between commands — `cd` sticks, variables stick, history sticks |
+| `qr` | QR Code | Make a QR of any text, scannable off the screen — and read one back from a clipboard image |
 | `curl` | Curl | Paste a curl command, get the answer in place: pretty JSON in editor colors, or field by field |
 | `kb` | Keyboard Layout | Text typed on the wrong layout — `kb sghl` gives `سلام`; mixed Persian/English works too |
 | `st` | Steam Games | Finds and launches installed games |

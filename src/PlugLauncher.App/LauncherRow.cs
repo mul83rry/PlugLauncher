@@ -27,6 +27,9 @@ public sealed class LauncherRow
     /// <summary>زبان متن نما برای رنگ‌آمیزی (مثلاً "json")؛ null یعنی ساده.</summary>
     public string? DetailSyntax { get; init; }
 
+    /// <summary>تصویر نما؛ مسیر مطلق یا null.</summary>
+    public string? DetailImagePath { get; init; }
+
     public bool HasDetail => !string.IsNullOrEmpty(DetailText);
 
     /// <summary>سهم ردیف از یک کل (۰ تا ۱)، یا null وقتی نواری نباید کشیده شود.</summary>
@@ -46,6 +49,7 @@ public sealed class LauncherRow
         DetailText = item.Result.DetailText,
         DetailTitle = item.Result.DetailTitle,
         DetailSyntax = item.Result.DetailSyntax,
+        DetailImagePath = item.Result.DetailImagePath,
         Item = item
     };
 

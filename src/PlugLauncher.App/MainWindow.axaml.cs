@@ -481,14 +481,44 @@ public partial class MainWindow : Window
         DetailCaption.Text = string.IsNullOrWhiteSpace(row.DetailTitle) ? row.Title : row.DetailTitle!;
         _detailText = row.DetailText!;
 
-        var colored = string.Equals(row.DetailSyntax, "json", StringComparison.OrdinalIgnoreCase)
-                      && row.DetailText!.Length <= ColoredDetailLimit;
+        var syntax = row.DetailSyntax?.ToLowerInvariant();
+        var colored = syntax == "json" && row.DetailText!.Length <= ColoredDetailLimit;
 
-        if (colored) FillColoredDetail(row.DetailText!);
+        // nowrap برای متنی است که شکلش خودش معناست — کد QR با بلوک‌کاراکترها. شکستن خط چنین
+        // چیزی را نابود می‌کند، پس مثل حالت رنگی در SelectableTextBlock می‌نشیند که نمی‌شکند.
+        var plainScroll = syntax == "nowrap";
+
+        // تصویر مقدم است: وقتی هست، هیچ‌کدام از حالت‌های متن دیده نمی‌شوند
+        var imagePath = row.DetailImagePath;
+        var hasImage = false;
+        if (!string.IsNullOrWhiteSpace(imagePath) && File.Exists(imagePath))
+        {
+            try
+            {
+                DetailImage.Source = new Avalonia.Media.Imaging.Bitmap(imagePath);
+                hasImage = true;
+            }
+            catch (Exception ex)
+            {
+                _log.Warn($"could not show the detail image \"{imagePath}\": {ex.Message}");
+            }
+        }
+
+        if (hasImage)
+        {
+            // بدون متن، دکمه‌ی کپی هنوز کاری دارد: همان DetailText را می‌دهد بیرون
+        }
+        else if (colored) FillColoredDetail(row.DetailText!);
+        else if (plainScroll)
+        {
+            DetailRich.Inlines!.Clear();
+            DetailRich.Inlines.Add(new Avalonia.Controls.Documents.Run(row.DetailText));
+        }
         else DetailTextBox.Text = row.DetailText;
 
-        DetailScroll.IsVisible = colored;
-        DetailTextBox.IsVisible = !colored;
+        DetailImage.IsVisible = hasImage;
+        DetailScroll.IsVisible = !hasImage && (colored || plainScroll);
+        DetailTextBox.IsVisible = !hasImage && !colored && !plainScroll;
 
         ResultsList.IsVisible = false;
         DetailPanel.IsVisible = true;
@@ -515,6 +545,7 @@ public partial class MainWindow : Window
 
         DetailPanel.IsVisible = false;
         DetailTextBox.Clear();
+        DetailImage.Source = null;
         DetailRich.Inlines?.Clear();
         _detailText = string.Empty;
         ResultsList.IsVisible = ResultsList.ItemCount > 0;

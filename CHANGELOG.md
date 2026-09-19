@@ -3,6 +3,38 @@
 The release workflow reads the section matching the tag out of this file and uses it as the
 release notes, so every version needs a `## <version>` heading here before it can be tagged.
 
+## Unreleased
+
+**New plugin: QR Code** (keyword `qr`, from the store)
+
+`qr <text>` makes a QR of any text and shows it as a real image — a crisp PNG, eight pixels per
+module with a quiet zone, centered in the launcher's new image view — scannable off the screen
+with a phone. Copy in the corner gives out the text that went in, because the drawing is for
+machines. `qr from clipboard` reads one back: an image on the clipboard — a screenshot of a QR
+anywhere — is decoded to text, ready to copy or turn straight back into a code. QRCoder (MIT)
+and zxing (Apache-2.0) travel with the plugin in `libs/`.
+
+**Plugins can read the image on the clipboard**
+
+`Clipboard.Image()` hands a plugin the clipboard's pixels as plain RGBA — what a barcode reader,
+an OCR step, or an "open this picture" row needs. On Windows the DIB is opened by hand, including
+the BI_BITFIELDS flavor the clipboard itself synthesizes, and an HBITMAP-only clipboard falls
+back to `GetDIBits`; anywhere else it returns null, exactly as the contract says.
+
+**Plugins can ship DLLs**
+
+A plugin's `references` in the manifest used to make DLLs compile but not load — the runtime
+looked for them next to the executable and gave up. The loader now remembers the folder of every
+referenced assembly and answers assembly resolution from there, so a plugin brings its libraries
+in `libs/` and they simply work, from the compile cache too.
+
+**Detail views can show images — and text that must not wrap**
+
+`DetailImagePath` on a result shows a picture in the view instead of text: a QR, a chart, a map,
+centered at its natural size with the copy button still in the corner (it hands out the row's
+`DetailText`). And `DetailSyntax = "nowrap"` shows the text in the non-wrapping view, for text
+whose shape is its meaning — breaking lines would destroy it.
+
 ## 1.6.0 — 2026-09-13
 
 **The plugin store got a window of its own**

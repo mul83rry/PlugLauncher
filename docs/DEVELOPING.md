@@ -212,7 +212,18 @@ return Plugin.Create(
   closes, so a plugin that always asks for a refresh cannot spin in the background.
 - **`DetailText`** on a result makes Enter open the text in a view instead of running: a
   read-only monospace panel with a copy button in its corner — the curl answers and the terminal
-  transcript live here. `DetailTitle` names it, and `DetailSyntax = "json"` colors the text like
-  an editor (past 20,000 characters it falls back to plain, for speed). Keep an `Action` on the
-  row too, so the host of a user with an older launcher still does something sensible — but set
-  `minCore` honestly, because the properties themselves have to exist for the script to compile.
+  transcript live here. `DetailTitle` names it, `DetailSyntax = "json"` colors the text like
+  an editor (past 20,000 characters it falls back to plain, for speed), and
+  `DetailSyntax = "nowrap"` shows it without ever breaking a line, for text whose shape is its
+  meaning. Keep an `Action` on the row too, so the host of a user with an older launcher still
+  does something sensible — but set `minCore` honestly, because the properties themselves have
+  to exist for the script to compile.
+- **`DetailImagePath`** on a result shows a picture instead of text: an absolute path to a
+  png/jpg/bmp that already exists, drawn centered at its natural size with the copy button still
+  in the corner (it hands out `DetailText`). The QR plugin writes its PNG into
+  `ctx.DataDirectory` and points the row here.
+- **`Clipboard.Image()`** reads the image on the clipboard as raw RGBA pixels — `null` when there
+  is no image or the host cannot read it. The QR plugin feeds exactly this to its decoder.
+- **Shipping DLLs**: put them in the plugin folder (a `libs/` subfolder reads nicely), name them
+  in the manifest's `references` array, and they compile *and* load — the loader answers assembly
+  resolution from their folder, from the compile cache too.

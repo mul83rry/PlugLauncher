@@ -20,6 +20,29 @@ public sealed class CsxPluginLoader(FileLogger? logger = null)
 {
     private readonly FileLogger _log = logger ?? new FileLogger("loader");
 
+    /// <summary>
+    /// پوشه‌هایی که اسمبلی‌های همراه پلاگین‌ها در آن‌ها جستجو می‌شوند. کامپایل با
+    /// <c>references</c> مانیفست کافی است، ولی زمانِ اجرا CLR باید خود اسمبلی را هم پیدا کند و
+    /// کنار exe نیست؛ بدون این، اولین دست زدن به نوعی از DLL پلاگین با FileNotFound می‌میرد.
+    /// </summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> ReferenceDirs = new();
+
+    static CsxPluginLoader()
+    {
+        AppDomain.CurrentDomain.AssemblyResolve += (_, args) =>
+        {
+            var fileName = new AssemblyName(args.Name).Name + ".dll";
+
+            foreach (var dir in ReferenceDirs.Keys)
+            {
+                var path = Path.Combine(dir, fileName);
+                if (File.Exists(path)) return Assembly.LoadFrom(path);
+            }
+
+            return null;
+        };
+    }
+
     private static readonly string[] DefaultImports =
     [
         "System",
@@ -36,6 +59,18 @@ public sealed class CsxPluginLoader(FileLogger? logger = null)
     /// <summary>لود پلاگین؛ در صورت خطای کامپایل یا اجرا، <see cref="PluginLoadException"/> پرتاب می‌شود.</summary>
     public async Task<IPlugin> LoadAsync(PluginDescriptor descriptor, CancellationToken cancellationToken = default)
     {
+        // قبل از هر چیز، حتی وقتی پاسخ از کش می‌آید و BuildScriptOptions صدا نمی‌خورد: اسمبلی‌های
+        // همراه پلاگین در زمانِ اجرا از همین پوشه‌ها پیدا می‌شوند
+        if (descriptor.Manifest.References is { Count: > 0 })
+        {
+            foreach (var reference in descriptor.Manifest.References)
+            {
+                var path = Path.IsPathRooted(reference) ? reference : Path.Combine(descriptor.Directory, reference);
+                if (File.Exists(path))
+                    ReferenceDirs.TryAdd(Path.GetDirectoryName(Path.GetFullPath(path))!, 0);
+            }
+        }
+
         var hash = ComputeHash(descriptor);
         var cachedAssembly = Path.Combine(
             PluginPaths.ScriptCache,
@@ -190,10 +225,19 @@ public sealed class CsxPluginLoader(FileLogger? logger = null)
             references.Add(MetadataReference.CreateFromFile(contracts));
 
         // اسمبلی‌های اضافه‌ی خود پلاگین (مسیر نسبی نسبت به پوشه‌ی پلاگین)
-        foreach (var reference in descriptor.Manifest.References)
+        if (descriptor.Manifest.References is { Count: > 0 })
         {
-            var path = Path.IsPathRooted(reference) ? reference : Path.Combine(descriptor.Directory, reference);
-            if (File.Exists(path)) references.Add(MetadataReference.CreateFromFile(path));
+            foreach (var reference in descriptor.Manifest.References)
+            {
+                var path = Path.IsPathRooted(reference) ? reference : Path.Combine(descriptor.Directory, reference);
+                if (File.Exists(path))
+                {
+                    references.Add(MetadataReference.CreateFromFile(path));
+
+                    // پوشه‌ی خودِ فایل، نه فقط ریشه‌ی پلاگین — DLLها معمولا در libs/ می‌نشینند
+                    ReferenceDirs.TryAdd(Path.GetDirectoryName(Path.GetFullPath(path))!, 0);
+                }
+            }
         }
 
         return ScriptOptions.Default

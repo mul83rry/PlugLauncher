@@ -79,6 +79,13 @@ public sealed class PluginResult
     /// </summary>
     public string? DetailSyntax { get; init; }
 
+    /// <summary>
+    /// تصویرِ نما برای وقتی که متن کافی نیست — یک QR واقعی، نمودار، نقشه. مسیر مطلقِ یک فایل
+    /// تصویری (png/jpg/bmp) که همین‌حالا موجود باشد؛ میزبان آن را وسطِ نما با اندازه‌ی اصلی‌اش
+    /// نشان می‌دهد و دکمه‌ی کپی همچنان <see cref="DetailText"/> را می‌دهد بیرون.
+    /// </summary>
+    public string? DetailImagePath { get; init; }
+
     /// <summary>داده‌ی دلخواه پلاگین که همراه ردیف حمل می‌شود.</summary>
     public object? Data { get; init; }
 

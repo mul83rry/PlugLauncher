@@ -171,6 +171,18 @@
                                              FontFamily="Consolas, Menlo, monospace"
                                              FontSize="12.5" />
                     </ScrollViewer>
+
+                    <!--
+                        تصویرِ نما: QR، نمودار، هر چیزی که متن نیست. وسط، با اندازه‌ی خودش؛
+                        دکمه‌ی کپی گوشه همان‌جاست و متنِ پشت تصویر را می‌دهد بیرون.
+                    -->
+                    <Image x:Name="DetailImage"
+                           Grid.Row="1"
+                           IsVisible="False"
+                           Stretch="Uniform"
+                           MaxWidth="560"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Top" />
                 </Grid>
             </Border>
         </Grid>
