@@ -1,8 +1,8 @@
 {
-    "generatedAt":  "2026-09-14T21:59:16Z",
-    "total":  12,
+    "generatedAt":  "2026-09-19T15:23:30Z",
+    "total":  13,
     "page":  1,
-    "pageSize":  12,
+    "pageSize":  13,
     "items":  [
                   {
                       "id":  "com.pluglauncher.applications",
@@ -13,9 +13,9 @@
                       "keywords":  [
 
                                    ],
-                      "size":  3990,
-                      "sha256":  "072b4b25b6602886b861844dbc096345a899ccd34d23121b0fab5e5f16279799",
-                      "publishedAt":  "2026-09-14T21:58:32Z",
+                      "size":  3973,
+                      "sha256":  "9f8dab62b256680878cb88306e57e513b540e59ae296ef7e52f92d1831fecf48",
+                      "publishedAt":  "2026-09-08T12:23:28Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.applications/1.0.0/com.pluglauncher.applications-1.0.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.applications/1.0.0/icon.png",
@@ -36,9 +36,9 @@
                       "keywords":  [
 
                                    ],
-                      "size":  2956,
-                      "sha256":  "4d6a9a7319ff49c89f47bd445ce2aeaa448b9585bbff510f51b361d1d739cb98",
-                      "publishedAt":  "2026-09-14T21:58:32Z",
+                      "size":  2945,
+                      "sha256":  "c02b8d5abf0959bbd41d937d05679dbc390e0775dc802ad814a8e9c541989a34",
+                      "publishedAt":  "2026-09-08T09:25:20Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.calculator/1.2.1/com.pluglauncher.calculator-1.2.1.plz",
                       "iconUrl":  "packages/com.pluglauncher.calculator/1.2.1/icon.png",
@@ -61,14 +61,14 @@
                       "keywords":  [
                                        "curl"
                                    ],
-                      "size":  36857,
-                      "sha256":  "3d5312c9928c0437eae557e42df84eee4e62a9996307dddd6478e39eb4fadec9",
-                      "publishedAt":  "2026-09-14T21:58:33Z",
+                      "size":  12541,
+                      "sha256":  "25dd9f7e6e0697a5c9c5a56b260e558c3ba8bc48a2ddc127e662023dda2a2a50",
+                      "publishedAt":  "2026-09-12T14:31:09Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.curl/1.1.0/com.pluglauncher.curl-1.1.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.curl/1.1.0/icon.png",
                       "screenshots":  [
-                                          "packages/com.pluglauncher.curl/1.1.0/screenshots/json-answer.jpg"
+
                                       ],
                       "platforms":  [
                                         "windows",
@@ -86,9 +86,9 @@
                       "keywords":  [
                                        "dev"
                                    ],
-                      "size":  8308,
-                      "sha256":  "97b1541cea582cf072fdd8e353dcee6b7a25ba27f389b302c976fd48cea6ab36",
-                      "publishedAt":  "2026-09-14T21:58:33Z",
+                      "size":  8266,
+                      "sha256":  "b20ca874b807b18dd9fc72ca9af522865f1bcfbb4956c1af1b481c0b8746af68",
+                      "publishedAt":  "2026-09-08T09:25:21Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.dev-toolbox/1.1.0/com.pluglauncher.dev-toolbox-1.1.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.dev-toolbox/1.1.0/icon.png",
@@ -112,8 +112,8 @@
                                        "du"
                                    ],
                       "size":  9853,
-                      "sha256":  "1c1db9a9256c6d19de69a5e25261ad74e708b68f7cef993a5f33b197ef5db26f",
-                      "publishedAt":  "2026-09-14T21:58:33Z",
+                      "sha256":  "c61c98a66ebaa456f75e80b48a53f1297b2aa1c808e831a8621e1d4ba3fd01cf",
+                      "publishedAt":  "2026-09-08T11:02:59Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/com.pluglauncher.disk-usage-1.0.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.disk-usage/1.0.0/icon.png",
@@ -136,14 +136,14 @@
                       "keywords":  [
                                        "kb"
                                    ],
-                      "size":  16691,
-                      "sha256":  "2bed587fdd27fe9af296cbdac7162f60c0975f7a0935c14d1df4e3f9e0476335",
-                      "publishedAt":  "2026-09-14T21:58:33Z",
+                      "size":  5938,
+                      "sha256":  "1e35cdc5fbbb6698db80920912da798e75b1581715abfccd27046fb58ca0dc62",
+                      "publishedAt":  "2026-09-12T14:31:11Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.keyboard-layout/1.2.0/com.pluglauncher.keyboard-layout-1.2.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.keyboard-layout/1.2.0/icon.png",
                       "screenshots":  [
-                                          "packages/com.pluglauncher.keyboard-layout/1.2.0/screenshots/layout-fix.jpg"
+
                                       ],
                       "platforms":  [
                                         "windows"
@@ -159,9 +159,9 @@
                       "keywords":  [
                                        "pw"
                                    ],
-                      "size":  5399,
-                      "sha256":  "7605ce9efa89722174c222cacb885cec1beae92f231b244775ad095bb587d543",
-                      "publishedAt":  "2026-09-14T21:58:33Z",
+                      "size":  5373,
+                      "sha256":  "a31d1c87f23f4781dc8d4b7999b380ff35e23a5614b3ee8b829a29d04f534606",
+                      "publishedAt":  "2026-09-08T09:25:22Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.password/1.1.1/com.pluglauncher.password-1.1.1.plz",
                       "iconUrl":  "packages/com.pluglauncher.password/1.1.1/icon.png",
@@ -179,17 +179,17 @@
                       "id":  "com.pluglauncher.programs",
                       "name":  "Programs",
                       "description":  "Search applications installed in the Start menu",
-                      "version":  "1.3.0",
+                      "version":  "1.2.1",
                       "author":  "PlugLauncher",
                       "keywords":  [
 
                                    ],
-                      "size":  4329,
-                      "sha256":  "fd253f3d5094d0252f8f1340844fc70dc7bdae6a7e46afd6455c1c5662ab234c",
-                      "publishedAt":  "2026-09-14T21:58:33Z",
+                      "size":  3250,
+                      "sha256":  "d11d0b9d0009810d8a9866091b227158f17eb32be2d0a73756014bd3385e7816",
+                      "publishedAt":  "2026-09-08T09:25:22Z",
                       "downloads":  0,
-                      "downloadUrl":  "packages/com.pluglauncher.programs/1.3.0/com.pluglauncher.programs-1.3.0.plz",
-                      "iconUrl":  "packages/com.pluglauncher.programs/1.3.0/icon.png",
+                      "downloadUrl":  "packages/com.pluglauncher.programs/1.2.1/com.pluglauncher.programs-1.2.1.plz",
+                      "iconUrl":  "packages/com.pluglauncher.programs/1.2.1/icon.png",
                       "screenshots":  [
 
                                       ],
@@ -197,6 +197,31 @@
                                         "windows"
                                     ],
                       "minCore":  ""
+                  },
+                  {
+                      "id":  "com.pluglauncher.qr",
+                      "name":  "QR Code",
+                      "description":  "make a QR of any text — scannable off the screen — and read one back from a clipboard image",
+                      "version":  "1.0.0",
+                      "author":  "PlugLauncher",
+                      "keywords":  [
+                                       "qr"
+                                   ],
+                      "size":  294671,
+                      "sha256":  "8681cf5ba1f0f0e4f2950945df67bb06420f47853122ddcec55b860ac94fe2f5",
+                      "publishedAt":  "2026-09-19T15:22:53Z",
+                      "downloads":  0,
+                      "downloadUrl":  "packages/com.pluglauncher.qr/1.0.0/com.pluglauncher.qr-1.0.0.plz",
+                      "iconUrl":  "packages/com.pluglauncher.qr/1.0.0/icon.png",
+                      "screenshots":  [
+
+                                      ],
+                      "platforms":  [
+                                        "windows",
+                                        "macos",
+                                        "linux"
+                                    ],
+                      "minCore":  "1.7.0"
                   },
                   {
                       "id":  "com.pluglauncher.ssh-hosts",
@@ -208,8 +233,8 @@
                                        "ssh"
                                    ],
                       "size":  6276,
-                      "sha256":  "c544f458ff2b15d1332dd256fa5c8e5efdc7cda9ce03edb42b846aa56d3c805a",
-                      "publishedAt":  "2026-09-14T21:58:33Z",
+                      "sha256":  "3589e3704fbe2fd67601bd3a91418e8e87c0fa8a8e912a0934e2288ea043cb7b",
+                      "publishedAt":  "2026-09-08T11:02:59Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.ssh-hosts/1.1.0/com.pluglauncher.ssh-hosts-1.1.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.ssh-hosts/1.1.0/icon.png",
@@ -233,8 +258,8 @@
                                        "st"
                                    ],
                       "size":  3903,
-                      "sha256":  "bb2546f7b3a8ed2a6e0621b126542841fa2ebb5bf4819b18bb8b938f7d204deb",
-                      "publishedAt":  "2026-09-14T21:58:34Z",
+                      "sha256":  "ec38d310f5915b23ec5c7f131459ae878817e586bfd882800486c77484fbeedc",
+                      "publishedAt":  "2026-09-08T11:02:59Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.steam-games/1.2.0/com.pluglauncher.steam-games-1.2.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.steam-games/1.2.0/icon.png",
@@ -257,9 +282,9 @@
                       "keywords":  [
                                        "sys"
                                    ],
-                      "size":  7219,
-                      "sha256":  "fdc6af813d65274308e44699834efb2ee6c37ae4ad7f72d2eda661a549a056c0",
-                      "publishedAt":  "2026-09-14T21:58:34Z",
+                      "size":  7192,
+                      "sha256":  "ef271cb5ae29b76acafb6dceab267ec237cca58dd10d19e64d41bcc1968e0655",
+                      "publishedAt":  "2026-09-08T10:19:46Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.system/1.1.0/com.pluglauncher.system-1.1.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.system/1.1.0/icon.png",
@@ -280,14 +305,14 @@
                       "keywords":  [
                                        "term"
                                    ],
-                      "size":  23583,
-                      "sha256":  "e6c4dcac6be2dfa7d250a4505560f3609a2f494b617568ff294dfed069cab2ff",
-                      "publishedAt":  "2026-09-14T21:58:34Z",
+                      "size":  7529,
+                      "sha256":  "97055dbb3f1d2ba9af3b62a27ae3ca50ba790bb43ed38ed9bf8c1579b5329d7b",
+                      "publishedAt":  "2026-09-12T14:31:08Z",
                       "downloads":  0,
                       "downloadUrl":  "packages/com.pluglauncher.terminal/1.0.0/com.pluglauncher.terminal-1.0.0.plz",
                       "iconUrl":  "packages/com.pluglauncher.terminal/1.0.0/icon.png",
                       "screenshots":  [
-                                          "packages/com.pluglauncher.terminal/1.0.0/screenshots/live-session.jpg"
+
                                       ],
                       "platforms":  [
                                         "windows",
