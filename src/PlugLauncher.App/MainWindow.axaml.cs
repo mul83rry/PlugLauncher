@@ -13,6 +13,8 @@ namespace PlugLauncher.App;
 
 public partial class MainWindow : Window
 {
+    private const double BaseLauncherWidth = 820;
+
     private readonly PluginEngine _engine;
     private readonly FileLogger _log = new("window");
     private readonly IHotkeys _hotkey = Os.CreateHotkeys();
@@ -26,6 +28,8 @@ public partial class MainWindow : Window
     private bool _hotkeyTried;
     private bool _positionAfterLayout;
     private ResultListPlacement? _appliedResultListPlacement;
+    private int? _appliedLauncherScalePercent;
+    private double _launcherScale = 1;
     private PixelRect _placementArea;
     private double _placementScale;
     private bool _hasPlacementScreen;
@@ -44,6 +48,7 @@ public partial class MainWindow : Window
         _engine = engine;
         InitializeComponent();
 
+        ApplyLauncherScale();
         ApplyResultListPlacement();
         LauncherLayout.LayoutUpdated += (_, _) => PositionAfterLayout();
 
@@ -176,6 +181,7 @@ public partial class MainWindow : Window
 
     public void ShowLauncher()
     {
+        ApplyLauncherScale();
         ApplyResultListPlacement();
         CapturePlacementScreen();
         SearchBox.Text = string.Empty;
@@ -209,6 +215,23 @@ public partial class MainWindow : Window
         SearchBox.Text = string.Empty;
         ResultsList.ItemsSource = null;
         _layoutFix = null;
+    }
+
+    /// <summary>
+    /// همه‌ی رابط را یک‌جا مقیاس می‌کند: متن، فاصله‌ها، آیکن‌ها، ردیف‌ها و نمای جزئیات. عرض
+    /// پنجره نیز با همان نسبت عوض می‌شود تا LayoutTransform محتوا را دوباره در عرض قبلی جا ندهد.
+    /// </summary>
+    private void ApplyLauncherScale()
+    {
+        var percent = _engine.Settings.LauncherScalePercent;
+        if (_appliedLauncherScalePercent == percent) return;
+
+        _appliedLauncherScalePercent = percent;
+        _launcherScale = percent / 100d;
+        LauncherScaleHost.LayoutTransform = new ScaleTransform(_launcherScale, _launcherScale);
+        Width = BaseLauncherWidth * _launcherScale;
+        LauncherScaleHost.InvalidateMeasure();
+        RequestPositionAfterLayout();
     }
 
     /// <summary>
@@ -275,9 +298,10 @@ public partial class MainWindow : Window
         var logicalHeight = ClientSize.Height > 0 ? ClientSize.Height : SearchBarHost.Bounds.Height;
         var windowWidth = Math.Max(1, (int)Math.Ceiling(logicalWidth * scale));
         var windowHeight = Math.Max(1, (int)Math.Ceiling(logicalHeight * scale));
-        var barOffsetX = (int)Math.Round(SearchBarHost.Bounds.X * scale);
-        var barOffsetY = (int)Math.Round(SearchBarHost.Bounds.Y * scale);
-        var barHeight = Math.Max(1, (int)Math.Ceiling(SearchBarHost.Bounds.Height * scale));
+        var contentScale = scale * _launcherScale;
+        var barOffsetX = (int)Math.Round(SearchBarHost.Bounds.X * contentScale);
+        var barOffsetY = (int)Math.Round(SearchBarHost.Bounds.Y * contentScale);
+        var barHeight = Math.Max(1, (int)Math.Ceiling(SearchBarHost.Bounds.Height * contentScale));
 
         int barX;
         int barY;

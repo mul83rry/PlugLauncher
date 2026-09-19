@@ -17,8 +17,11 @@
         <app:ShareOfWidth x:Key="ShareOfWidth" />
     </Window.Resources>
 
-    <Border Background="{StaticResource SurfaceBrush}" CornerRadius="12">
-        <Grid x:Name="LauncherLayout" RowDefinitions="Auto,Auto,Auto">
+    <!-- LayoutTransform اندازه‌ی واقعی پنجره را هم با محتوا بزرگ و کوچک می‌کند؛ RenderTransform
+         فقط نقاشی را عوض می‌کرد و برای کلیک، SizeToContent و جای‌گذاری نوار اندازه‌ی غلط می‌ماند. -->
+    <LayoutTransformControl x:Name="LauncherScaleHost">
+        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="12">
+            <Grid x:Name="LauncherLayout" RowDefinitions="Auto,Auto,Auto">
 
             <!-- ناحیه‌ی جستجو -->
             <!--
@@ -192,6 +195,7 @@
                            VerticalAlignment="Top" />
                 </Grid>
             </Border>
-        </Grid>
-    </Border>
+            </Grid>
+        </Border>
+    </LayoutTransformControl>
 </Window>

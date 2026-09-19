@@ -23,6 +23,11 @@ public enum ResultListPlacement
 /// <summary>تنظیمات کاربر؛ در <c>%APPDATA%\PlugLauncher\settings.json</c> ذخیره می‌شود.</summary>
 public sealed class AppSettings
 {
+    public const int MinLauncherScalePercent = 50;
+    public const int MaxLauncherScalePercent = 200;
+
+    private int _launcherScalePercent = 100;
+
     /// <summary>هات‌کی سراسری نمایش پنجره، مثلاً <c>Alt+Space</c>.</summary>
     [JsonPropertyName("hotkey")]
     public string Hotkey { get; set; } = "Alt+Space";
@@ -45,6 +50,17 @@ public sealed class AppSettings
     /// <summary>فهرست پاسخ‌ها بالای نوار باز شود یا پایین آن.</summary>
     [JsonPropertyName("resultListPlacement")]
     public ResultListPlacement ResultListPlacement { get; set; } = ResultListPlacement.Below;
+
+    /// <summary>
+    /// مقیاس تمام رابط لانچر، بر حسب درصد. خودِ تنظیم مقدار را محدود می‌کند تا عدد خراب در فایل
+    /// تنظیمات پنجره را نامرئی یا آن‌قدر بزرگ نکند که دیگر نتوان آن را اصلاح کرد.
+    /// </summary>
+    [JsonPropertyName("launcherScalePercent")]
+    public int LauncherScalePercent
+    {
+        get => _launcherScalePercent;
+        set => _launcherScalePercent = Math.Clamp(value, MinLauncherScalePercent, MaxLauncherScalePercent);
+    }
 
     /// <summary>شناسه‌ی پلاگین‌هایی که کاربر غیرفعال کرده است.</summary>
     [JsonPropertyName("disabledPlugins")]
