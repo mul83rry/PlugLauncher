@@ -3,7 +3,7 @@
 The release workflow reads the section matching the tag out of this file and uses it as the
 release notes, so every version needs a `## <version>` heading here before it can be tagged.
 
-## Unreleased
+## 1.7.0 — 2026-09-20
 
 **Settings are organized, and the launcher can move and scale**
 
@@ -42,6 +42,18 @@ in `libs/` and they simply work, from the compile cache too.
 centered at its natural size with the copy button still in the corner (it hands out the row's
 `DetailText`). And `DetailSyntax = "nowrap"` shows the text in the non-wrapping view, for text
 whose shape is its meaning — breaking lines would destroy it.
+
+**Store apps appear in Programs now**
+
+Programs indexed the Start menu by its `.lnk` files — everything a normal installer puts there,
+and nothing else. Apps installed from the Microsoft Store (Telegram among them) never create a
+shortcut: they live in `shell:AppsFolder` under an AUMID, so they were invisible no matter what
+you typed. The plugin now also asks `Get-StartApps` for the same list the Start menu shows and
+adds every Store app next to the shortcuts, once per session and cached like the rest. A Store
+app opens exactly the way the Start menu opens it; an app that has both a shortcut and a store
+entry keeps its shortcut. Icons are not extracted for Store apps — the row appears without one.
+
+Stashed changes
 
 ## 1.6.0 — 2026-09-13
 
