@@ -65,6 +65,20 @@ Linux builds and runs but has no hotkey yet, so there is no way to open the wind
 
 ## Releasing
 
+Everything below is one command:
+
+```bash
+./tools/release.ps1                # version comes from Directory.Build.props
+./tools/release.ps1 -Version 1.8.0 # or bump it in the same commit
+```
+
+It pulls first, refuses to re-tag or to release an empty changelog, stamps the `## Unreleased`
+heading with the date, commits **only** `CHANGELOG.md` and `Directory.Build.props` (work in
+progress stays out), tags `v<version>` and pushes; the Release workflow does the rest. Add
+`-NoPush` to stop after tagging.
+
+What it automates, in order — the same steps by hand:
+
 1. Bump `<Version>` in `Directory.Build.props`.
 2. Add a `## <version>` section to [CHANGELOG.md](../CHANGELOG.md) — the workflow reads it and
    fails if it is missing.
