@@ -17,40 +17,50 @@
         <app:ShareOfWidth x:Key="ShareOfWidth" />
     </Window.Resources>
 
-    <Border Background="{StaticResource SurfaceBrush}" CornerRadius="12">
-        <Grid RowDefinitions="Auto,Auto,Auto">
+    <!-- LayoutTransform اندازه‌ی واقعی پنجره را هم با محتوا بزرگ و کوچک می‌کند؛ RenderTransform
+         فقط نقاشی را عوض می‌کرد و برای کلیک، SizeToContent و جای‌گذاری نوار اندازه‌ی غلط می‌ماند. -->
+    <LayoutTransformControl x:Name="LauncherScaleHost">
+        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="12">
+            <Grid x:Name="LauncherLayout" RowDefinitions="Auto,Auto,Auto">
 
             <!-- ناحیه‌ی جستجو -->
-            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="22,16,14,14">
+            <!--
+                میزبانِ بی‌حاشیه عرض کامل پنجره را می‌گیرد. جای پنجره نسبت به همین کنترل حساب
+                می‌شود تا X/Y سفارشی و حالت بالا/پایین به خود نوار اشاره کنند، نه به لبه‌ی فهرست.
+            -->
+            <Grid x:Name="SearchBarHost" Grid.Row="0">
+                <Grid ColumnDefinitions="*,Auto" Margin="22,16,14,14">
 
-                <!--
-                    متن پیشنهادی خاکستری، دقیقاً پشت متن تایپ‌شده. تکه‌ی اول همان چیزی است که
-                    کاربر نوشته و نامرئی است، فقط برای اینکه تکه‌ی دوم سرِ جای درست بیفتد.
-                -->
-                <StackPanel Grid.Column="0"
-                            Orientation="Horizontal"
+                    <!--
+                        متن پیشنهادی خاکستری، دقیقاً پشت متن تایپ‌شده. تکه‌ی اول همان چیزی است که
+                        کاربر نوشته و نامرئی است، فقط برای اینکه تکه‌ی دوم سرِ جای درست بیفتد.
+                    -->
+                    <StackPanel Grid.Column="0"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                IsHitTestVisible="False"
+                                ClipToBounds="True">
+                        <TextBlock x:Name="HintTyped" FontSize="30" Foreground="Transparent" />
+                        <TextBlock x:Name="HintRest" FontSize="30" Foreground="{StaticResource HintTextBrush}" />
+                    </StackPanel>
+
+                    <TextBox x:Name="SearchBox"
+                             Grid.Column="0"
+                             Classes="search"
+                             AcceptsReturn="False"
+                             TextChanged="OnSearchTextChanged" />
+
+                    <Button x:Name="SettingsButton"
+                            Grid.Column="1"
+                            Classes="ghost"
+                            Content="Settings"
                             VerticalAlignment="Center"
-                            IsHitTestVisible="False"
-                            ClipToBounds="True">
-                    <TextBlock x:Name="HintTyped" FontSize="30" Foreground="Transparent" />
-                    <TextBlock x:Name="HintRest" FontSize="30" Foreground="{StaticResource HintTextBrush}" />
-                </StackPanel>
-
-                <TextBox x:Name="SearchBox"
-                         Grid.Column="0"
-                         Classes="search"
-                         AcceptsReturn="False"
-                         TextChanged="OnSearchTextChanged" />
-
-                <Button x:Name="SettingsButton"
-                        Grid.Column="1"
-                        Classes="ghost"
-                        Content="Settings"
-                        VerticalAlignment="Center"
-                        Click="OnSettingsClick" />
+                            Click="OnSettingsClick" />
+                </Grid>
             </Grid>
 
-            <Border Grid.Row="1"
+            <Border x:Name="ResultsSeparator"
+                    Grid.Row="1"
                     Height="1"
                     Background="{StaticResource SeparatorBrush}"
                     Margin="14,0" />
@@ -185,6 +195,7 @@
                            VerticalAlignment="Top" />
                 </Grid>
             </Border>
-        </Grid>
-    </Border>
+            </Grid>
+        </Border>
+    </LayoutTransformControl>
 </Window>

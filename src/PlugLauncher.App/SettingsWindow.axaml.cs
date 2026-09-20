@@ -30,19 +30,82 @@ public partial class SettingsWindow : Window
         Icon = App.LoadAppIcon();
 
         _loading = true;
-        HotkeyBox.Text = _engine.Settings.Hotkey;
+        var settings = _engine.Settings;
+        HotkeyBox.Text = settings.Hotkey;
+        LauncherScaleBox.Value = settings.LauncherScalePercent;
+        BarPositionBox.SelectedIndex = settings.BarPosition switch
+        {
+            LauncherBarPosition.Center => 0,
+            LauncherBarPosition.Top => 1,
+            LauncherBarPosition.Bottom => 2,
+            LauncherBarPosition.Custom => 3,
+            _ => 1
+        };
+        CustomXBox.Value = settings.CustomBarX;
+        CustomYBox.Value = settings.CustomBarY;
+        ResultPlacementBox.SelectedIndex = settings.ResultListPlacement == ResultListPlacement.Above ? 1 : 0;
+        UpdateCustomPositionVisibility();
         // اسمِ سیستم داخل متن است، چون این چک‌باکس روی هر سه سیستم چیز متفاوتی می‌نویسد —
         // کلید رجیستری، فایل plist، یا فایل desktop
         StartWithSystemBox.Content = $"Start with {Os.DisplayName}";
         // از خود سیستم خوانده می‌شود نه از settings.json، چون کاربر می‌تواند از بیرون هم عوضش کند
         StartWithSystemBox.IsChecked = Os.AutoStart.IsEnabled();
-        AutoUpdateBox.IsChecked = _engine.Settings.CheckForUpdates;
+        AutoUpdateBox.IsChecked = settings.CheckForUpdates;
         _loading = false;
 
-        VersionText.Text = $"PlugLauncher v{UpdateChecker.RunningVersion.ToString(3)}";
+        VersionText.Text = $"Version {UpdateChecker.RunningVersion.ToString(3)}";
         if (knownUpdate is not null) ShowUpdate(knownUpdate);
 
         Refresh();
+    }
+
+    private void OnLauncherScaleChanged(object? sender, RoutedEventArgs e)
+    {
+        if (_loading || LauncherScaleBox.Value is not { } value) return;
+
+        _engine.Settings.LauncherScalePercent = decimal.ToInt32(decimal.Truncate(value));
+        _engine.SaveSettings();
+    }
+
+    private void OnBarPositionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        UpdateCustomPositionVisibility();
+        if (_loading) return;
+
+        var position = BarPositionBox.SelectedIndex switch
+        {
+            0 => LauncherBarPosition.Center,
+            1 => LauncherBarPosition.Top,
+            2 => LauncherBarPosition.Bottom,
+            3 => LauncherBarPosition.Custom,
+            _ => (LauncherBarPosition?)null
+        };
+
+        if (position is null) return;
+        _engine.Settings.BarPosition = position.Value;
+        _engine.SaveSettings();
+    }
+
+    private void UpdateCustomPositionVisibility()
+        => CustomPositionFields.IsVisible = BarPositionBox.SelectedIndex == 3;
+
+    private void OnCustomPositionChanged(object? sender, RoutedEventArgs e)
+    {
+        if (_loading || CustomXBox.Value is not { } x || CustomYBox.Value is not { } y) return;
+
+        _engine.Settings.CustomBarX = decimal.ToInt32(decimal.Truncate(x));
+        _engine.Settings.CustomBarY = decimal.ToInt32(decimal.Truncate(y));
+        _engine.SaveSettings();
+    }
+
+    private void OnResultPlacementChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_loading || ResultPlacementBox.SelectedIndex < 0) return;
+
+        _engine.Settings.ResultListPlacement = ResultPlacementBox.SelectedIndex == 1
+            ? ResultListPlacement.Above
+            : ResultListPlacement.Below;
+        _engine.SaveSettings();
     }
 
     private void OnAutoUpdateToggled(object? sender, RoutedEventArgs e)

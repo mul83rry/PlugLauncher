@@ -5,6 +5,14 @@ release notes, so every version needs a `## <version>` heading here before it ca
 
 ## Unreleased
 
+**Settings are organized, and the launcher can move and scale**
+
+Settings now opens on a General tab for the app, updates, hotkey, startup and launcher appearance;
+the installed list and its store/folder/reload actions have their own Plugins tab. The search bar
+can sit at the top, center or bottom of the active screen, or at exact desktop X/Y coordinates,
+while results can open above or below it. A 50–200% scale changes the whole launcher together —
+text, controls, spacing, icons and result/detail views — rather than making users tune each piece.
+
 **New plugin: QR Code** (keyword `qr`, from the store)
 
 `qr <text>` makes a QR of any text and shows it as a real image — a crisp PNG, eight pixels per

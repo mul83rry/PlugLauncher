@@ -79,8 +79,13 @@ the app.
   only hides it — the app stays in the tray so the hotkey keeps working.
 - **Quit for real:** the tray icon → **Exit**, or the **Exit PlugLauncher** button in settings.
 - On the first run it asks whether to start with Windows, and never asks again. The
-  **Start with Windows** checkbox in settings is where you change your answer.
-- The hotkey itself can be changed in settings.
+  **Start with Windows** checkbox on the **General** settings tab is where you change your answer.
+- The **General** tab also changes the hotkey, scales the whole launcher from 50% to 200%, places
+  the search bar at the top, center, bottom or exact X/Y coordinates, and puts results above or
+  below it. Display changes apply the next time the launcher opens; a changed hotkey takes effect
+  after restart.
+- The **Plugins** tab lists everything installed and has the store, plugins-folder and reload
+  controls.
 
 ### Updates
 
@@ -88,7 +93,8 @@ Once a day PlugLauncher asks GitHub whether a newer release exists. If there is 
 notification names it and the **Settings** button keeps a dot until you restart. Nothing is
 downloaded or installed — the button opens the release page, and you upgrade the same way you
 installed. The check is one request to `api.github.com`, it carries nothing about you, and
-settings has a **Check now** button and a **Check automatically** checkbox to switch it off.
+the General settings tab has a **Check for updates** button and a **Check automatically** checkbox
+to switch it off.
 
 ## What comes with it
 
@@ -101,8 +107,8 @@ things you did not ask for:
 | *(none)* | Calculator | Type any math expression, Enter copies the result |
 | `pw` | Password Generator | Length, character sets, PIN and hex modes |
 
-The rest are in the **store** tab in settings, one click each — the store greys out anything
-your version of the launcher cannot run, so what it offers always works:
+The rest are available from **Plugin Store** on the Plugins settings tab, one click each — the
+store greys out anything your version of the launcher cannot run, so what it offers always works:
 
 | Keyword | Plugin | What it does |
 |---|---|---|
