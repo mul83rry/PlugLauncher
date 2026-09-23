@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using PlugLauncher.Core;
 using PlugLauncher.Platform;
+using PlugLauncher.PluginUI;
 
 namespace PlugLauncher.App;
 
@@ -314,6 +315,7 @@ public partial class App : Application
 
     private void Cleanup()
     {
+        PluginWindows.CloseAll();
         _engine?.Usage.Flush();
 
         if (_trayIcon is not null)

@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using PlugLauncher.Core;
 using PlugLauncher.Platform;
+using PlugLauncher.PluginUI;
 
 namespace PlugLauncher.App;
 
@@ -225,7 +226,9 @@ public partial class SettingsWindow : Window
         if (_loading) return;
         if (sender is not CheckBox { Tag: string pluginId } box) return;
 
-        await _engine.SetEnabledAsync(pluginId, box.IsChecked == true);
+        var enabled = box.IsChecked == true;
+        if (!enabled) PluginWindows.CloseFor(pluginId);
+        await _engine.SetEnabledAsync(pluginId, enabled);
         Refresh();
     }
 
@@ -237,6 +240,7 @@ public partial class SettingsWindow : Window
 
         try
         {
+            PluginWindows.CloseFor(pluginId);
             _engine.Uninstall(pluginId);
             Refresh();
         }
@@ -303,6 +307,7 @@ public partial class SettingsWindow : Window
 
     private async void OnReload(object? sender, RoutedEventArgs e)
     {
+        PluginWindows.CloseAll();
         await _engine.ReloadAsync();
         Refresh();
     }
