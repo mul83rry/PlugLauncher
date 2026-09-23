@@ -8,6 +8,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using PlugLauncher.Contracts;
 using PlugLauncher.Core;
+using PlugLauncher.PluginUI;
 
 namespace PlugLauncher.App;
 
@@ -371,6 +372,7 @@ public partial class StoreWindow : Window
 
         try
         {
+            PluginWindows.CloseFor(item.Id);
             await _engine.InstallFromStoreAsync(item.Plugin, CancellationToken.None, progress);
 
             item.SetInstalled(_engine.InstalledVersionOf(item.Id));
@@ -399,6 +401,7 @@ public partial class StoreWindow : Window
 
         try
         {
+            PluginWindows.CloseFor(id);
             _engine.Uninstall(id);
             StatusText.Text = $"{id} removed";
 

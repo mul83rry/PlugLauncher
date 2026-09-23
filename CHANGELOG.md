@@ -3,6 +3,23 @@
 The release workflow reads the section matching the tag out of this file and uses it as the
 release notes, so every version needs a `## <version>` heading here before it can be tagged.
 
+## Unreleased
+
+**Plugins can open managed windows**
+
+The optional `PlugLauncher.PluginUI` layer gives windowed plugins a supported API instead of
+making them depend on loader internals. A plugin gets its own window scope and can open a themed
+Avalonia `PluginWindow`; calls are marshalled to the UI thread, repeated keys activate the same
+window, and the host closes tracked windows on disable, update, uninstall, reload and shutdown.
+The core contracts remain UI-neutral.
+
+**New plugin: Custom Shortcuts** (keywords `go` and `shortcut`, from the store)
+
+Give a program, file or URL a memorable name and launch it with `go <name>`. Its dedicated
+launcher-themed window lists every shortcut and provides add, edit and remove actions, including
+optional command-line arguments and a working folder. Definitions are kept as JSON in the
+plugin's own data directory and saved atomically.
+
 ## 1.7.0 — 2026-09-20
 
 **Settings are organized, and the launcher can move and scale**

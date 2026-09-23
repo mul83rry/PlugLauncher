@@ -102,8 +102,9 @@ packaging change before committing to a tag.
 
 | Project | Role |
 |---|---|
-| `src/PlugLauncher.Contracts` | The plugin contract (`IPlugin`, `PluginResult`, `PluginQuery`, `IPluginContext`) — all a plugin author ever sees |
+| `src/PlugLauncher.Contracts` | The UI-neutral plugin contract (`IPlugin`, results, queries, context and host services) |
 | `src/PlugLauncher.Core` | Plugin discovery, Roslyn compilation with an on-disk cache, query execution, usage stats, settings |
+| `src/PlugLauncher.PluginUI` | Optional Avalonia window helpers for plugins that need a full interface |
 | `src/PlugLauncher.Platform` | The parts that differ per operating system behind one door: global hotkey, start-at-login, opening files |
 | `src/PlugLauncher.App` | The interface, in Avalonia: the glass window, settings, the tray icon |
 
@@ -202,6 +203,49 @@ return Plugin.Create(
     initialize: async (ctx, ct) => { ctx.Log.Info(ctx.PluginDirectory); });
 ```
 
+### Opening a plugin window
+
+Most plugins should stay inside the result list, but a manager or editor sometimes needs a real
+window. Do not reach into `PlugLauncher.App`, guess the UI thread, or retain an untracked Avalonia
+window. The optional `PlugLauncher.PluginUI` assembly provides the supported path:
+
+```csharp
+using Avalonia.Controls;
+using PlugLauncher.PluginUI;
+
+PluginWindowScope? windows = null;
+
+return Plugin.Create(
+    query: (query, ct) => Task.FromResult<IReadOnlyList<PluginResult>>(
+    [
+        new PluginResult
+        {
+            Id = "manager",
+            Title = "Manage my plugin",
+            Action = () => windows!.Show("manager", () => new PluginWindow
+            {
+                Title = "My plugin",
+                Content = new TextBlock { Text = "An ordinary Avalonia control tree" }
+            })
+        }
+    ]),
+    initialize: (ctx, ct) =>
+    {
+        windows = PluginWindows.For(ctx);
+        return Task.CompletedTask;
+    });
+```
+
+`Show` is safe from any thread. Its key is scoped to the plugin, so calling it again activates the
+existing window instead of opening duplicates. `PluginWindow` supplies the launcher's background,
+size defaults, and theme access; its `Content` accepts normal code-created Avalonia controls. The
+host tracks these windows and closes them when the plugin is disabled, updated, removed or
+reloaded, and when PlugLauncher exits. A plugin can also call `windows.CloseAll()` itself.
+
+This API is present in PlugLauncher 1.8.0 and later, so a plugin using it must set
+`"minCore": "1.8.0"`. Avalonia and `PlugLauncher.PluginUI` come from the host and must not be
+copied into the package.
+
 ### Things worth knowing
 
 - **Compile cache**: each plugin's compiled output is kept in `cache\scripts`, keyed on a hash
@@ -209,8 +253,9 @@ return Plugin.Create(
   by itself.
 - **Isolation**: a plugin that throws or runs long only removes itself from the results
   (`queryTimeoutMs`, three seconds by default) and the reason goes to the log.
-- **References**: the whole framework and `PlugLauncher.Contracts` are available to the script.
-  Extra DLLs go in the manifest's `references` array.
+- **References**: the whole framework and `PlugLauncher.Contracts` are available to every script.
+  The desktop host also provides Avalonia and `PlugLauncher.PluginUI` for windowed plugins. Extra
+  DLLs go in the manifest's `references` array.
 - **Compile errors** appear in settings, next to the plugin, with a line number.
 - **`Fraction`** on a result draws a faint bar behind the row. Use it for anything that is a
   share of a whole; leave it `null` for everything else.
