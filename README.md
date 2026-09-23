@@ -112,6 +112,7 @@ store greys out anything your version of the launcher cannot run, so what it off
 
 | Keyword | Plugin | What it does |
 |---|---|---|
+| `go` | Custom Shortcuts | Name a program, file or URL, then launch it by that name; includes its own add/edit/remove window |
 | `term` | Terminal | One shell that stays alive between commands — `cd` sticks, variables stick, history sticks |
 | `qr` | QR Code | Make a QR of any text, scannable off the screen — and read one back from a clipboard image |
 | `curl` | Curl | Paste a curl command, get the answer in place: pretty JSON in editor colors, or field by field |

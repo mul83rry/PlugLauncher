@@ -102,7 +102,7 @@ packaging change before committing to a tag.
 
 | Project | Role |
 |---|---|
-| `src/PlugLauncher.Contracts` | The plugin contract (`IPlugin`, `PluginResult`, `PluginQuery`, `IPluginContext`) — all a plugin author ever sees |
+| `src/PlugLauncher.Contracts` | The UI-neutral plugin contract (`IPlugin`, results, queries, context and host services) |
 | `src/PlugLauncher.Core` | Plugin discovery, Roslyn compilation with an on-disk cache, query execution, usage stats, settings |
 | `src/PlugLauncher.PluginUI` | Optional Avalonia window helpers for plugins that need a full interface |
 | `src/PlugLauncher.Platform` | The parts that differ per operating system behind one door: global hotkey, start-at-login, opening files |

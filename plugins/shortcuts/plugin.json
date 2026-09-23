@@ -1,0 +1,33 @@
+{
+  "id": "com.pluglauncher.shortcuts",
+  "name": "Custom Shortcuts",
+  "description": "Create your own named shortcuts to programs, files and URLs",
+  "version": "1.0.0",
+  "author": "PlugLauncher",
+  "entry": "main.csx",
+  "keywords": [
+    "go",
+    "shortcut"
+  ],
+  "icon": "assets/icon.png",
+  "platforms": [
+    "windows",
+    "macos",
+    "linux"
+  ],
+  "minCore": "1.8.0",
+  "usage": [
+    {
+      "example": "go",
+      "description": "show every custom shortcut and open the manager"
+    },
+    {
+      "example": "go editor",
+      "description": "find and run a shortcut by name"
+    },
+    {
+      "example": "shortcut manage",
+      "description": "open the add, edit and remove window"
+    }
+  ]
+}
